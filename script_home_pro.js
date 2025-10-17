@@ -1,15 +1,20 @@
-// 💬 ZingMini Classic Home Script – Realtime & UI Control
+// 💬 ZingMini Classic Home Script – Realtime & UI Control (FIXED FINAL)
 
-const API_URL = "https://zingmini-backend-2.onrender.com"; // backend của bạn
+const API_URL = "https://zingmini-backend-2.onrender.com"; // backend Render
 const socket = io(API_URL);
 
-// ============ LOAD USER ============ //
+// ===== CHECK TOKEN =====
 const token = localStorage.getItem("token");
+if (!token) {
+  alert("Vui lòng đăng nhập lại!");
+  location.href = "index.html";
+}
 let currentUser = null;
 
+// ============ LOAD USER ============
 async function loadUser() {
   try {
-    const res = await fetch(`${API_URL}/auth/me`, {
+    const res = await fetch(`${API_URL}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
@@ -30,7 +35,7 @@ async function loadUser() {
 }
 loadUser();
 
-// ============ ĐĂNG BÀI ============ //
+// ============ ĐĂNG BÀI ============
 async function createPost() {
   const text = document.getElementById("statusInput").value.trim();
   const file = document.getElementById("imageInput").files[0];
@@ -40,28 +45,36 @@ async function createPost() {
   formData.append("content", text);
   if (file) formData.append("image", file);
 
-  const res = await fetch(`${API_URL}/posts`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
-  });
-  const post = await res.json();
-  if (post && post._id) {
-    addPostToFeed(post, true);
-    document.getElementById("statusInput").value = "";
-    document.getElementById("imageInput").value = "";
-  } else {
-    alert("Đăng bài thất bại!");
+  try {
+    const res = await fetch(`${API_URL}/api/posts`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    const post = await res.json();
+    if (post && post._id) {
+      addPostToFeed(post, true);
+      document.getElementById("statusInput").value = "";
+      document.getElementById("imageInput").value = "";
+    } else {
+      alert("Đăng bài thất bại!");
+    }
+  } catch (err) {
+    alert("Lỗi đăng bài: " + err.message);
   }
 }
 
-// ============ HIỂN THỊ BÀI VIẾT ============ //
+// ============ HIỂN THỊ BÀI VIẾT ============
 async function loadFeed() {
-  const res = await fetch(`${API_URL}/posts`);
-  const data = await res.json();
-  const feed = document.getElementById("feed");
-  feed.innerHTML = "";
-  data.reverse().forEach((p) => addPostToFeed(p, false));
+  try {
+    const res = await fetch(`${API_URL}/api/posts`);
+    const data = await res.json();
+    const feed = document.getElementById("feed");
+    feed.innerHTML = "";
+    data.reverse().forEach((p) => addPostToFeed(p, false));
+  } catch (err) {
+    console.error("Lỗi tải bài viết:", err);
+  }
 }
 
 function addPostToFeed(post, prepend = false) {
@@ -85,7 +98,7 @@ function addPostToFeed(post, prepend = false) {
 }
 loadFeed();
 
-// ============ STORY DEMO ============ //
+// ============ STORY DEMO ============
 const stories = [
   { name: "Linh", img: "https://i.imgur.com/XC8ZbZC.jpg" },
   { name: "Huy", img: "https://i.imgur.com/5ZQbB3k.jpg" },
@@ -99,7 +112,7 @@ document.getElementById("storyBox").innerHTML = stories
   )
   .join("");
 
-// ============ GỢI Ý KẾT BẠN ============ //
+// ============ GỢI Ý KẾT BẠN ============
 const suggestions = [
   { name: "Trang", img: "https://i.imgur.com/2vS8t4h.jpg" },
   { name: "Đạt", img: "https://i.imgur.com/Tjz5UB1.jpg" },
@@ -118,7 +131,7 @@ document.getElementById("suggestBox").innerHTML = suggestions
   )
   .join("");
 
-// ============ GAME LIST ============ //
+// ============ GAME LIST ============
 const games = [
   { name: "Zing Farm", img: "https://i.imgur.com/dzWl3V7.png" },
   { name: "Gunny", img: "https://i.imgur.com/0LKBgGR.png" },
@@ -134,7 +147,7 @@ document.getElementById("gameList").innerHTML = games
   )
   .join("");
 
-// ============ FRIENDS ONLINE DEMO ============ //
+// ============ FRIENDS ONLINE DEMO ============
 const friends = [
   { name: "Tuấn", online: true },
   { name: "Mai", online: true },
@@ -149,7 +162,7 @@ document.getElementById("friendsList").innerHTML = friends
   )
   .join("");
 
-// ============ CHAT REALTIME ============ //
+// ============ CHAT REALTIME ============
 const chatBody = document.getElementById("chatBody");
 const chatInput = document.getElementById("chatInput");
 const sendBtn = document.getElementById("sendBtn");
@@ -187,7 +200,7 @@ socket.on("chat", (msg) => {
   }
 });
 
-// ============ LOGOUT ============ //
+// ============ LOGOUT ============
 function logout() {
   localStorage.removeItem("token");
   location.href = "index.html";
