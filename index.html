@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZingMini Classic - Đăng nhập</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      body {
+        background: linear-gradient(135deg, #6ec1ff, #a7d8ff);
+        font-family: "Poppins", sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .auth-container {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        width: 380px;
+        padding: 30px;
+        text-align: center;
+        animation: fadeIn 0.8s ease;
+      }
+      h2 {
+        color: #0078ff;
+        margin-bottom: 16px;
+      }
+      input {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        margin-bottom: 12px;
+        font-size: 0.95rem;
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        background: #0078ff;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+      button:hover {
+        background: #46b2ff;
+      }
+      .switch {
+        margin-top: 14px;
+        color: #555;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="auth-container" id="loginBox">
+      <h2>Đăng nhập ZingMini</h2>
+      <input id="loginEmail" type="email" placeholder="Email" />
+      <input id="loginPassword" type="password" placeholder="Mật khẩu" />
+      <button id="loginBtn">Đăng nhập</button>
+      <div class="switch" onclick="switchToRegister()">
+        Chưa có tài khoản? Đăng ký ngay
+      </div>
+    </div>
+
+    <div class="auth-container" id="registerBox" style="display: none">
+      <h2>Đăng ký tài khoản</h2>
+      <input id="registerName" type="text" placeholder="Họ & tên" />
+      <input id="registerEmail" type="email" placeholder="Email" />
+      <input id="registerPassword" type="password" placeholder="Mật khẩu" />
+      <button id="registerBtn">Đăng ký</button>
+      <div class="switch" onclick="switchToLogin()">
+        Đã có tài khoản? Quay lại đăng nhập
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+      function switchToRegister() {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("registerBox").style.display = "block";
+      }
+      function switchToLogin() {
+        document.getElementById("registerBox").style.display = "none";
+        document.getElementById("loginBox").style.display = "block";
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZingMini Classic - Trang chủ</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="logo">🌈 ZingMini Classic</div>
+      <div class="nav">
+        <button class="nav-btn active">Trang chủ</button>
+        <button class="nav-btn" onclick="logout()">Đăng xuất</button>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- LEFT COLUMN -->
+      <aside class="leftcol">
+        <div class="card profile-card">
+          <img id="profileAvatar" class="avatar-large" src="" alt="Avatar" />
+          <h3 id="profileName">Người dùng</h3>
+          <button class="btn small" id="editProfileBtn">Sửa thông tin</button>
+        </div>
+
+        <div class="card">
+          <h3>🟢 Ai đang online</h3>
+          <ul class="friends-list" id="friendsList"></ul>
+        </div>
+
+        <div class="card">
+          <h3>📸 Story</h3>
+          <div class="stories" id="storyBox"></div>
+        </div>
+      </aside>
+
+      <!-- MIDDLE COLUMN -->
+      <main class="feedcol">
+        <div class="card status-card">
+          <textarea id="statusInput" placeholder="Đang nghĩ gì thế?"></textarea>
+          <input type="file" id="imageInput" accept="image/*" />
+          <button class="btn primary" onclick="createPost()">Đăng bài</button>
+        </div>
+
+        <div class="card feed" id="feed"></div>
+      </main>
+
+      <!-- RIGHT COLUMN -->
+      <aside class="rightcol">
+        <div class="card">
+          <h3>👥 Gợi ý kết bạn</h3>
+          <div id="suggestBox" class="suggest-list"></div>
+        </div>
+
+        <div class="card">
+          <h3>🎮 Game</h3>
+          <div id="gameList" class="game-list"></div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- CHAT BUBBLE -->
+    <div class="chat-bubble" id="chatBubble">
+      <div class="chat-header">💬 Chat ZingMini</div>
+      <div class="chat-body" id="chatBody"></div>
+      <div class="chat-input">
+        <input id="chatInput" type="text" placeholder="Nhập tin nhắn..." />
+        <button id="sendBtn">Gửi</button>
+      </div>
+    </div>
+
+    <script src="script_home_pro.js"></script>
+  </body>
+</html>
