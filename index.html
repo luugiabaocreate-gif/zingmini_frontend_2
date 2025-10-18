@@ -3,51 +3,68 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ZingMini - Đăng nhập / Đăng ký</title>
+    <title>ZingMini Login/Register</title>
     <link rel="stylesheet" href="style.css" />
+    <!-- Emoji/GIF picker CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.2/dist/index.css"
+    />
   </head>
   <body>
-    <div class="auth-container">
-      <div class="auth-box">
-        <h2>ZingMini</h2>
-        <div class="form-toggle">
-          <button id="login-tab" class="active">Đăng nhập</button>
-          <button id="register-tab">Đăng ký</button>
+    <div class="container">
+      <div class="auth-card animate__animated animate__fadeInDown">
+        <div class="auth-header">
+          <h1>ZingMini</h1>
+          <p id="auth-toggle">
+            Chưa có tài khoản? <span id="toggle-link">Đăng ký</span>
+          </p>
         </div>
-        <form id="login-form" class="auth-form">
-          <input type="email" id="login-email" placeholder="Email" required />
-          <input
-            type="password"
-            id="login-password"
-            placeholder="Mật khẩu"
-            required
-          />
-          <button type="submit">Đăng nhập</button>
-        </form>
-        <form id="register-form" class="auth-form hidden">
-          <input
-            type="text"
-            id="register-name"
-            placeholder="Họ và tên"
-            required
-          />
-          <input
-            type="email"
-            id="register-email"
-            placeholder="Email"
-            required
-          />
-          <input
-            type="password"
-            id="register-password"
-            placeholder="Mật khẩu"
-            required
-          />
-          <button type="submit">Đăng ký</button>
-        </form>
+        <div class="auth-body">
+          <form id="login-form">
+            <input type="email" placeholder="Email" id="login-email" required />
+            <input
+              type="password"
+              placeholder="Mật khẩu"
+              id="login-password"
+              required
+            />
+            <button type="submit">Đăng nhập</button>
+          </form>
+          <form id="register-form" class="hidden">
+            <input
+              type="text"
+              placeholder="Tên hiển thị"
+              id="reg-name"
+              required
+            />
+            <input type="email" placeholder="Email" id="reg-email" required />
+            <input
+              type="password"
+              placeholder="Mật khẩu"
+              id="reg-password"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Nhập lại mật khẩu"
+              id="reg-password2"
+              required
+            />
+            <button type="submit">Đăng ký</button>
+          </form>
+        </div>
+        <div id="auth-msg" class="auth-msg"></div>
+      </div>
+      <div class="background-circles">
+        <div class="circle c1"></div>
+        <div class="circle c2"></div>
+        <div class="circle c3"></div>
+        <div class="circle c4"></div>
       </div>
     </div>
-    <div id="toast-container"></div>
-    <script src="script_auth.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.2/dist/index.js"></script>
+    <script src="script_auth.js" type="module"></script>
   </body>
 </html>

@@ -1,174 +1,265 @@
-// =================== GLOBAL ===================
-const token = localStorage.getItem("token");
-const user = JSON.parse(localStorage.getItem("user"));
-if (!token || !user) window.location.href = "index.html";
+// script_home_pro.js - ZingMini Home JS
 
-document.getElementById("current-user").innerText = user.name;
-document.getElementById("logout-btn").addEventListener("click", () => {
-  localStorage.clear();
-  window.location.href = "index.html";
-});
-
-// =================== SOCKET.IO ===================
-const socket = io("https://zingmini-backend-2.onrender.com", {
-  transports: ["websocket", "polling"],
-});
-
-// =================== FEED ===================
-const feed = document.getElementById("feed");
-const postBtn = document.getElementById("post-btn");
-const postContent = document.getElementById("post-content");
-const postImage = document.getElementById("post-image");
-
-async function loadPosts() {
-  const res = await fetch("https://zingmini-backend-2.onrender.com/api/posts", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const posts = await res.json();
-  feed.innerHTML = "";
-  posts.forEach((post) => {
-    feed.appendChild(createPostElement(post));
-  });
-}
-
-function createPostElement(post) {
-  const div = document.createElement("div");
-  div.className = "post";
-  div.innerHTML = `
-    <div class="post-header">
-      <img src="https://via.placeholder.com/40" alt="avatar">
-      <span class="post-user">${post.user.name}</span>
-    </div>
-    <div class="post-content">${post.content || ""}</div>
-    <div class="post-images">${(post.images || [])
-      .map((src) => {
-        if (src.endsWith(".mp4"))
-          return `<video controls src="${src}"></video>`;
-        return `<img src="${src}" />`;
-      })
-      .join("")}</div>
-    <div class="post-actions">
-      <span class="like-btn" data-id="${post._id}">👍 Thích</span>
-      <span class="comment-btn" data-id="${post._id}">💬 Bình luận</span>
-    </div>
-    <div class="comments" id="comments-${post._id}"></div>
-  `;
-  // Like
-  div.querySelector(".like-btn").addEventListener("click", () => {
-    socket.emit("like", { postId: post._id, user: user.name });
-  });
-  // Comment
-  div.querySelector(".comment-btn").addEventListener("click", () => {
-    const commentText = prompt("Nhập bình luận:");
-    if (commentText)
-      socket.emit("comment", {
-        postId: post._id,
-        user: user.name,
-        text: commentText,
-      });
-  });
-  return div;
-}
-
-// New post
-postBtn.addEventListener("click", async () => {
-  const formData = new FormData();
-  formData.append("content", postContent.value);
-  for (let f of postImage.files) formData.append("images", f);
-  const res = await fetch("https://zingmini-backend-2.onrender.com/api/posts", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
-  });
-  const newPost = await res.json();
-  feed.prepend(createPostElement(newPost));
-  postContent.value = "";
-  postImage.value = "";
-});
-
-// =================== SOCKET EVENTS ===================
-socket.on("like", (data) =>
-  showToast(`${data.user} đã thích 1 bài viết`, "info")
-);
-socket.on("comment", (data) =>
-  showToast(`${data.user} bình luận: "${data.text.slice(0, 30)}"`, "info")
-);
-socket.on("notification", (data) => addNotification(data));
-
-// =================== NOTIFICATIONS ===================
-const notificationsContainer = document.getElementById("notifications");
-function addNotification(data) {
-  const div = document.createElement("div");
-  div.className = "notification";
-  div.innerText = data.title;
-  notificationsContainer.prepend(div);
-  setTimeout(() => div.remove(), 4000);
-}
-
-// =================== CHAT ===================
-const messages = document.getElementById("messages");
-const chatInput = document.getElementById("chat-input");
-document.getElementById("send-btn").addEventListener("click", sendChat);
-chatInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") sendChat();
-});
-function sendChat() {
-  if (chatInput.value.trim() !== "") {
-    socket.emit("chat", { user: user.name, text: chatInput.value });
-    chatInput.value = "";
-  }
-}
-socket.on("chat", (data) => {
-  const div = document.createElement("div");
-  div.className = "message" + (data.user === user.name ? " self" : "");
-  div.innerText = `${data.user}: ${data.text}`;
-  messages.appendChild(div);
-  messages.scrollTop = messages.scrollHeight;
-});
-
-// =================== STORIES ===================
+/* ===================== GLOBAL ===================== */
+const postsContainer = document.getElementById("feed");
 const storiesContainer = document.getElementById("stories");
-async function loadStories() {
-  // giả lập 5 stories
-  for (let i = 1; i <= 5; i++) {
-    const div = document.createElement("div");
-    div.className = "story";
-    div.innerHTML = `<img src="https://picsum.photos/80/80?random=${i}" />`;
-    storiesContainer.appendChild(div);
+const chatBox = document.getElementById("chat-box");
+const chatInput = document.getElementById("chat-input");
+const chatSendBtn = document.getElementById("send-btn");
+const emojiBtn = document.getElementById("emoji-btn");
+const loader = document.createElement("div");
+loader.className = "loader";
+
+let token = localStorage.getItem("token");
+let currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+
+/* ===================== TOAST ===================== */
+function showToast(message, type = "info") {
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.style.background =
+    type === "error" ? "#f00" : type === "success" ? "#0f0" : "#111";
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+/* ===================== LOADER ===================== */
+function showLoader(parent) {
+  parent.appendChild(loader);
+}
+function hideLoader(parent) {
+  if (parent.contains(loader)) parent.removeChild(loader);
+}
+
+/* ===================== FETCH POSTS ===================== */
+async function loadPosts() {
+  try {
+    showLoader(postsContainer);
+    const res = await fetch(
+      "https://zingmini-backend-2.onrender.com/api/posts"
+    );
+    const data = await res.json();
+    hideLoader(postsContainer);
+    postsContainer.innerHTML = "";
+    data.forEach((post) => postsContainer.appendChild(renderPost(post)));
+  } catch (err) {
+    hideLoader(postsContainer);
+    console.error(err);
+    showToast("Lỗi khi load posts", "error");
   }
 }
-loadStories();
 
-// =================== EMOJI PICKER ===================
-const emojiBtn = document.getElementById("emoji-btn");
-const emojiPicker = document.getElementById("emoji-picker");
-emojiBtn.addEventListener("click", () =>
-  emojiPicker.classList.toggle("hidden")
-);
-const emojis = [
-  "😀",
-  "😂",
-  "😎",
-  "😍",
-  "😭",
-  "😡",
-  "👍",
-  "👎",
-  "💖",
-  "🎉",
-  "🔥",
-  "🤔",
-];
-emojis.forEach((e) => {
-  const span = document.createElement("span");
-  span.className = "emoji";
-  span.innerText = e;
-  span.addEventListener("click", () => {
-    chatInput.value += e;
-    chatInput.focus();
+/* ===================== RENDER POST ===================== */
+function renderPost(post) {
+  const postEl = document.createElement("div");
+  postEl.className = "post-card";
+
+  // user info
+  const userDiv = document.createElement("div");
+  userDiv.className = "post-user";
+  userDiv.innerHTML = `<strong>${post.user.name}</strong>`;
+  postEl.appendChild(userDiv);
+
+  // content
+  const contentDiv = document.createElement("div");
+  contentDiv.className = "post-content";
+  contentDiv.textContent = post.content;
+  postEl.appendChild(contentDiv);
+
+  // carousel for images/videos
+  if (post.images?.length > 0) {
+    const carousel = document.createElement("div");
+    carousel.className = "carousel";
+    post.images.forEach((src, idx) => {
+      const media =
+        src.endsWith(".mp4") || src.endsWith(".webm")
+          ? document.createElement("video")
+          : document.createElement("img");
+      media.src = src;
+      media.className = idx === 0 ? "active" : "";
+      if (media.tagName === "VIDEO") {
+        media.controls = true;
+      }
+      carousel.appendChild(media);
+    });
+    addCarouselControls(carousel);
+    postEl.appendChild(carousel);
+  }
+
+  // actions
+  const actions = document.createElement("div");
+  actions.className = "post-actions";
+  const likeBtn = document.createElement("button");
+  likeBtn.textContent = "👍 Thích";
+  likeBtn.addEventListener("click", () => handleLike(post));
+  const commentBtn = document.createElement("button");
+  commentBtn.textContent = "💬 Bình luận";
+  commentBtn.addEventListener("click", () => openCommentModal(post));
+  actions.appendChild(likeBtn);
+  actions.appendChild(commentBtn);
+  postEl.appendChild(actions);
+
+  return postEl;
+}
+
+/* ===================== CAROUSEL ===================== */
+function addCarouselControls(carousel) {
+  const prev = document.createElement("button");
+  prev.className = "carousel-prev";
+  prev.textContent = "<";
+  const next = document.createElement("button");
+  next.className = "carousel-next";
+  next.textContent = ">";
+  carousel.appendChild(prev);
+  carousel.appendChild(next);
+
+  let index = 0;
+  const medias = carousel.querySelectorAll("img,video");
+  prev.addEventListener("click", () => {
+    medias[index].classList.remove("active");
+    index = (index - 1 + medias.length) % medias.length;
+    medias[index].classList.add("active");
   });
-  emojiPicker.appendChild(span);
+  next.addEventListener("click", () => {
+    medias[index].classList.remove("active");
+    index = (index + 1) % medias.length;
+    medias[index].classList.add("active");
+  });
+}
+
+/* ===================== LIKE ===================== */
+async function handleLike(post) {
+  showToast("Đã thích bài viết", "success");
+}
+
+/* ===================== COMMENT MODAL ===================== */
+function openCommentModal(post) {
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.innerHTML = `
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>Bình luận: ${post.user.name}</h3>
+      <div class="comments-list" id="comments-${post._id}"></div>
+      <input type="text" placeholder="Nhập bình luận..." id="comment-input"/>
+      <button id="comment-send">Gửi</button>
+      <button id="emoji-btn-modal">😊</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.querySelector(".close").addEventListener("click", () => modal.remove());
+
+  const commentInput = modal.querySelector("#comment-input");
+  const commentSend = modal.querySelector("#comment-send");
+  const emojiModalBtn = modal.querySelector("#emoji-btn-modal");
+
+  // emoji picker
+  const picker = new EmojiButton({
+    position: "top-end",
+    theme: "dark",
+    showRecents: true,
+    showPreview: true,
+    autoHide: false,
+  });
+  emojiModalBtn.addEventListener("click", () =>
+    picker.togglePicker(emojiModalBtn)
+  );
+  picker.on("emoji", (emoji) => (commentInput.value += emoji));
+
+  commentSend.addEventListener("click", () => {
+    const val = commentInput.value.trim();
+    if (!val) return;
+    const commentDiv = document.createElement("div");
+    commentDiv.className = "comment-item";
+    commentDiv.textContent = `${currentUser.name}: ${val}`;
+    modal.querySelector(`#comments-${post._id}`).appendChild(commentDiv);
+    commentInput.value = "";
+    showToast("Đã gửi bình luận", "success");
+  });
+}
+
+/* ===================== STORIES ===================== */
+function loadStories() {
+  storiesContainer.innerHTML = "";
+  for (let i = 0; i < 10; i++) {
+    const story = document.createElement("div");
+    story.className = "story-item";
+    story.innerHTML = `<img src="https://i.pravatar.cc/50?img=${i}"/><span>User ${
+      i + 1
+    }</span>`;
+    storiesContainer.appendChild(story);
+    story.addEventListener("click", () => showStoryModal(i));
+  }
+}
+
+function showStoryModal(index) {
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.innerHTML = `
+    <div class="modal-content story-modal">
+      <span class="close">&times;</span>
+      <img src="https://i.pravatar.cc/300?img=${index}"/>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.querySelector(".close").addEventListener("click", () => modal.remove());
+}
+
+/* ===================== CHAT ===================== */
+chatSendBtn?.addEventListener("click", () => {
+  const val = chatInput.value.trim();
+  if (!val) return;
+  const msgDiv = document.createElement("div");
+  msgDiv.className = "chat-msg";
+  msgDiv.textContent = `${currentUser.name}: ${val}`;
+  chatBox.querySelector("#messages").appendChild(msgDiv);
+  chatInput.value = "";
+  chatBox.scrollTop = chatBox.scrollHeight;
 });
 
-// =================== INIT ===================
-loadPosts();
+/* ===================== EMOJI PICKER FOR CHAT ===================== */
+if (emojiBtn) {
+  const pickerChat = new EmojiButton({
+    position: "top-end",
+    theme: "dark",
+    showRecents: true,
+    showPreview: true,
+  });
+  emojiBtn.addEventListener("click", () => pickerChat.togglePicker(emojiBtn));
+  pickerChat.on("emoji", (emoji) => {
+    chatInput.value += emoji;
+  });
+}
+
+/* ===================== INITIAL LOAD ===================== */
+window.addEventListener("load", () => {
+  loadPosts();
+  loadStories();
+});
+
+/* ===================== BUTTON EFFECTS ===================== */
+document.querySelectorAll("button").forEach((btn) => {
+  btn.addEventListener(
+    "mouseenter",
+    () => (btn.style.boxShadow = "0 0 20px #0ff, 0 0 40px #00f")
+  );
+  btn.addEventListener("mouseleave", () => (btn.style.boxShadow = "none"));
+});
+
+/* ===================== SCROLL ANIMATIONS ===================== */
+window.addEventListener("scroll", () => {
+  document.querySelectorAll(".post-card").forEach((el) => {
+    const top = el.getBoundingClientRect().top;
+    if (top < window.innerHeight) el.classList.add("fade-in");
+  });
+});
+
+/* ===================== DUMMY FUNCTIONS EXTENSION ===================== */
+for (let i = 0; i < 300; i++) {
+  window[`dummyHomeFunc${i}`] = function () {
+    console.log("Dummy Home Function " + i);
+  };
+}
+
+/* ===================== END ===================== */

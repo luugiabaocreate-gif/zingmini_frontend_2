@@ -27,7 +27,7 @@
         <input type="file" id="post-image" multiple accept="image/*,video/*" />
         <button id="post-btn">Đăng</button>
       </div>
-      <div id="feed">
+      <div id="feed" class="posts-container">
         <!-- Post sẽ được load JS -->
       </div>
     </div>
@@ -37,11 +37,8 @@
         <div id="messages"></div>
         <div class="chat-input">
           <textarea id="chat-input" placeholder="Gửi tin nhắn..."></textarea>
-          <button id="emoji-btn">😊</button>
-          <button id="send-btn">Gửi</button>
-        </div>
-        <div id="emoji-picker" class="hidden">
-          <!-- Emoji + GIF picker JS -->
+          <button id="chat-emoji-btn">😊</button>
+          <button id="chat-send">Gửi</button>
         </div>
       </div>
     </div>
@@ -50,6 +47,7 @@
       <!-- Notifications realtime -->
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.2/dist/index.min.js"></script>
     <script src="script_home_pro.js"></script>
   </body>
 </html>
