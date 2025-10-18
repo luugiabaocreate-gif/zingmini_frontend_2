@@ -1,34 +1,50 @@
-const API_URL = "https://zingmini-backend-2.onrender.com";
+// =====================
+// ZingMini Auth (Login/Register)
+// =====================
 
-document.getElementById("login-btn").addEventListener("click", async () => {
-  const email = document.getElementById("login-email").value;
-  const password = document.getElementById("login-password").value;
-  const res = await fetch(`${API_URL}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  const data = await res.json();
-  if (data.token) {
+const API = "https://zingmini-backend-2.onrender.com";
+
+const loginBtn = document.getElementById("login-btn");
+const registerBtn = document.getElementById("register-btn");
+
+loginBtn.onclick = async () => {
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value.trim();
+  if (!email || !password) return alert("Vui lòng nhập đủ thông tin");
+
+  try {
+    const res = await fetch(`${API}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Đăng nhập thất bại");
     localStorage.setItem("token", data.token);
     localStorage.setItem("currentUser", JSON.stringify(data.user));
     window.location.href = "home.html";
-  } else alert(data.message);
-});
+  } catch (err) {
+    alert(err.message);
+  }
+};
 
-document.getElementById("register-btn").addEventListener("click", async () => {
-  const name = document.getElementById("register-name").value;
-  const email = document.getElementById("register-email").value;
-  const password = document.getElementById("register-password").value;
-  const res = await fetch(`${API_URL}/api/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, password }),
-  });
-  const data = await res.json();
-  if (data.token) {
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("currentUser", JSON.stringify(data.user));
-    window.location.href = "home.html";
-  } else alert(data.message);
-});
+registerBtn.onclick = async () => {
+  const name = document.getElementById("register-name").value.trim();
+  const email = document.getElementById("register-email").value.trim();
+  const password = document.getElementById("register-password").value.trim();
+  if (!name || !email || !password) return alert("Điền đầy đủ thông tin!");
+
+  try {
+    const res = await fetch(`${API}/api/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Đăng ký thất bại");
+    alert("Đăng ký thành công! Vui lòng đăng nhập.");
+    document.getElementById("show-login").click();
+  } catch (err) {
+    alert(err.message);
+  }
+};

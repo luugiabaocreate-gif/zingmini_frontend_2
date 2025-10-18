@@ -1,828 +1,160 @@
-/* ================= RESET ================= */
+/* ===========================
+   style.css — ZingMini Login (ZingMe Retro)
+   =========================== */
+
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
-
-/* ================= INDEX (login) - GIỮ NGUYÊN ================= */
-body.login-page {
   margin: 0;
   padding: 0;
-  min-height: 100vh;
-  width: 100vw;
-  background-image: url("assets/logo.png");
-  background-size: cover;
-  background-position: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
-/* Login box styles (unchanged) */
-.auth-box {
-  background-color: rgba(255, 255, 255, 0.85);
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  width: 320px;
-  padding: 30px;
-  text-align: center;
+body.login-page {
+  height: 100vh;
+  font-family: "Arial", sans-serif;
+  background: #d7f1ff;
+  background-image: url("assets/logo.png"); /* ← đây! đường dẫn đúng */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  color: #222;
 }
+
+/* ☁️ Mây bay nhẹ */
+.cloud {
+  position: absolute;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.4;
+  z-index: 1;
+  animation: drift 45s linear infinite;
+}
+.cloud.one {
+  width: 280px;
+  height: 160px;
+  top: 14%;
+  left: -320px;
+  background-image: url("https://i.imgur.com/JuGZsYp.png");
+}
+.cloud.two {
+  width: 320px;
+  height: 160px;
+  top: 42%;
+  left: -380px;
+  background-image: url("https://i.imgur.com/JuGZsYp.png");
+  animation-delay: 15s;
+}
+@keyframes drift {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(140vw);
+  }
+}
+
+/* ✨ Hộp đăng nhập */
+.auth-box {
+  position: relative;
+  z-index: 5;
+  width: 340px;
+  padding: 34px 30px 40px;
+  background: rgba(255, 255, 255, 0.86);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  animation: fadeIn 1s ease both;
+  transition: all 0.3s ease;
+}
+
+.auth-box h2 {
+  color: #0076ff;
+  font-weight: 700;
+  font-size: 22px;
+  margin-bottom: 18px;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.4);
+}
+
+/* Inputs */
 .auth-box input {
   width: 100%;
-  padding: 10px;
+  padding: 10px 14px;
   margin: 8px 0;
-  border-radius: 8px;
-  border: 1px solid #00aaff;
+  border-radius: 10px;
+  border: 1px solid #b8dcff;
+  outline: none;
+  font-size: 14px;
+  background: #f9fcff;
+  transition: all 0.2s ease;
 }
+.auth-box input:focus {
+  border-color: #0076ff;
+  background: #fff;
+  box-shadow: 0 0 6px rgba(0, 118, 255, 0.3);
+}
+
+/* Button */
 .auth-box button {
+  width: 100%;
   padding: 10px;
-  width: 100%;
-  border: none;
-  border-radius: 8px;
-  background: #00aaff;
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
-}
-.hidden {
-  display: none;
-}
-
-/* ================= HOME: ZingFace PRO styles ================= */
-body.home-page {
-  background: #f0f8ff;
-  color: #222;
-  min-height: 100vh;
-  overflow-y: auto;
-}
-
-/* Topbar */
-.topbar {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.6),
-    rgba(255, 255, 255, 0.4)
-  );
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  backdrop-filter: blur(4px);
-}
-.topbar .logo {
-  font-weight: 700;
-  font-size: 1.2rem;
-  color: #0077cc;
-  letter-spacing: 0.5px;
-}
-.top-controls {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.toggle-theme {
-  font-size: 1.2rem;
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-.toggle-theme:hover {
-  transform: translateY(-3px);
-  background: rgba(0, 0, 0, 0.03);
-}
-
-/* Layout grid */
-.zing-layout {
-  display: grid;
-  grid-template-columns: 260px 1fr 300px;
-  gap: 20px;
-  padding: 22px;
-  max-width: 1200px;
-  margin: 14px auto;
-}
-
-/* Panels */
-.panel {
-  background: transparent;
-}
-.panel-inner {
-  background: rgba(255, 255, 255, 0.76);
-  border-radius: 12px;
-  padding: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-}
-.panel-inner:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.09);
-}
-
-/* Sidebar */
-.menu-title {
-  color: #0077cc;
-  margin-bottom: 8px;
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-.sidebar-left .item,
-.sidebar-right .sponsor {
-  display: block;
-  padding: 8px 6px;
-  border-radius: 8px;
-  color: #333;
-  margin: 6px 0;
-  text-decoration: none;
-}
-.sidebar-left .item:hover {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.6),
-    rgba(255, 255, 255, 0.9)
-  );
-  transform: translateX(4px);
-}
-
-/* Create post */
-.create-post {
-  background: linear-gradient(180deg, #fff, #fff9f5);
-  border-radius: 14px;
-  padding: 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
-  margin-bottom: 18px;
-}
-.create-top {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-.create-top .avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #eee;
-}
-#create-text {
-  flex: 1;
-}
-#create-textarea {
-}
-#create-buttons {
-}
-#create-bottom {
-}
-
-.create-top textarea {
-  width: 100%;
-  border-radius: 12px;
-  padding: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  font-size: 0.95rem;
-  resize: vertical;
-}
-
-/* controls */
-.create-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 8px;
-}
-.file-btn {
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 8px;
-  background: #fff;
-  border: 1px dashed rgba(0, 0, 0, 0.06);
-}
-.file-btn input {
-  display: none;
-}
-.btn {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  background: #f0f0f0;
-}
-.btn.primary {
-  background: linear-gradient(90deg, #ff9a00, #ffc62b);
-  color: #fff;
-  font-weight: 700;
-  box-shadow: 0 6px 14px rgba(255, 160, 0, 0.18);
-}
-
-/* media preview */
-.preview {
-  margin-left: 12px;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.preview img,
-.preview video {
-  max-width: 160px;
-  max-height: 120px;
-  border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-}
-
-/* Stories */
-.stories {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-.story {
-  width: 120px;
-  height: 170px;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #ffe8b8, #ffdca6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6b3f00;
-  font-weight: 700;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-  transition: transform 0.12s ease;
-}
-.story:hover {
-  transform: translateY(-8px) rotate(-1deg);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-}
-
-/* posts list & card */
-.posts-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding-top: 6px;
-}
-.post-card {
-  background: linear-gradient(180deg, #fff, #fffef9);
-  border-radius: 14px;
-  padding: 14px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
-  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 0.18s ease, filter 0.18s ease, opacity 0.3s;
-  opacity: 0;
-  transform: translateY(10px) scale(0.995);
-}
-.post-card.loaded {
-  opacity: 1;
-  transform: none;
-}
-.post-card:hover {
-  transform: translateY(-8px) scale(1.01);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.09);
-  filter: saturate(1.05);
-}
-
-/* post header */
-.post-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-.post-header .avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #eee;
-}
-.post-content p {
-  margin: 6px 0;
-  color: #1a1a1a;
-}
-.post-content img {
-  width: 100%;
-  border-radius: 10px;
-  margin-top: 8px;
-}
-
-/* actions */
-.post-actions {
   margin-top: 10px;
-  display: flex;
-  gap: 8px;
-}
-.post-actions .btn {
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-/* chat */
-.chat-box {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  width: 320px;
-  max-width: calc(100% - 40px);
-  border-radius: 12px;
-  overflow: hidden;
-  z-index: 60;
-}
-.chat-box .chat-header {
-  background: linear-gradient(90deg, #00aaff, #00d1ff);
-  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0091ff, #00b6ff);
   color: #fff;
-  font-weight: 700;
-}
-.chat-box .chat-messages {
-  max-height: 220px;
-  overflow: auto;
-  padding: 10px;
-  background: #fff;
-}
-.chat-box .chat-input {
-  display: flex;
-  gap: 8px;
-  padding: 8px;
-  background: #f7fbff;
-}
-.chat-box .message {
-  margin-bottom: 8px;
-  padding: 6px 8px;
-  border-radius: 8px;
-  background: linear-gradient(90deg, #fff7f0, #fff);
-}
-
-/* decorative balloons + clouds (subtle) */
-.bg-decor {
-  position: fixed;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 2;
-}
-.balloon {
-  width: 84px;
-  height: 100px;
-  border-radius: 50% 50% 46% 46%;
-  position: absolute;
-  transform-origin: center;
-  background: repeating-linear-gradient(
-    90deg,
-    #ffd24a 0 18px,
-    #1e9de6 18px 36px
-  );
-  box-shadow: inset 0 -6px 12px rgba(0, 0, 0, 0.08),
-    0 8px 16px rgba(0, 0, 0, 0.12);
-  opacity: 0.95;
-}
-.balloon.b1 {
-  left: 18px;
-  top: 110px;
-  animation: floaty 8s ease-in-out infinite;
-  transform: translateY(0);
-}
-@keyframes floaty {
-  0% {
-    transform: translateY(0) rotate(-1deg);
-  }
-  50% {
-    transform: translateY(-18px) rotate(2deg);
-  }
-  100% {
-    transform: translateY(0) rotate(-1deg);
-  }
-}
-.cloud {
-  width: 220px;
-  height: 80px;
-  background: radial-gradient(circle at 40% 40%, #fff, #f3fbff 40%);
-  border-radius: 50px;
-  position: absolute;
-  left: 120px;
-  top: 40px;
-  filter: blur(0.6px);
-  opacity: 0.95;
-  animation: cloudDrift 20s linear infinite;
-}
-@keyframes cloudDrift {
-  0% {
-    transform: translateX(-10px);
-  }
-  100% {
-    transform: translateX(20px);
-  }
-}
-
-/* theme dark */
-body.home-page.dark {
-  background: linear-gradient(180deg, #061829, #0b2a3a);
-  color: #e9f6ff;
-}
-body.home-page.dark .panel-inner {
-  background: rgba(10, 20, 30, 0.55);
-  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5);
-  color: #e0f6ff;
-}
-body.home-page.dark .post-card {
-  background: linear-gradient(180deg, #062635, #073044);
-  color: #e1f7ff;
-}
-body.home-page.dark .toggle-theme {
-  filter: invert(1);
-}
-
-/* small screens */
-@media (max-width: 980px) {
-  .zing-layout {
-    grid-template-columns: 1fr;
-    padding: 12px;
-  }
-  .sidebar-left,
-  .sidebar-right {
-    display: none;
-  }
-  .chat-box {
-    right: 8px;
-    bottom: 8px;
-    width: 92%;
-  }
-}
-/* ====== APPEND: FB-EXTENSIONS (reactions, dropdowns, multi-chat) ====== */
-
-/* dropdowns */
-.dropdown-wrap {
-  position: relative;
-}
-.dropdown {
-  position: absolute;
-  top: 40px;
-  right: 0;
-  width: 320px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 80;
-}
-.dropdown.hidden {
-  display: none;
-}
-
-/* notif badge tweak */
-.badge {
-  min-width: 18px;
-  padding: 2px 6px;
-  border-radius: 12px;
-  background: #e74c3c;
-  color: #fff;
-  font-size: 12px;
-  margin-left: 6px;
-  display: inline-block;
-}
-
-/* reactions popup */
-.reactions-popup {
-  position: absolute;
-  bottom: 38px;
-  left: 6px;
-  display: flex;
-  gap: 8px;
-  background: transparent;
-  pointer-events: auto;
-  z-index: 100;
-}
-.reaction {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+  font-weight: 600;
+  font-size: 15px;
   cursor: pointer;
-  transform: translateY(6px);
-  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.12s;
+  box-shadow: 0 4px 14px rgba(0, 120, 255, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.reaction:hover {
-  transform: translateY(-8px) scale(1.12);
+.auth-box button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 120, 255, 0.45);
 }
 
-/* small count next to reaction */
-.reaction-count {
-  margin-left: 8px;
-  font-size: 13px;
+/* Text link */
+.auth-box p {
+  margin-top: 14px;
   color: #555;
+  font-size: 14px;
+}
+.auth-box span {
+  color: #0076ff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.auth-box span:hover {
+  color: #005ccc;
 }
 
-/* reaction animation (pop) */
-@keyframes popup {
-  0% {
-    transform: translateY(8px) scale(0.85);
+/* Hidden */
+.hidden {
+  display: none !important;
+}
+
+/* Fade in */
+@keyframes fadeIn {
+  from {
     opacity: 0;
+    transform: translateY(-15px) scale(0.97);
   }
-  60% {
-    transform: translateY(-6px) scale(1.06);
+  to {
     opacity: 1;
-  }
-  100% {
     transform: translateY(0) scale(1);
   }
 }
 
-/* reaction icons style */
-.reaction.emoji {
-  animation: popup 0.28s ease;
-}
-
-/* post actions container position fix */
-.post-actions {
-  position: relative;
-}
-
-/* chat windows (multi) */
-.chat-window {
-  width: 300px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-.chat-window .head {
-  background: #1877f2;
-  color: #fff;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-.chat-window .body {
-  padding: 8px;
-  max-height: 260px;
-  overflow: auto;
-  background: #f6f8fb;
-}
-.chat-window .foot {
-  display: flex;
-  gap: 6px;
-  padding: 8px;
-  background: #fff;
-}
-.chat-window .message.you {
-  text-align: right;
-  background: #d1f0ff;
-  padding: 6px;
-  border-radius: 8px;
-  display: inline-block;
-  margin: 6px 0;
-}
-.chat-window .message.them {
-  text-align: left;
-  background: #fff;
-  padding: 6px;
-  border-radius: 8px;
-  display: inline-block;
-  margin: 6px 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-/* small collapse btn */
-.chat-window .mini {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-  border: none;
-  cursor: pointer;
-}
-
-/* reaction-selected indicator */
-.btn.reaction-selected {
-  background: #ffeedd;
-  border: 1px solid #ffd1a6;
-  color: #d35400;
-}
-
-/* small responsive tweak */
-@media (max-width: 980px) {
-  .dropdown {
-    right: 8px;
-    left: 8px;
-    width: auto;
-  }
-  #chat-windows-root {
-    left: 8px;
-    right: 8px;
-    bottom: 8px;
-  }
-}
-/* ====== LAYOUT FACEBOOK STYLE ====== */
-.fb-topbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 56px;
-  background: #fff;
-  border-bottom: 1px solid #ddd;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  z-index: 50;
-}
-.fb-topbar .fb-left,
-.fb-topbar .fb-center,
-.fb-topbar .fb-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.fb-logo {
-  font-weight: 700;
-  font-size: 22px;
-  color: #1877f2;
-}
-.fb-search input {
-  background: #f0f2f5;
-  border: none;
-  border-radius: 20px;
-  padding: 6px 12px;
-  font-size: 14px;
-}
-.nav-btn {
-  background: none;
-  border: none;
-  font-size: 20px;
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.nav-btn:hover,
-.nav-btn.active {
-  background: #e7f3ff;
-}
-
-/* main 3-column grid */
-.fb-container {
-  margin-top: 72px;
-  display: grid;
-  grid-template-columns: 1fr minmax(420px, 2.4fr) 1fr;
-  gap: 18px;
-  width: 100%;
-  max-width: 1250px;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0 18px;
-  box-sizing: border-box;
-}
-.left-col,
-.center-col,
-.right-col {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.card {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 12px;
-}
-.dark .card {
-  background: #242526;
-  color: #eee;
-}
-
-/* posts/feed styling */
-.post-card {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.25s ease;
-}
-.post-card.loaded {
-  opacity: 1;
-  transform: translateY(0);
-}
-.post-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.post-header img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-}
-.post-content {
-  margin-bottom: 8px;
-}
-.post-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid #eee;
-  padding-top: 8px;
-}
-.post-actions .btn {
-  background: none;
-  border: none;
-  font-size: 14px;
-  color: #555;
-  cursor: pointer;
-  border-radius: 6px;
-  padding: 4px 10px;
-  transition: background 0.2s;
-}
-.post-actions .btn:hover {
-  background: #f0f2f5;
-}
-
-/* stories */
-.stories-row {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-}
-.story {
-  width: 110px;
-  height: 180px;
-  border-radius: 10px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  flex: none;
-  cursor: pointer;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-.story::after {
-  content: attr(data-name);
-  position: absolute;
-  bottom: 6px;
-  left: 8px;
-  color: #fff;
-  font-size: 13px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-}
-.story:hover {
-  transform: scale(1.04);
-}
-
-/* right column friend list */
-.right-card .s-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.right-card .s-item:hover {
-  background: #f0f2f5;
-  border-radius: 8px;
-}
-
-/* buttons */
-.btn.primary {
-  background: #1877f2;
-  color: #fff;
-  border: none;
-}
-.btn.primary:hover {
-  background: #166fe5;
-}
-
-/* responsive adjustments */
-@media (max-width: 1080px) {
-  .fb-container {
-    grid-template-columns: minmax(420px, 2.6fr) 1fr;
-  }
-  .left-col {
-    display: none;
-  }
-}
-@media (max-width: 800px) {
-  .fb-container {
-    grid-template-columns: 1fr;
-    padding: 0 12px;
-  }
-  .right-col {
-    display: none;
+/* Responsive */
+@media (max-width: 420px) {
+  .auth-box {
+    width: 90%;
+    padding: 26px 22px;
   }
 }

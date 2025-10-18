@@ -1,24 +1,27 @@
+// script_home_pro.js
+// Home logic: load posts, create post (FormData), reactions popup, multi-chat, notif, logout, theme.
+// Uses socket.io for realtime. Compatible with API endpoints under API_URL.
+
 import io from "https://cdn.socket.io/4.6.1/socket.io.esm.min.js";
 
 const API_URL = "https://zingmini-backend-2.onrender.com";
 const token = localStorage.getItem("token");
 const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
 
-if (!token || !currentUser) {
-  window.location.href = "index.html";
-}
+// Redirect to login if missing
+if (!token || !currentUser) location.href = "index.html";
 
-/* socket */
+// Initialize socket
 const socket = io(API_URL, { transports: ["websocket", "polling"] });
 
-/* DOM refs */
+// DOM refs
 const postsContainer = document.getElementById("posts-container");
 const postContent = document.getElementById("post-content");
 const postImage = document.getElementById("post-image");
 const postSubmit = document.getElementById("post-submit");
 const mediaPreview = document.getElementById("media-preview");
-const logoutBtn = document.getElementById("logout-btn");
 const toggleThemeBtn = document.getElementById("toggle-theme");
+const logoutAction = document.getElementById("logout-action");
 const chatWindowsRoot = document.getElementById("chat-windows-root");
 const friendsListEl = document.getElementById("friends-list");
 const messengerDropdown = document.getElementById("messenger-dropdown");
@@ -26,8 +29,10 @@ const notifDropdown = document.getElementById("notif-dropdown");
 const notifBadge = document.getElementById("notif-badge");
 const profileDropdown = document.getElementById("profile-dropdown");
 const profileBtn = document.getElementById("profile-btn");
+const messengerBtn = document.getElementById("messenger-btn");
+const notifBtn = document.getElementById("notif-btn");
 
-/* set user UI */
+// UI setup
 document.getElementById("nav-username").textContent = currentUser.name || "Bạn";
 document.getElementById("nav-avatar").src =
   currentUser.avatar || `https://i.pravatar.cc/40?u=${currentUser._id || "x"}`;
@@ -38,10 +43,10 @@ document.getElementById("left-avatar").src =
 document.getElementById("create-avatar").src =
   currentUser.avatar || `https://i.pravatar.cc/48?u=${currentUser._id || "x"}`;
 
-/* theme */
-function applyTheme(m) {
-  document.body.classList.toggle("dark", m === "dark");
-  toggleThemeBtn.textContent = m === "dark" ? "☀️" : "🌙";
+/* THEME */
+function applyTheme(mode) {
+  document.body.classList.toggle("dark", mode === "dark");
+  toggleThemeBtn.textContent = mode === "dark" ? "☀️" : "🌙";
 }
 applyTheme(localStorage.getItem("zing_home_theme") || "light");
 toggleThemeBtn.addEventListener("click", () => {
@@ -50,29 +55,29 @@ toggleThemeBtn.addEventListener("click", () => {
   applyTheme(newMode);
 });
 
-/* logout */
-logoutBtn.addEventListener("click", () => {
+/* LOGOUT */
+logoutAction.addEventListener("click", (e) => {
+  e.preventDefault();
   if (confirm("Bạn có muốn đăng xuất?")) {
     localStorage.removeItem("token");
     localStorage.removeItem("currentUser");
-    window.location.href = "index.html";
+    location.href = "index.html";
   }
 });
 
-/* safe fetch JSON */
+/* safe fetch helper */
 async function safeFetchJson(url, opts) {
   try {
     const res = await fetch(url, opts);
     if (!res.ok) {
       const txt = await res.text();
-      console.error("Server lỗi response:", txt);
+      console.error("Server error:", txt);
       throw new Error(`Server lỗi ${res.status}`);
     }
     const text = await res.text();
     try {
       return JSON.parse(text);
-    } catch (e) {
-      console.error("JSON parse fail:", text);
+    } catch {
       throw new Error("Invalid JSON");
     }
   } catch (err) {
@@ -80,15 +85,17 @@ async function safeFetchJson(url, opts) {
   }
 }
 
-/* ---------- load posts, build friend pool ---------- */
-let friendPool = {}; // id -> user {name, avatar, _id}
+/* friend pool (collected from posts) */
+let friendPool = {};
+
+/* LOAD POSTS */
 async function loadPosts() {
   postsContainer.innerHTML =
     "<p style='text-align:center;color:#777;padding:12px'>Đang tải bài viết...</p>";
   try {
     const posts = await safeFetchJson(`${API_URL}/api/posts`);
     postsContainer.innerHTML = "";
-    // collect users
+    // build friend pool
     posts.forEach((p) => {
       if (p.user && p.user._id)
         friendPool[p.user._id] = {
@@ -97,9 +104,7 @@ async function loadPosts() {
           _id: p.user._id,
         };
     });
-    // render friend list from pool
     renderFriendsList();
-    // render posts
     posts.forEach((p, i) => {
       const node = createPostNode(p);
       postsContainer.appendChild(node);
@@ -113,113 +118,96 @@ async function loadPosts() {
 }
 loadPosts();
 
-/* render friends list (click to open chat window) */
+/* RENDER FRIENDS */
 function renderFriendsList() {
   friendsListEl.innerHTML = "";
-  const keys = Object.keys(friendPool);
-  if (keys.length === 0) {
+  const ids = Object.keys(friendPool);
+  if (ids.length === 0) {
     friendsListEl.innerHTML =
       "<div class='small'>Không có bạn để hiển thị.</div>";
     return;
   }
-  keys.slice(0, 8).forEach((id) => {
+  ids.slice(0, 8).forEach((id) => {
     const u = friendPool[id];
     const el = document.createElement("div");
     el.className = "s-item";
-    el.innerHTML = `<img src="${u.avatar}" style="width:36px;height:36px;border-radius:50%;cursor:pointer" data-id="${id}" data-name="${u.name}"/><div>${u.name}</div>`;
-    el.querySelector("img").addEventListener("click", (e) => {
-      const uid = e.target.dataset.id;
-      const name = e.target.dataset.name;
-      openChatWindow(uid, name);
-    });
+    el.innerHTML = `<img data-id="${id}" data-name="${u.name}" src="${u.avatar}" style="width:36px;height:36px;border-radius:50%;cursor:pointer"/><div>${u.name}</div>`;
+    el.querySelector("img").addEventListener("click", (e) =>
+      openChatWindow(e.target.dataset.id, e.target.dataset.name)
+    );
     friendsListEl.appendChild(el);
   });
 }
 
-/* ---------- create post rendering + reactions UI ---------- */
+/* CREATE POST NODE + REACTIONS POPUP */
 function createPostNode(post) {
   if (!post.user) post.user = { name: post.authorName || "Ẩn danh", _id: "" };
   const div = document.createElement("div");
   div.className = "post-card";
   div.dataset.postId = post._id || "";
   const time = new Date(post.createdAt || Date.now()).toLocaleString("vi-VN");
-  // basic reaction summary data (if backend has reaction summary we could show; else maintain local)
-  const reactionDisplay = post.reaction || ""; // backend optional
   div.innerHTML = `
-    <div class="post-header"><img src="${
-      post.user.avatar || `https://i.pravatar.cc/44?u=${post.user._id || "x"}`
-    }" alt="avatar"><div><div style="font-weight:700">${escapeHtml(
-    post.user.name
-  )}</div><div style="font-size:12px;color:#666">${time}</div></div></div>
+    <div class="post-header">
+      <img src="${
+        post.user.avatar || `https://i.pravatar.cc/44?u=${post.user._id || "x"}`
+      }" alt="avatar">
+      <div><div style="font-weight:700">${escapeHtml(
+        post.user.name
+      )}</div><div class="small">${time}</div></div>
+    </div>
     <div class="post-content"><p>${escapeHtml(post.content || "")}</p>${
     post.image ? renderMediaHtml(post.image) : ""
   }</div>
     <div class="post-actions">
-      <div class="actions-left">
+      <div style="display:flex;align-items:center;gap:6px;position:relative;">
         <button class="btn like-btn">👍 Thích</button>
-        <div class="reaction-placeholder" style="display:inline-block;position:relative"></div>
+        <div class="reaction-placeholder"></div>
       </div>
-      <div class="actions-right">
-        <button class="btn">💬 Bình luận</button>
-      </div>
+      <div><button class="btn">💬 Bình luận</button></div>
     </div>
   `;
-  /* attach reaction hover popup */
+
   const likeBtn = div.querySelector(".like-btn");
   const reactionHolder = div.querySelector(".reaction-placeholder");
-
-  let currentReaction = null; // local state for this client
-  // build popup
   const popup = document.createElement("div");
   popup.className = "reactions-popup hidden";
   const emojis = ["👍", "❤️", "😆", "😮", "😢", "😡"];
-  emojis.forEach((em) => {
+  emojis.forEach((e) => {
     const r = document.createElement("div");
-    r.className = "reaction emoji";
-    r.textContent = em;
-    r.title = em;
+    r.className = "reaction";
+    r.textContent = e;
     r.addEventListener("click", (ev) => {
       ev.stopPropagation();
-      chooseReaction(post._id, em, div);
+      chooseReaction(post._id, e, div);
       popup.classList.add("hidden");
     });
     popup.appendChild(r);
   });
   reactionHolder.appendChild(popup);
 
-  // show/hide on hover (with small delay to mimic FB)
-  let hoveredTimeout;
+  let hoverTimeout;
   likeBtn.addEventListener("mouseenter", () => {
-    clearTimeout(hoveredTimeout);
+    clearTimeout(hoverTimeout);
     popup.classList.remove("hidden");
-    // animate children
-    Array.from(popup.children).forEach(
-      (c, i) => (c.style.animationDelay = `${i * 40}ms`)
-    );
   });
   likeBtn.addEventListener("mouseleave", () => {
-    hoveredTimeout = setTimeout(() => popup.classList.add("hidden"), 350);
+    hoverTimeout = setTimeout(() => popup.classList.add("hidden"), 300);
   });
-  popup.addEventListener("mouseenter", () => clearTimeout(hoveredTimeout));
+  popup.addEventListener("mouseenter", () => clearTimeout(hoverTimeout));
   popup.addEventListener("mouseleave", () => popup.classList.add("hidden"));
 
-  // reflect reaction on close (if user clicks likeBtn itself, toggle default 👍)
   likeBtn.addEventListener("click", () => {
-    chooseReaction(post._id, currentReaction === "👍" ? null : "👍", div);
+    const isSelected = likeBtn.classList.contains("reaction-selected");
+    chooseReaction(post._id, isSelected ? null : "👍", div);
   });
-
-  // update reaction display when server sends reaction events
-  // (socket listener below will handle reaction updates globally)
 
   return div;
 }
 
-/* chooseReaction: updates local UI + emit socket event */
+/* CHOOSE REACTION — update UI + emit socket */
 function chooseReaction(postId, emoji, postNode) {
-  // current reaction local toggle
   const likeBtn = postNode.querySelector(".like-btn");
   if (!emoji) {
-    // clear selection
     likeBtn.classList.remove("reaction-selected");
     likeBtn.textContent = "👍 Thích";
     socket.emit("reaction", { postId, user: currentUser.name, reaction: null });
@@ -230,7 +218,7 @@ function chooseReaction(postId, emoji, postNode) {
   socket.emit("reaction", { postId, user: currentUser.name, reaction: emoji });
 }
 
-/* render media */
+/* RENDER MEDIA */
 function renderMediaHtml(path) {
   const url = path.startsWith("http") ? path : `${API_URL}${path}`;
   const ext = url.split(".").pop().toLowerCase();
@@ -240,7 +228,7 @@ function renderMediaHtml(path) {
   return `<img src="${url}" alt="media" style="width:100%;border-radius:8px;margin-top:8px">`;
 }
 
-/* escape helper */
+/* ESCAPE */
 function escapeHtml(s = "") {
   return String(s)
     .replace(/&/g, "&amp;")
@@ -248,50 +236,7 @@ function escapeHtml(s = "") {
     .replace(/>/g, "&gt;");
 }
 
-/* ---------- POST SUBMIT (safe) ---------- */
-postSubmit.addEventListener("click", async () => {
-  const content = postContent.value.trim();
-  if (!content && !postImage.files[0])
-    return alert("Nhập nội dung hoặc chọn ảnh!");
-  const form = new FormData();
-  form.append("content", content || "");
-  if (postImage.files[0]) form.append("image", postImage.files[0]);
-
-  try {
-    const res = await fetch(`${API_URL}/api/posts`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: form,
-    });
-    if (!res.ok) {
-      const txt = await res.text();
-      console.error("Đăng bài lỗi:", txt);
-      throw new Error("Server lỗi");
-    }
-    const newPost = await res.json();
-    // ensure friendPool knows this user
-    if (newPost.user && newPost.user._id)
-      friendPool[newPost.user._id] = {
-        name: newPost.user.name,
-        avatar:
-          newPost.user.avatar ||
-          `https://i.pravatar.cc/44?u=${newPost.user._id}`,
-        _id: newPost.user._id,
-      };
-    renderFriendsList();
-    const node = createPostNode(newPost);
-    postsContainer.prepend(node);
-    setTimeout(() => node.classList.add("loaded"), 60);
-    postContent.value = "";
-    postImage.value = "";
-    mediaPreview.innerHTML = "";
-  } catch (err) {
-    console.error(err);
-    alert("Không thể đăng bài ngay bây giờ. Vui lòng thử lại sau.");
-  }
-});
-
-/* preview */
+/* PREVIEW */
 postImage.addEventListener("change", (e) => {
   const file = e.target.files[0];
   mediaPreview.innerHTML = "";
@@ -314,10 +259,51 @@ postImage.addEventListener("change", (e) => {
   fr.readAsDataURL(file);
 });
 
-/* ---------- dropdowns: messenger & notif & profile ---------- */
-document.getElementById("messenger-btn").addEventListener("click", (e) => {
+/* CREATE POST */
+postSubmit.addEventListener("click", async () => {
+  const content = postContent.value.trim();
+  if (!content && !postImage.files[0])
+    return alert("Nhập nội dung hoặc chọn ảnh!");
+  const form = new FormData();
+  form.append("content", content || "");
+  if (postImage.files[0]) form.append("image", postImage.files[0]);
+
+  try {
+    const res = await fetch(`${API_URL}/api/posts`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: form,
+    });
+    if (!res.ok) {
+      const txt = await res.text();
+      console.error("Đăng bài lỗi, server replied:", txt);
+      throw new Error("Server lỗi khi đăng bài");
+    }
+    const newPost = await res.json();
+    if (newPost.user && newPost.user._id)
+      friendPool[newPost.user._id] = {
+        name: newPost.user.name,
+        avatar:
+          newPost.user.avatar ||
+          `https://i.pravatar.cc/44?u=${newPost.user._id}`,
+        _id: newPost.user._id,
+      };
+    renderFriendsList();
+    const node = createPostNode(newPost);
+    postsContainer.prepend(node);
+    setTimeout(() => node.classList.add("loaded"), 60);
+    postContent.value = "";
+    postImage.value = "";
+    mediaPreview.innerHTML = "";
+  } catch (err) {
+    console.error(err);
+    alert("Không thể đăng bài ngay bây giờ. Vui lòng thử lại sau.");
+  }
+});
+
+/* DROPDOWNS (messenger, notif, profile) */
+messengerBtn.addEventListener("click", () => {
   messengerDropdown.classList.toggle("hidden");
-  // populate conversation shortcuts (friends)
   if (!messengerDropdown.innerHTML) {
     messengerDropdown.innerHTML = "";
     Object.values(friendPool)
@@ -336,25 +322,20 @@ document.getElementById("messenger-btn").addEventListener("click", (e) => {
       });
   }
 });
-document.getElementById("notif-btn").addEventListener("click", (e) => {
+notifBtn.addEventListener("click", () => {
   notifDropdown.classList.toggle("hidden");
   if (!notifDropdown.innerHTML)
-    notifDropdown.innerHTML = "<div class='small'>Không có thông báo</div>";
+    notifDropdown.innerHTML = '<div class="small">Không có thông báo</div>';
 });
 profileBtn.addEventListener("click", () =>
   profileDropdown.classList.toggle("hidden")
 );
 
-/* ---------- multi-chat windows ---------- */
-const openChats = {}; // map userId -> windowElement
-
+/* MULTI-CHAT */
+const openChats = {};
 function openChatWindow(userId, name) {
-  if (!userId) {
-    // fallback: create temp id
-    userId = "u_" + Math.random().toString(36).slice(2, 8);
-  }
+  if (!userId) userId = "u_" + Math.random().toString(36).slice(2, 8);
   if (openChats[userId]) {
-    // bring to front (move to top)
     const node = openChats[userId];
     node.parentNode.prepend(node);
     return;
@@ -363,12 +344,9 @@ function openChatWindow(userId, name) {
   win.className = "chat-window";
   win.dataset.uid = userId;
   win.innerHTML = `
-    <div class="head">
-      <div style="display:flex;gap:8px;align-items:center"><img src="https://i.pravatar.cc/40?u=${userId}" style="width:28px;height:28px;border-radius:50%"/><div style="font-weight:700">${escapeHtml(
+    <div class="head"><div style="display:flex;gap:8px;align-items:center"><img src="https://i.pravatar.cc/40?u=${userId}" style="width:28px;height:28px;border-radius:50%"/><div style="font-weight:700">${escapeHtml(
     name
-  )}</div></div>
-      <div><button class="mini collapse">_</button><button class="mini close">×</button></div>
-    </div>
+  )}</div></div><div><button class="mini collapse">_</button><button class="mini close">×</button></div></div>
     <div class="body"></div>
     <div class="foot"><input class="cw-input" placeholder="Nhập tin nhắn..."/><button class="cw-send btn">Gửi</button></div>
   `;
@@ -383,19 +361,23 @@ function openChatWindow(userId, name) {
     delete openChats[userId];
   });
   collapse.addEventListener("click", () => {
-    body.style.display = body.style.display === "none" ? "block" : "none";
-    win.querySelector(".foot").style.display =
-      body.style.display === "none" ? "none" : "flex";
+    if (body.style.display === "none") {
+      body.style.display = "block";
+      win.querySelector(".foot").style.display = "flex";
+    } else {
+      body.style.display = "none";
+      win.querySelector(".foot").style.display = "none";
+    }
   });
 
   sendBtn.addEventListener("click", () => {
     const txt = input.value.trim();
     if (!txt) return;
-    // emit socket chat to target user
     socket.emit("private_chat", {
       from: currentUser._id,
       to: userId,
       text: txt,
+      userName: currentUser.name,
     });
     appendChatMessage(body, currentUser.name, txt, "you");
     input.value = "";
@@ -403,7 +385,6 @@ function openChatWindow(userId, name) {
 
   chatWindowsRoot.prepend(win);
   openChats[userId] = win;
-  // load last messages placeholder (could fetch from server if available)
   appendChatMessage(body, name, "Xin chào!", "them");
   return win;
 }
@@ -416,9 +397,8 @@ function appendChatMessage(bodyEl, user, text, cls = "them") {
   bodyEl.scrollTop = bodyEl.scrollHeight;
 }
 
-/* socket handlers for private_chat */
+/* SOCKET EVENTS */
 socket.on("private_chat", (msg) => {
-  // msg: {from, to, text, userName}
   const otherId = msg.from === currentUser._id ? msg.to : msg.from;
   const otherName = msg.userName || `User ${otherId}`;
   const win = openChats[otherId] || openChatWindow(otherId, otherName);
@@ -426,10 +406,7 @@ socket.on("private_chat", (msg) => {
   appendChatMessage(body, msg.userName || otherName, msg.text, "them");
 });
 
-/* reactions and notif via socket */
 socket.on("reaction", (r) => {
-  // r: {postId, user, reaction}
-  // update UI: find post node and show a tiny toast or change state
   const node = document.querySelector(`.post-card[data-post-id="${r.postId}"]`);
   if (node) {
     const likeBtn = node.querySelector(".like-btn");
@@ -443,51 +420,37 @@ socket.on("reaction", (r) => {
       likeBtn.classList.remove("reaction-selected");
     }
   }
-  // increment notif badge
   notifBadge.classList.remove("hidden");
   notifBadge.textContent = (parseInt(notifBadge.textContent || "0") || 0) + 1;
-  // optionally add entry to notif dropdown
   const el = document.createElement("div");
   el.className = "card";
   el.textContent = `${r.user} đã phản ứng trên một bài viết`;
   notifDropdown.prepend(el);
 });
 
-/* receive generic chat */
 socket.on("chat", (msg) => {
-  // show in main chat area (not private)
-  // append a simple message to an open global chat window if exists
-  // for simplicity, display as notif
   notifBadge.classList.remove("hidden");
   notifBadge.textContent = (parseInt(notifBadge.textContent || "0") || 0) + 1;
 });
 
-/* helper to open chat from friends list on right panel */
+/* UTIL: click outside to close dropdowns */
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".dropdown-wrap") && !e.target.closest(".dropdown")) {
+    messengerDropdown.classList.add("hidden");
+    notifDropdown.classList.add("hidden");
+    profileDropdown.classList.add("hidden");
+  }
+});
+
+/* helper to open chat by clicking friends list imgs */
 friendsListEl.addEventListener("click", (e) => {
   const img = e.target.closest("img[data-id]");
   if (img) openChatWindow(img.dataset.id, img.dataset.name || "Bạn");
 });
 
-/* simulate online: create friend elements from friendPool */
-function buildFriendsFromPool() {
-  // already handled in renderFriendsList
-}
+/* expose helper for debugging */
+window._openChatWindow = openChatWindow;
 
-/* utils */
-function renderMediaHtml(path) {
-  const url = path.startsWith("http") ? path : `${API_URL}${path}`;
-  const ext = url.split(".").pop().toLowerCase();
-  if (["mp4", "webm", "ogg"].includes(ext)) {
-    return `<video controls src="${url}" style="width:100%;border-radius:8px;margin-top:8px"></video>`;
-  }
-  return `<img src="${url}" alt="media" style="width:100%;border-radius:8px;margin-top:8px">`;
-}
-
-/* initial seed: if friendPool empty, add a few example users from posts on load */
-window.addEventListener("load", () => {
-  // small heartbeat - request posts already triggered above
-});
-
-/* keep socket alive and log errors */
-socket.on("connect_error", (e) => console.warn("Socket connect error", e));
-socket.on("connect", () => console.log("Socket connected"));
+/* keep socket alive logs */
+socket.on("connect", () => console.log("socket connected"));
+socket.on("connect_error", (e) => console.warn("socket error", e));

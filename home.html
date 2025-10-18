@@ -3,12 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>ZingMini - Home (FB full + Reactions + Multi-chat)</title>
-    <link rel="stylesheet" href="style.css" />
+    <title>ZingMini - Home (Facebook-like)</title>
+    <!-- IMPORTANT: This is the home-only stylesheet. Do NOT change index.css -->
+    <link rel="stylesheet" href="style_home.css" />
   </head>
   <body class="home-page">
     <!-- TOP NAVBAR -->
-    <header class="fb-topbar">
+    <header class="fb-topbar" role="banner">
       <div class="fb-left">
         <div class="fb-logo">ZingMini</div>
         <div class="fb-search">
@@ -16,12 +17,12 @@
         </div>
       </div>
 
-      <div class="fb-center" role="navigation" aria-label="Main nav">
+      <nav class="fb-center" role="navigation" aria-label="Main nav">
         <button class="nav-btn active" data-key="home">🏠</button>
         <button class="nav-btn" data-key="watch">🎞️</button>
         <button class="nav-btn" data-key="market">🛒</button>
         <button class="nav-btn" data-key="groups">👥</button>
-      </div>
+      </nav>
 
       <div class="fb-right">
         <div class="user-chip" id="nav-user">
@@ -33,24 +34,32 @@
           <button id="messenger-btn" class="icon-btn" title="Tin nhắn">
             💬
           </button>
-          <div id="messenger-dropdown" class="dropdown hidden"></div>
+          <div
+            id="messenger-dropdown"
+            class="dropdown hidden"
+            aria-hidden="true"
+          ></div>
         </div>
 
         <div class="dropdown-wrap">
           <button id="notif-btn" class="icon-btn" title="Thông báo">
             🔔<span id="notif-badge" class="badge hidden">0</span>
           </button>
-          <div id="notif-dropdown" class="dropdown hidden"></div>
+          <div
+            id="notif-dropdown"
+            class="dropdown hidden"
+            aria-hidden="true"
+          ></div>
         </div>
 
         <div class="dropdown-wrap">
           <button id="profile-btn" class="icon-btn" title="Tài khoản">
             🧑
           </button>
-          <div id="profile-dropdown" class="dropdown hidden">
+          <div id="profile-dropdown" class="dropdown hidden" aria-hidden="true">
             <a href="#" id="view-profile">Xem trang cá nhân</a>
             <a href="#" id="settings">Cài đặt</a>
-            <a href="#" id="logout-btn" class="logout-action">Đăng xuất</a>
+            <a href="#" id="logout-action" class="logout-action">Đăng xuất</a>
           </div>
         </div>
 
@@ -61,18 +70,18 @@
     </header>
 
     <!-- MAIN GRID -->
-    <div class="fb-container">
+    <div class="fb-container" role="main">
       <!-- LEFT -->
-      <aside class="left-col">
+      <aside class="left-col" aria-label="Sidebar trái">
         <div class="left-card card">
           <div class="left-avatar-row">
             <img id="left-avatar" src="https://i.pravatar.cc/48" alt="me" />
             <div>
-              <div class="name" id="left-username">Bạn</div>
+              <div id="left-username" class="name">Bạn</div>
               <div class="small">Xem trang cá nhân</div>
             </div>
           </div>
-          <nav class="left-menu" id="left-menu"></nav>
+          <nav id="left-menu" class="left-menu"></nav>
         </div>
 
         <div class="left-card card">
@@ -83,16 +92,18 @@
       </aside>
 
       <!-- CENTER -->
-      <main class="center-col">
-        <!-- STORIES -->
-        <section class="stories-row" id="stories-row"></section>
+      <main class="center-col" aria-live="polite">
+        <section
+          id="stories-row"
+          class="stories-row"
+          aria-label="Stories"
+        ></section>
 
-        <!-- CREATE POST -->
         <section class="create-post card" aria-label="Tạo bài viết">
           <div class="create-top">
             <img
-              class="avatar"
               id="create-avatar"
+              class="avatar"
               src="https://i.pravatar.cc/48"
               alt="me"
             />
@@ -102,7 +113,6 @@
               rows="2"
             ></textarea>
           </div>
-
           <div class="create-bottom">
             <label class="file-btn"
               >Ảnh/Video<input
@@ -118,16 +128,15 @@
           </div>
         </section>
 
-        <!-- FEED -->
         <section
           id="posts-container"
           class="feed-list"
-          aria-live="polite"
+          aria-label="Bảng tin"
         ></section>
       </main>
 
       <!-- RIGHT -->
-      <aside class="right-col">
+      <aside class="right-col" aria-label="Sidebar phải">
         <div class="right-card card">
           <div class="title">Bạn bè online</div>
           <div id="friends-list" class="suggest"></div>
@@ -149,9 +158,10 @@
       </aside>
     </div>
 
-    <!-- CHAT WINDOWS container (will hold multiple chat boxes) -->
+    <!-- CHAT WINDOWS container -->
     <div
       id="chat-windows-root"
+      aria-live="polite"
       style="
         position: fixed;
         right: 18px;
