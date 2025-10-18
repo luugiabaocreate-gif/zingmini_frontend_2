@@ -3,68 +3,143 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ZingMini Login/Register</title>
+    <title>ZingMini - Login</title>
     <link rel="stylesheet" href="style.css" />
-    <!-- Emoji/GIF picker CSS -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.2/dist/index.css"
-    />
   </head>
   <body>
-    <div class="container">
-      <div class="auth-card animate__animated animate__fadeInDown">
-        <div class="auth-header">
-          <h1>ZingMini</h1>
-          <p id="auth-toggle">
-            Chưa có tài khoản? <span id="toggle-link">Đăng ký</span>
-          </p>
-        </div>
-        <div class="auth-body">
-          <form id="login-form">
-            <input type="email" placeholder="Email" id="login-email" required />
-            <input
-              type="password"
-              placeholder="Mật khẩu"
-              id="login-password"
-              required
-            />
-            <button type="submit">Đăng nhập</button>
-          </form>
-          <form id="register-form" class="hidden">
-            <input
-              type="text"
-              placeholder="Tên hiển thị"
-              id="reg-name"
-              required
-            />
-            <input type="email" placeholder="Email" id="reg-email" required />
-            <input
-              type="password"
-              placeholder="Mật khẩu"
-              id="reg-password"
-              required
-            />
-            <input
-              type="password"
-              placeholder="Nhập lại mật khẩu"
-              id="reg-password2"
-              required
-            />
-            <button type="submit">Đăng ký</button>
-          </form>
-        </div>
-        <div id="auth-msg" class="auth-msg"></div>
-      </div>
-      <div class="background-circles">
-        <div class="circle c1"></div>
-        <div class="circle c2"></div>
-        <div class="circle c3"></div>
-        <div class="circle c4"></div>
-      </div>
+    <!-- ===================== HEADER ===================== -->
+    <header>
+      <div class="logo">ZingMini</div>
+      <div class="toggle-theme" id="theme-toggle">☀️/🌙</div>
+    </header>
+
+    <!-- ===================== MAIN CONTENT ===================== -->
+    <div
+      class="container"
+      style="
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+      "
+    >
+      <!-- LOGIN FORM -->
+      <form id="login-form" class="form-card">
+        <h2 style="margin-bottom: 15px; color: #0ff">Đăng nhập</h2>
+        <input
+          type="text"
+          id="login-username"
+          placeholder="Tên đăng nhập"
+          required
+          style="
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            width: 250px;
+            background: #161b22;
+          "
+        />
+        <input
+          type="password"
+          id="login-password"
+          placeholder="Mật khẩu"
+          required
+          style="
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            width: 250px;
+            background: #161b22;
+          "
+        />
+        <button
+          type="submit"
+          style="
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            background: #0ff;
+            color: #0d1117;
+            font-weight: bold;
+          "
+        >
+          Đăng nhập
+        </button>
+        <p style="margin-top: 10px; font-size: 0.9rem; color: #cdd9e5">
+          Chưa có tài khoản?
+          <span
+            id="toggle-forms"
+            style="cursor: pointer; color: #0ff; text-decoration: underline"
+            >Đăng ký</span
+          >
+        </p>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form
+        id="register-form"
+        class="form-card hidden"
+        style="margin-top: 20px"
+      >
+        <h2 style="margin-bottom: 15px; color: #0ff">Đăng ký</h2>
+        <input
+          type="text"
+          id="reg-username"
+          placeholder="Tên đăng nhập"
+          required
+          style="
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            width: 250px;
+            background: #161b22;
+          "
+        />
+        <input
+          type="password"
+          id="reg-password"
+          placeholder="Mật khẩu"
+          required
+          style="
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            width: 250px;
+            background: #161b22;
+          "
+        />
+        <button
+          type="submit"
+          style="
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            background: #0ff;
+            color: #0d1117;
+            font-weight: bold;
+          "
+        >
+          Đăng ký
+        </button>
+        <p style="margin-top: 10px; font-size: 0.9rem; color: #cdd9e5">
+          Đã có tài khoản?
+          <span
+            id="toggle-forms"
+            style="cursor: pointer; color: #0ff; text-decoration: underline"
+            >Đăng nhập</span
+          >
+        </p>
+      </form>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.2/dist/index.js"></script>
-    <script src="script_auth.js" type="module"></script>
+    <script src="script_auth.js"></script>
+
+    <!-- ===================== LIGHT/DARK MODE ===================== -->
+    <script>
+      const themeToggle = document.getElementById("theme-toggle");
+      themeToggle.addEventListener("click", () => {
+        document.body.classList.toggle("light-mode");
+      });
+    </script>
   </body>
 </html>

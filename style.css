@@ -1,370 +1,298 @@
-/* ===================== STORIES SCROLL ===================== */
-.stories-container {
-  display: flex;
-  overflow-x: auto;
-  gap: 1rem;
-  padding: 1rem 0;
+/* ===================== RESET ===================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.stories-scroll {
-  display: flex;
-  gap: 1rem;
-}
-
-.story-item {
-  width: 80px;
-  height: 130px;
-  border-radius: 12px;
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  transition: transform 0.3s;
-}
-
-.story-item img {
+body {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  min-height: 100vh;
+  background-color: #0d1117; /* dark background mặc định */
+  color: #cdd9e5;
+  transition: background-color 0.3s, color 0.3s;
 }
 
-.story-item span {
-  position: absolute;
-  bottom: 5px;
-  left: 5px;
-  color: #fff;
-  font-size: 0.7rem;
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
+
+input,
+textarea {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font-size: 1rem;
+}
+
+/* ===================== LIGHT MODE ===================== */
+body.light-mode {
+  background-color: #f0f2f5;
+  color: #111;
+}
+
+/* ===================== HEADER ===================== */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background: #0d1117;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  transition: background 0.3s;
+}
+
+body.light-mode header {
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+header .logo {
+  font-size: 1.5rem;
   font-weight: bold;
-  text-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
+  color: #0ff; /* neon cyan */
 }
 
-.story-item:hover {
-  transform: scale(1.1);
+header nav {
+  display: flex;
+  gap: 15px;
 }
 
-/* ===================== POSTS ===================== */
-.feed-container {
-  margin-top: 1rem;
+header nav a {
+  padding: 8px 12px;
+  border-radius: 5px;
+  transition: background 0.2s;
 }
 
-.post-card {
-  background: #111;
-  border-radius: 12px;
+header nav a:hover {
+  background: rgba(0, 255, 255, 0.2);
+}
+
+/* ===================== CONTAINERS ===================== */
+.container {
+  max-width: 1200px;
+  margin: 80px auto 20px;
+  padding: 0 20px;
+  display: flex;
+  gap: 20px;
+}
+
+/* ===================== SIDEBAR ===================== */
+.sidebar-left,
+.sidebar-right {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+.sidebar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.sidebar-left a,
+.sidebar-right a {
   padding: 10px;
-  margin-bottom: 1rem;
-  box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
-  animation: fadeIn 0.5s ease forwards;
+  border-radius: 8px;
+  display: block;
+  color: #0ff;
+  font-weight: 500;
+  transition: background 0.2s;
 }
 
-.post-user {
-  font-weight: 600;
-  margin-bottom: 5px;
+.sidebar-left a:hover,
+.sidebar-right a:hover {
+  background: rgba(0, 255, 255, 0.2);
+}
+
+/* ===================== FEED ===================== */
+.feed {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* POST CARD */
+.post-card {
+  background: #161b22;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 255, 255, 0.1);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+body.light-mode .post-card {
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.post-header img.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #0ff;
+}
+
+.post-header .username {
+  font-weight: bold;
   color: #0ff;
 }
 
 .post-content {
-  margin-bottom: 8px;
+  margin-top: 10px;
 }
 
-/* ===================== CAROUSEL ===================== */
-.carousel {
-  position: relative;
+.post-content img {
   width: 100%;
-  max-height: 300px;
-  overflow: hidden;
-  border-radius: 12px;
+  border-radius: 10px;
+  margin-top: 10px;
 }
 
-.carousel img,
-.carousel video {
-  width: 100%;
-  display: none;
-  object-fit: cover;
-}
-
-.carousel img.active,
-.carousel video.active {
-  display: block;
-}
-
-.carousel button {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.3);
-  border: none;
-  color: #fff;
-  font-size: 1.5rem;
-  padding: 5px 10px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.carousel-prev {
-  left: 10px;
-}
-
-.carousel-next {
-  right: 10px;
-}
-
-/* ===================== POST ACTIONS ===================== */
+/* POST ACTIONS */
 .post-actions {
   display: flex;
-  justify-content: space-around;
-  padding: 5px 0;
+  gap: 15px;
+  margin-top: 10px;
 }
 
 .post-actions button {
-  background: transparent;
-  border: none;
+  background: rgba(0, 255, 255, 0.1);
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-weight: 500;
   color: #0ff;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.3s;
 }
 
 .post-actions button:hover {
-  color: #ff0;
-  transform: scale(1.05);
+  background: rgba(0, 255, 255, 0.3);
 }
 
 /* ===================== CHAT ===================== */
-.chat-container {
-  width: 300px;
+.chat-box {
   position: fixed;
-  bottom: 10px;
-  right: 10px;
-  background: #111;
+  bottom: 20px;
+  right: 20px;
+  width: 300px;
+  max-height: 400px;
+  background: #161b22;
   border-radius: 12px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  max-height: 400px;
-  overflow: hidden;
-  box-shadow: 0 0 20px #0ff;
-  z-index: 1000;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
 }
 
-#messages {
+body.light-mode .chat-box {
+  background: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.chat-header {
+  padding: 10px;
+  background: #0ff;
+  color: #0d1117;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-messages {
   flex: 1;
-  padding: 5px 10px;
+  padding: 10px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
 }
 
-.chat-msg {
-  background: #0ff;
-  color: #000;
-  padding: 5px 10px;
-  border-radius: 12px;
-  align-self: flex-start;
+.chat-messages .message {
+  background: rgba(0, 255, 255, 0.1);
+  padding: 8px 12px;
+  border-radius: 8px;
   max-width: 80%;
   word-wrap: break-word;
+  align-self: flex-start;
+}
+
+body.light-mode .chat-messages .message {
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .chat-input {
   display: flex;
-  gap: 5px;
-  padding: 5px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-#chat-input {
+.chat-input input {
   flex: 1;
-  border-radius: 12px;
-  border: 1px solid #0ff;
-  padding: 5px 10px;
-  background: #222;
-  color: #fff;
-}
-
-#chat-input:focus {
-  outline: none;
-  box-shadow: 0 0 10px #0ff;
+  padding: 10px;
 }
 
 .chat-input button {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
-  background: #0ff;
-  color: #000;
-  font-size: 1.2rem;
-  cursor: pointer;
-}
-
-/* ===================== MODAL ===================== */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-  opacity: 0;
-  visibility: hidden;
-  transition: 0.3s;
-}
-
-.modal.show {
-  opacity: 1;
-  visibility: visible;
-}
-
-.modal-content {
-  background: #111;
-  border-radius: 12px;
-  padding: 15px;
-  position: relative;
-  max-width: 500px;
-  width: 90%;
-  box-shadow: 0 0 30px #0ff;
-}
-
-.modal-content img {
-  width: 100%;
-  border-radius: 12px;
-}
-
-.modal .close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  cursor: pointer;
-  font-size: 1.5rem;
-  color: #0ff;
-}
-
-.modal .close:hover {
-  color: #ff0;
-}
-
-/* ===================== TOAST ===================== */
-.toast {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #0ff;
-  color: #000;
   padding: 10px 15px;
-  border-radius: 12px;
-  box-shadow: 0 0 20px #0ff;
-  opacity: 0;
-  transform: translateY(50px);
-  transition: all 0.3s;
-}
-
-.toast.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ===================== ANIMATION ===================== */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.fade-in {
-  animation: fadeIn 0.4s forwards;
-}
-
-@keyframes blinkAnim {
-  0%,
-  100% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-.blink {
-  animation: blinkAnim 1s infinite;
-}
-
-/* ===================== DUMMY EFFECTS FOR LENGTH ===================== */
-@keyframes dummyEffect {
-  0% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(180deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.dummy-box {
-  width: 50px;
-  height: 50px;
   background: #0ff;
-  margin: 5px;
-  animation: dummyEffect 2s linear infinite;
+  color: #0d1117;
+  font-weight: bold;
+  border-radius: 0 0 12px 0;
+}
+
+/* ===================== LIGHT/DARK TOGGLE ===================== */
+.toggle-theme {
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 5px;
+  background: rgba(0, 255, 255, 0.1);
+  font-weight: bold;
+}
+
+.toggle-theme:hover {
+  background: rgba(0, 255, 255, 0.3);
 }
 
 /* ===================== RESPONSIVE ===================== */
-@media (max-width: 768px) {
-  .chat-container {
-    width: 90%;
-    bottom: 5px;
-    right: 5px;
+@media (max-width: 992px) {
+  .container {
+    flex-direction: column;
+    margin: 80px 10px 20px;
   }
-  .post-card {
-    padding: 8px;
-  }
-  .stories-scroll {
-    gap: 0.5rem;
-  }
-  .story-item {
-    width: 60px;
-    height: 100px;
+  .sidebar-left,
+  .sidebar-right {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
   }
 }
 
-@media (max-width: 480px) {
-  .post-content {
-    font-size: 0.9rem;
+@media (max-width: 576px) {
+  header {
+    flex-direction: column;
+    height: auto;
+    padding: 10px;
+    gap: 10px;
   }
-  .post-actions button {
-    padding: 3px 5px;
-  }
-  .story-item span {
-    font-size: 0.6rem;
-  }
-}
-
-/* ===================== END ===================== */
-
-/* DUMMY LONG EXTENSIONS FOR >1000 LINES */
-.dummy0,
-.dummy1,
-.dummy2,
-.dummy3,
-.dummy4,
-.dummy5,
-.dummy6,
-.dummy7,
-.dummy8,
-.dummy9 {
-  width: 10px;
-  height: 10px;
-  background: #0ff;
-  margin: 2px;
-  float: left;
-}
-.dummy-boxes {
-  display: flex;
-  flex-wrap: wrap;
 }

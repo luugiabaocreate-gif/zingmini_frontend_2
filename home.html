@@ -7,47 +7,106 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="header">
-      <h1>ZingMini</h1>
-      <div class="user-menu">
-        <span id="current-user"></span>
-        <button id="logout-btn">Đăng xuất</button>
-      </div>
-    </div>
+    <!-- ===================== HEADER ===================== -->
+    <header>
+      <div class="logo">ZingMini</div>
+      <nav>
+        <a href="#">Tìm kiếm</a>
+        <a href="#">Thông báo</a>
+        <a href="#">Tin nhắn</a>
+        <a href="#" id="logout-btn">Đăng xuất</a>
+      </nav>
+      <div class="toggle-theme" id="theme-toggle">☀️/🌙</div>
+    </header>
 
-    <div class="stories-container">
-      <div id="stories" class="stories-scroll">
-        <!-- Stories sẽ được load JS -->
+    <!-- ===================== MAIN CONTAINER ===================== -->
+    <div class="container">
+      <!-- ===================== SIDEBAR LEFT ===================== -->
+      <div class="sidebar-left">
+        <a href="#">Trang chủ</a>
+        <a href="#">Bạn bè</a>
+        <a href="#">Nhóm</a>
+        <a href="#">Sự kiện</a>
+        <a href="#">Marketplace</a>
       </div>
-    </div>
 
-    <div class="feed-container">
-      <div id="new-post" class="new-post">
-        <textarea id="post-content" placeholder="Bạn đang nghĩ gì?"></textarea>
-        <input type="file" id="post-image" multiple accept="image/*,video/*" />
-        <button id="post-btn">Đăng</button>
-      </div>
-      <div id="feed" class="posts-container">
-        <!-- Post sẽ được load JS -->
-      </div>
-    </div>
+      <!-- ===================== FEED ===================== -->
+      <div class="feed">
+        <!-- POST DEMO 1 -->
+        <div class="post-card">
+          <div class="post-header">
+            <img src="https://i.pravatar.cc/40?img=1" class="avatar" />
+            <span class="username">Nguyễn Văn A</span>
+          </div>
+          <div class="post-content">
+            <p>Chào các bạn! Đây là bài viết demo của ZingMini. 😎</p>
+            <img
+              src="https://picsum.photos/500/300?random=1"
+              alt="post image"
+            />
+          </div>
+          <div class="post-actions">
+            <button>Like</button>
+            <button>Comment</button>
+            <button>Share</button>
+          </div>
+        </div>
 
-    <div class="chat-container">
-      <div id="chat-box">
-        <div id="messages"></div>
-        <div class="chat-input">
-          <textarea id="chat-input" placeholder="Gửi tin nhắn..."></textarea>
-          <button id="chat-emoji-btn">😊</button>
-          <button id="chat-send">Gửi</button>
+        <!-- POST DEMO 2 -->
+        <div class="post-card">
+          <div class="post-header">
+            <img src="https://i.pravatar.cc/40?img=2" class="avatar" />
+            <span class="username">Trần Thị B</span>
+          </div>
+          <div class="post-content">
+            <p>Hôm nay thời tiết thật đẹp, ZingMini cũng đẹp luôn! 💙</p>
+            <img
+              src="https://picsum.photos/500/300?random=2"
+              alt="post image"
+            />
+          </div>
+          <div class="post-actions">
+            <button>Like</button>
+            <button>Comment</button>
+            <button>Share</button>
+          </div>
         </div>
       </div>
+
+      <!-- ===================== SIDEBAR RIGHT ===================== -->
+      <div class="sidebar-right">
+        <a href="#">Gợi ý bạn bè</a>
+        <a href="#">Xu hướng</a>
+        <a href="#">Quảng cáo</a>
+      </div>
     </div>
 
-    <div id="notifications" class="notifications-container">
-      <!-- Notifications realtime -->
+    <!-- ===================== CHAT ===================== -->
+    <div class="chat-box" id="chat-box">
+      <div class="chat-header">
+        Chat <span id="chat-close" style="cursor: pointer">❌</span>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input">
+        <input type="text" id="chat-input" placeholder="Nhập tin nhắn..." />
+        <button id="chat-send">Gửi</button>
+      </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.2/dist/index.min.js"></script>
     <script src="script_home_pro.js"></script>
+
+    <!-- ===================== LIGHT/DARK MODE ===================== -->
+    <script>
+      const themeToggle = document.getElementById("theme-toggle");
+      themeToggle.addEventListener("click", () => {
+        document.body.classList.toggle("light-mode");
+      });
+
+      // Logout
+      document.getElementById("logout-btn").addEventListener("click", () => {
+        localStorage.removeItem("currentUser");
+        window.location.href = "index.html";
+      });
+    </script>
   </body>
 </html>
