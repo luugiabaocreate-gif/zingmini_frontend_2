@@ -18,8 +18,12 @@ socket.on("connect_error", (err) =>
   console.error("❌ Socket connect error:", err.message)
 );
 
-// Receive chat messages
+// ✅ FIX: Không hiển thị lại tin nhắn của chính mình (tránh bị lặp)
 socket.on("chat", (msg) => {
+  const userStored = JSON.parse(localStorage.getItem("user") || "null");
+  const currentName =
+    (userStored && (userStored.name || userStored.username)) || "Ẩn danh";
+  if (msg.user === currentName) return; // bỏ qua tin nhắn của chính mình
   addMessageToChat(msg);
 });
 
