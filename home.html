@@ -5,31 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ZingMini - Home</title>
     <link rel="stylesheet" href="style.css" />
-    <script type="module" src="script_home_pro.js" defer></script>
   </head>
   <body>
     <header>
       <div class="logo">ZingMini</div>
       <nav>
-        <a href="#">Tìm kiếm</a>
-        <a href="#">Thông báo</a>
-        <a href="#">Tin nhắn</a>
-        <a href="#" id="logout-btn">Đăng xuất</a>
+        <a href="#" class="toggle-theme">🌙</a>
       </nav>
-      <div class="toggle-theme" id="theme-toggle">☀️/🌙</div>
     </header>
-
     <div class="container">
       <div class="sidebar-left">
         <a href="#">Trang chủ</a>
         <a href="#">Bạn bè</a>
-        <a href="#">Nhóm</a>
-        <a href="#">Sự kiện</a>
-        <a href="#">Marketplace</a>
+        <a href="#">Tin nhắn</a>
+        <a href="#">Thông báo</a>
       </div>
-
       <div class="feed">
-        <div class="post-card" style="margin-bottom: 20px">
+        <div class="post-card">
           <textarea
             id="post-content"
             placeholder="Bạn đang nghĩ gì?"
@@ -38,41 +30,23 @@
           <button id="post-submit">Đăng</button>
         </div>
       </div>
-
       <div class="sidebar-right">
-        <a href="#">Gợi ý bạn bè</a>
-        <a href="#">Xu hướng</a>
-        <a href="#">Quảng cáo</a>
+        <a href="#">Sự kiện</a>
+        <a href="#">Nhóm</a>
+        <a href="#">Trang</a>
       </div>
     </div>
 
-    <div class="chat-box" id="chat-box">
-      <div class="chat-header">Chat <span id="chat-close">❌</span></div>
+    <!-- Chat -->
+    <div class="chat-box">
+      <div class="chat-header">Chat Realtime</div>
       <div class="chat-messages" id="chat-messages"></div>
       <div class="chat-input">
-        <input type="text" id="chat-input" placeholder="Nhập tin nhắn..." />
+        <input type="text" id="chat-input" placeholder="Nhập tin nhắn" />
         <button id="chat-send">Gửi</button>
       </div>
     </div>
 
-    <script>
-      const themeToggle = document.getElementById("theme-toggle");
-      themeToggle.addEventListener("click", () =>
-        document.body.classList.toggle("light-mode")
-      );
-
-      document.getElementById("logout-btn").addEventListener("click", () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("currentUser");
-        window.location.href = "index.html";
-      });
-
-      const chatBox = document.getElementById("chat-box");
-      const chatClose = document.getElementById("chat-close");
-      chatClose.addEventListener(
-        "click",
-        () => (chatBox.style.display = "none")
-      );
-    </script>
+    <script type="module" src="script_home_pro.js"></script>
   </body>
 </html>

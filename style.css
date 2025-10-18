@@ -3,21 +3,68 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Verdana, sans-serif;
 }
 
+/* ===================== BODY ===================== */
 body {
-  background-color: #0d1117;
-  color: #c9d1d9;
+  background: #fff9e6; /* vàng nhạt */
+  color: #033d2e; /* xanh lá đậm */
   min-height: 100vh;
+}
+
+/* ===================== FORM ===================== */
+.form-container {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 20px;
 }
-
-/* ===================== LIGHT MODE ===================== */
-body.light-mode {
-  background-color: #f5f5f5;
-  color: #111;
+.form-card {
+  background: #b3e6cc; /* xanh lá nhạt */
+  padding: 20px;
+  border-radius: 15px;
+  border: 2px solid #00aaff; /* xanh dương nhạt */
+  width: 300px;
+  text-align: center;
+}
+.form-card h2 {
+  margin-bottom: 20px;
+  color: #007755;
+}
+.form-card input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #00aaff;
+  border-radius: 12px;
+  background: #e6fff2;
+  color: #033d2e;
+}
+.form-card button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 12px;
+  background: #00aaff;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+.form-card button:hover {
+  background: #0077cc;
+}
+.form-card a {
+  color: #007755;
+  text-decoration: none;
+}
+.form-card a:hover {
+  text-decoration: underline;
+}
+.hidden {
+  display: none;
 }
 
 /* ===================== HEADER ===================== */
@@ -27,36 +74,24 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #161b22;
-  border-bottom: 1px solid #21262d;
+  background: #00aaff;
+  border-radius: 0 0 12px 12px;
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-
-body.light-mode header {
-  background: #fff;
-  border-bottom: 1px solid #ccc;
-}
-
 header .logo {
   font-size: 1.8rem;
   font-weight: bold;
-  color: #0ff;
 }
-
 header nav a {
   margin: 0 10px;
-  color: #0ff;
+  color: #fff;
   text-decoration: none;
   font-weight: bold;
 }
-
-body.light-mode header nav a {
-  color: #0077cc;
-}
-
 .toggle-theme {
   cursor: pointer;
   font-size: 1.2rem;
-  color: #0ff;
 }
 
 /* ===================== CONTAINER ===================== */
@@ -65,12 +100,7 @@ body.light-mode header nav a {
   padding: 20px;
   gap: 20px;
 }
-
-body.light-mode .container {
-  color: #111;
-}
-
-/* ===================== SIDEBARS ===================== */
+/* Sidebar */
 .sidebar-left,
 .sidebar-right {
   width: 220px;
@@ -78,33 +108,18 @@ body.light-mode .container {
   flex-direction: column;
   gap: 10px;
 }
-
 .sidebar-left a,
 .sidebar-right a {
   padding: 10px;
-  border-radius: 5px;
+  border-radius: 12px;
   text-decoration: none;
-  color: #0ff;
-  background: #161b22;
+  color: #033d2e;
+  background: #b3e6cc;
   transition: 0.2s;
 }
-
-body.light-mode .sidebar-left a,
-body.light-mode .sidebar-right a {
-  background: #e5e5e5;
-  color: #0077cc;
-}
-
 .sidebar-left a:hover,
 .sidebar-right a:hover {
-  background: #0ff;
-  color: #0d1117;
-}
-
-body.light-mode .sidebar-left a:hover,
-body.light-mode .sidebar-right a:hover {
-  background: #0077cc;
-  color: #fff;
+  background: #80d8a6;
 }
 
 /* ===================== FEED ===================== */
@@ -114,72 +129,49 @@ body.light-mode .sidebar-right a:hover {
   flex-direction: column;
   gap: 20px;
 }
-
 .post-card {
-  background: #161b22;
+  background: #ccf0d6;
   padding: 15px;
-  border-radius: 10px;
-  border: 1px solid #21262d;
+  border-radius: 15px;
+  border: 1px solid #00aaff;
+  position: relative;
 }
-
-body.light-mode .post-card {
-  background: #fff;
-  border: 1px solid #ccc;
+.post-card .time {
+  font-size: 0.8rem;
+  color: #005533;
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
-
 .post-card textarea {
   width: 100%;
   padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #0ff;
-  background: #0d1117;
-  color: #c9d1d9;
+  border-radius: 12px;
+  border: 1px solid #00aaff;
+  background: #e6fff2;
+  color: #033d2e;
 }
-
-body.light-mode .post-card textarea {
-  background: #f5f5f5;
-  color: #111;
-  border: 1px solid #0077cc;
-}
-
 .post-card img {
   max-width: 100%;
-  border-radius: 10px;
+  border-radius: 12px;
   margin-top: 10px;
 }
-
-.post-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.post-header .avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-}
-
 .post-actions {
   display: flex;
   gap: 10px;
   margin-top: 10px;
 }
-
 .post-actions button {
   padding: 5px 10px;
-  border-radius: 5px;
+  border-radius: 12px;
   border: none;
-  cursor: pointer;
-  background: #0ff;
-  color: #0d1117;
+  background: #00aaff;
+  color: #fff;
   font-weight: bold;
-  transition: 0.2s;
+  cursor: pointer;
 }
-
 .post-actions button:hover {
-  background: #00e0ff;
+  background: #0077cc;
 }
 
 /* ===================== CHAT BOX ===================== */
@@ -189,125 +181,53 @@ body.light-mode .post-card textarea {
   right: 20px;
   width: 300px;
   max-height: 400px;
-  background: #161b22;
-  border: 1px solid #0ff;
-  border-radius: 10px;
+  background: #b3e6cc;
+  border: 2px solid #00aaff;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
-
-body.light-mode .chat-box {
-  background: #fff;
-  border: 1px solid #0077cc;
-}
-
 .chat-header {
   padding: 10px;
   font-weight: bold;
-  background: #0d1117;
-  color: #0ff;
+  background: #00aaff;
+  color: #fff;
   cursor: default;
 }
-
-body.light-mode .chat-header {
-  background: #0077cc;
-  color: #fff;
-}
-
 .chat-messages {
   flex: 1;
   padding: 10px;
   overflow-y: auto;
 }
-
+.chat-messages .message {
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+.chat-messages .timestamp {
+  font-size: 0.7rem;
+  color: #033d2e;
+  margin-left: 5px;
+}
 .chat-input {
   display: flex;
   gap: 5px;
   padding: 10px;
 }
-
 .chat-input input {
   flex: 1;
   padding: 5px;
-  border-radius: 5px;
-  border: 1px solid #0ff;
-  background: #0d1117;
-  color: #c9d1d9;
+  border-radius: 12px;
+  border: 1px solid #00aaff;
 }
-
-body.light-mode .chat-input input {
-  border: 1px solid #0077cc;
-  background: #fff;
-  color: #111;
-}
-
 .chat-input button {
   padding: 5px 10px;
-  border-radius: 5px;
+  border-radius: 12px;
   border: none;
-  background: #0ff;
-  color: #0d1117;
+  background: #00aaff;
+  color: #fff;
   font-weight: bold;
   cursor: pointer;
-}
-
-/* ===================== LOGIN/REGISTER FORM ===================== */
-.form-card {
-  background: #161b22;
-  padding: 20px;
-  border-radius: 10px;
-  border: 1px solid #0ff;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 300px;
-}
-
-body.light-mode .form-card {
-  background: #fff;
-  border: 1px solid #0077cc;
-}
-
-.form-card input {
-  padding: 8px;
-  border-radius: 5px;
-  border: 1px solid #0ff;
-  background: #0d1117;
-  color: #c9d1d9;
-}
-
-body.light-mode .form-card input {
-  background: #fff;
-  color: #111;
-  border: 1px solid #0077cc;
-}
-
-.form-card button {
-  padding: 8px;
-  border-radius: 5px;
-  border: none;
-  background: #0ff;
-  color: #0d1117;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.form-card button:hover {
-  background: #00e0ff;
-}
-
-.hidden {
-  display: none;
-}
-
-.link {
-  color: #0ff;
-  cursor: pointer;
-}
-
-body.light-mode .link {
-  color: #0077cc;
 }
 
 /* ===================== RESPONSIVE ===================== */
@@ -327,4 +247,26 @@ body.light-mode .link {
     flex: 1;
     text-align: center;
   }
+}
+
+/* ===================== LIGHT MODE ===================== */
+body.light-mode {
+  background: #d0f0ff;
+  color: #022d22;
+}
+body.light-mode header {
+  background: #33bbff;
+}
+body.light-mode .post-card,
+body.light-mode .chat-box,
+body.light-mode .form-card {
+  background: #c0f0d6;
+}
+body.light-mode .sidebar-left a,
+body.light-mode .sidebar-right a,
+body.light-mode .post-actions button,
+body.light-mode .chat-input button,
+body.light-mode .form-card button {
+  background: #33bbff;
+  color: #fff;
 }

@@ -3,69 +3,45 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ZingMini - Login</title>
+    <title>ZingMini - Đăng nhập</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <header>
-      <div class="logo">ZingMini</div>
-      <div class="toggle-theme" id="theme-toggle">☀️/🌙</div>
-    </header>
-
-    <div
-      class="container"
-      style="
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 80vh;
-      "
-    >
-      <form id="login-form" class="form-card">
+    <div class="form-container">
+      <!-- Login -->
+      <div class="form-card" id="login-form">
         <h2>Đăng nhập</h2>
-        <input type="email" id="login-email" placeholder="Email" required />
-        <input
-          type="password"
-          id="login-password"
-          placeholder="Mật khẩu"
-          required
-        />
-        <button type="submit">Đăng nhập</button>
-        <p>
-          Chưa có tài khoản? <span id="toggle-forms" class="link">Đăng ký</span>
-        </p>
-      </form>
+        <form>
+          <input type="email" id="login-email" placeholder="Email" required />
+          <input
+            type="password"
+            id="login-password"
+            placeholder="Mật khẩu"
+            required
+          />
+          <button type="submit">Đăng nhập</button>
+        </form>
+        <p>Chưa có tài khoản? <a href="#" id="show-register">Đăng ký</a></p>
+      </div>
 
-      <form id="register-form" class="form-card hidden">
+      <!-- Register -->
+      <div class="form-card hidden" id="register-form">
         <h2>Đăng ký</h2>
-        <input type="text" id="reg-username" placeholder="Họ tên" required />
-        <input type="email" id="reg-email" placeholder="Email" required />
-        <input
-          type="password"
-          id="reg-password"
-          placeholder="Mật khẩu"
-          required
-        />
-        <button type="submit">Đăng ký</button>
-        <p>
-          Đã có tài khoản? <span id="toggle-forms" class="link">Đăng nhập</span>
-        </p>
-      </form>
+        <form>
+          <input type="text" id="reg-name" placeholder="Họ và tên" required />
+          <input type="email" id="reg-email" placeholder="Email" required />
+          <input
+            type="password"
+            id="reg-password"
+            placeholder="Mật khẩu"
+            required
+          />
+          <button type="submit">Đăng ký</button>
+        </form>
+        <p>Đã có tài khoản? <a href="#" id="show-login">Đăng nhập</a></p>
+      </div>
     </div>
 
     <script type="module" src="script_auth.js"></script>
-    <script>
-      const themeToggle = document.getElementById("theme-toggle");
-      themeToggle.addEventListener("click", () =>
-        document.body.classList.toggle("light-mode")
-      );
-
-      document.querySelectorAll("#toggle-forms").forEach((el) => {
-        el.addEventListener("click", () => {
-          document.getElementById("login-form").classList.toggle("hidden");
-          document.getElementById("register-form").classList.toggle("hidden");
-        });
-      });
-    </script>
   </body>
 </html>
