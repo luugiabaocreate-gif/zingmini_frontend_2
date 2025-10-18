@@ -1,51 +1,52 @@
-/* ===================== RESET ===================== */
+/* RESET */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Segoe UI", Tahoma, Verdana, sans-serif;
+  font-family: Arial, sans-serif;
 }
 
-/* ===================== BODY ===================== */
-body {
-  background: #fff9e6; /* vàng nhạt */
-  color: #033d2e; /* xanh lá đậm */
-  min-height: 100vh;
-}
-
-/* ===================== FORM ===================== */
-.form-container {
+/* ================= INDEX ================= */
+.index-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   min-height: 100vh;
-  gap: 20px;
 }
-.form-card {
-  background: #b3e6cc; /* xanh lá nhạt */
-  padding: 20px;
+.index-left {
+  flex: 1;
+  background-color: #b3e6cc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.index-left img {
+  max-width: 80%;
   border-radius: 15px;
-  border: 2px solid #00aaff; /* xanh dương nhạt */
+}
+.index-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #e6fff2;
+}
+.auth-box {
   width: 300px;
+  padding: 20px;
+  background: #ccf0d6;
+  border: 2px solid #00aaff;
+  border-radius: 15px;
   text-align: center;
 }
-.form-card h2 {
-  margin-bottom: 20px;
-  color: #007755;
-}
-.form-card input {
+.auth-box input {
   width: 100%;
   padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #00aaff;
+  margin: 10px 0;
   border-radius: 12px;
-  background: #e6fff2;
-  color: #033d2e;
+  border: 1px solid #00aaff;
 }
-.form-card button {
-  width: 100%;
+.auth-box button {
   padding: 10px;
+  width: 100%;
   border: none;
   border-radius: 12px;
   background: #00aaff;
@@ -53,21 +54,22 @@ body {
   font-weight: bold;
   cursor: pointer;
 }
-.form-card button:hover {
+.auth-box button:hover {
   background: #0077cc;
 }
-.form-card a {
-  color: #007755;
-  text-decoration: none;
+.auth-box p {
+  margin-top: 10px;
+  font-size: 0.9rem;
 }
-.form-card a:hover {
-  text-decoration: underline;
+.auth-box span {
+  color: #007755;
+  cursor: pointer;
 }
 .hidden {
   display: none;
 }
 
-/* ===================== HEADER ===================== */
+/* ================= HOME ================= */
 header {
   width: 100%;
   padding: 10px 20px;
@@ -75,7 +77,7 @@ header {
   justify-content: space-between;
   align-items: center;
   background: #00aaff;
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 15px 15px;
   color: #fff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
@@ -84,23 +86,19 @@ header .logo {
   font-weight: bold;
 }
 header nav a {
-  margin: 0 10px;
+  margin-left: 10px;
   color: #fff;
   text-decoration: none;
-  font-weight: bold;
 }
-.toggle-theme {
-  cursor: pointer;
-  font-size: 1.2rem;
+header nav a:hover {
+  text-decoration: underline;
 }
 
-/* ===================== CONTAINER ===================== */
 .container {
   display: flex;
   padding: 20px;
   gap: 20px;
 }
-/* Sidebar */
 .sidebar-left,
 .sidebar-right {
   width: 220px;
@@ -122,7 +120,6 @@ header nav a {
   background: #80d8a6;
 }
 
-/* ===================== FEED ===================== */
 .feed {
   flex: 1;
   display: flex;
@@ -134,16 +131,8 @@ header nav a {
   padding: 15px;
   border-radius: 15px;
   border: 1px solid #00aaff;
-  position: relative;
 }
-.post-card .time {
-  font-size: 0.8rem;
-  color: #005533;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-.post-card textarea {
+#post-content {
   width: 100%;
   padding: 10px;
   border-radius: 12px;
@@ -151,18 +140,8 @@ header nav a {
   background: #e6fff2;
   color: #033d2e;
 }
-.post-card img {
-  max-width: 100%;
-  border-radius: 12px;
-  margin-top: 10px;
-}
-.post-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-.post-actions button {
-  padding: 5px 10px;
+#post-submit {
+  padding: 10px 15px;
   border-radius: 12px;
   border: none;
   background: #00aaff;
@@ -170,11 +149,18 @@ header nav a {
   font-weight: bold;
   cursor: pointer;
 }
-.post-actions button:hover {
+#post-submit:hover {
   background: #0077cc;
 }
+#posts-container .post-card {
+  margin-top: 10px;
+  border-radius: 15px;
+  background: #ccf0d6;
+  border: 1px solid #00aaff;
+  padding: 10px;
+}
 
-/* ===================== CHAT BOX ===================== */
+/* CHAT BOX */
 .chat-box {
   position: fixed;
   bottom: 20px;
@@ -183,7 +169,7 @@ header nav a {
   max-height: 400px;
   background: #b3e6cc;
   border: 2px solid #00aaff;
-  border-radius: 12px;
+  border-radius: 15px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -230,7 +216,7 @@ header nav a {
   cursor: pointer;
 }
 
-/* ===================== RESPONSIVE ===================== */
+/* RESPONSIVE */
 @media (max-width: 1024px) {
   .container {
     flex-direction: column;
@@ -247,26 +233,4 @@ header nav a {
     flex: 1;
     text-align: center;
   }
-}
-
-/* ===================== LIGHT MODE ===================== */
-body.light-mode {
-  background: #d0f0ff;
-  color: #022d22;
-}
-body.light-mode header {
-  background: #33bbff;
-}
-body.light-mode .post-card,
-body.light-mode .chat-box,
-body.light-mode .form-card {
-  background: #c0f0d6;
-}
-body.light-mode .sidebar-left a,
-body.light-mode .sidebar-right a,
-body.light-mode .post-actions button,
-body.light-mode .chat-input button,
-body.light-mode .form-card button {
-  background: #33bbff;
-  color: #fff;
 }

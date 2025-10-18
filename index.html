@@ -7,41 +7,49 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="form-container">
-      <!-- Login -->
-      <div class="form-card" id="login-form">
-        <h2>Đăng nhập</h2>
-        <form>
-          <input type="email" id="login-email" placeholder="Email" required />
-          <input
-            type="password"
-            id="login-password"
-            placeholder="Mật khẩu"
-            required
-          />
-          <button type="submit">Đăng nhập</button>
-        </form>
-        <p>Chưa có tài khoản? <a href="#" id="show-register">Đăng ký</a></p>
+    <div class="index-container">
+      <div class="index-left">
+        <img
+          src="https://marketingai.mediacdn.vn/wp-content/uploads/2019/09/introZingMe-min.jpg"
+          alt="Zing Me"
+        />
       </div>
+      <div class="index-right">
+        <div class="auth-box" id="login-box">
+          <h2>Đăng nhập ZingMini</h2>
+          <input type="email" id="login-email" placeholder="Email" />
+          <input type="password" id="login-password" placeholder="Mật khẩu" />
+          <button id="login-btn">Đăng nhập</button>
+          <p>Chưa có tài khoản? <span id="show-register">Đăng ký</span></p>
+        </div>
 
-      <!-- Register -->
-      <div class="form-card hidden" id="register-form">
-        <h2>Đăng ký</h2>
-        <form>
-          <input type="text" id="reg-name" placeholder="Họ và tên" required />
-          <input type="email" id="reg-email" placeholder="Email" required />
+        <div class="auth-box hidden" id="register-box">
+          <h2>Đăng ký ZingMini</h2>
+          <input type="text" id="register-name" placeholder="Họ và tên" />
+          <input type="email" id="register-email" placeholder="Email" />
           <input
             type="password"
-            id="reg-password"
+            id="register-password"
             placeholder="Mật khẩu"
-            required
           />
-          <button type="submit">Đăng ký</button>
-        </form>
-        <p>Đã có tài khoản? <a href="#" id="show-login">Đăng nhập</a></p>
+          <button id="register-btn">Đăng ký</button>
+          <p>Đã có tài khoản? <span id="show-login">Đăng nhập</span></p>
+        </div>
       </div>
     </div>
 
     <script type="module" src="script_auth.js"></script>
+    <script>
+      const loginBox = document.getElementById("login-box");
+      const registerBox = document.getElementById("register-box");
+      document.getElementById("show-register").onclick = () => {
+        loginBox.classList.add("hidden");
+        registerBox.classList.remove("hidden");
+      };
+      document.getElementById("show-login").onclick = () => {
+        registerBox.classList.add("hidden");
+        loginBox.classList.remove("hidden");
+      };
+    </script>
   </body>
 </html>

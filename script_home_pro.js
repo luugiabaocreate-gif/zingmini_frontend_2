@@ -5,11 +5,9 @@ const token = localStorage.getItem("token");
 const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 if (!token || !currentUser) window.location.href = "index.html";
 
-// ================= SOCKET.IO =================
 const socket = io(API_URL, { transports: ["websocket", "polling"] });
 
-// ================= FEED =================
-const feed = document.querySelector(".feed");
+const postsContainer = document.getElementById("posts-container");
 const postContent = document.getElementById("post-content");
 const postImage = document.getElementById("post-image");
 const postSubmit = document.getElementById("post-submit");
@@ -17,14 +15,14 @@ const postSubmit = document.getElementById("post-submit");
 async function loadPosts() {
   const res = await fetch(`${API_URL}/api/posts`);
   const posts = await res.json();
-  feed.querySelectorAll(".dynamic").forEach((el) => el.remove());
+  postsContainer.innerHTML = "";
   posts.forEach((post) => renderPost(post));
 }
 loadPosts();
 
 function renderPost(post) {
   const card = document.createElement("div");
-  card.classList.add("post-card", "dynamic");
+  card.classList.add("post-card");
   const time = new Date(post.createdAt || Date.now()).toLocaleString("vi-VN");
   card.innerHTML = `
     <div class="post-header" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
@@ -39,7 +37,9 @@ function renderPost(post) {
     <div class="post-content">
       <p>${post.content}</p>
       ${
-        post.image ? `<img src="${API_URL}${post.image}" alt="post image">` : ""
+        post.image
+          ? `<img src="${API_URL}${post.image}" alt="post image" style="width:100%;border-radius:12px;">`
+          : ""
       }
     </div>
     <div class="post-actions">
@@ -47,7 +47,7 @@ function renderPost(post) {
       <button data-id="${post._id}" class="comment-btn">💬 Comment</button>
     </div>
   `;
-  feed.prepend(card);
+  postsContainer.prepend(card);
 
   card.querySelector(".like-btn").addEventListener("click", () => {
     socket.emit("like", { user: currentUser.name, postId: post._id });
@@ -63,7 +63,6 @@ function renderPost(post) {
   });
 }
 
-// Post creation
 postSubmit.addEventListener("click", async () => {
   const content = postContent.value.trim();
   if (!content && !postImage.files[0])
@@ -71,7 +70,6 @@ postSubmit.addEventListener("click", async () => {
   const formData = new FormData();
   formData.append("content", content);
   if (postImage.files[0]) formData.append("image", postImage.files[0]);
-
   const res = await fetch(`${API_URL}/api/posts`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
@@ -83,7 +81,6 @@ postSubmit.addEventListener("click", async () => {
   postImage.value = "";
 });
 
-// ================= CHAT =================
 const chatMessages = document.getElementById("chat-messages");
 const chatInput = document.getElementById("chat-input");
 const chatSend = document.getElementById("chat-send");
