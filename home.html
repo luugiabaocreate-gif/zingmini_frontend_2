@@ -3,15 +3,18 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>ZingMini Classic — Trang chủ</title>
+    <title>ZingMini Classic — Premium 2025</title>
 
-    <!-- Fonts + Icons -->
+    <!-- Fonts -->
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
       rel="stylesheet"
     />
 
+    <!-- Styles -->
     <link rel="stylesheet" href="style.css" />
+
+    <!-- socket.io -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   </head>
   <body>
@@ -50,7 +53,7 @@
             />
           </div>
           <h3 id="profileName">Người dùng</h3>
-          <div class="profile-meta" id="profileMeta">Chuyên gia Zing</div>
+          <div id="profileMeta" class="profile-meta">ZingMinier</div>
           <div class="profile-actions">
             <button class="btn small" id="editProfileBtn">Sửa thông tin</button>
             <button class="btn small" id="followBtn">Kết bạn</button>
@@ -68,7 +71,7 @@
         </div>
       </aside>
 
-      <!-- MIDDLE -->
+      <!-- CENTER FEED -->
       <section class="feedcol">
         <div class="card status-card glass">
           <textarea id="statusInput" placeholder="Đang nghĩ gì thế?"></textarea>
@@ -76,7 +79,9 @@
             <input type="file" id="imageInput" accept="image/*" />
             <div class="status-controls">
               <button class="btn primary" id="postBtn">Đăng bài</button>
-              <button class="btn" id="draftBtn">Lưu nháp</button>
+              <button class="btn" id="draftBtn" title="Lưu tạm">
+                Lưu nháp
+              </button>
             </div>
           </div>
         </div>
@@ -98,10 +103,10 @@
       </aside>
     </main>
 
-    <!-- CHAT POPUP -->
+    <!-- Chat container -->
     <div id="chatContainer"></div>
 
-    <!-- PROFILE EDIT MODAL -->
+    <!-- Profile Modal -->
     <div id="profileModal" class="modal" style="display: none">
       <div class="modal-card glass">
         <button class="modal-close" id="closeProfileModal">✕</button>
@@ -125,8 +130,32 @@
       </div>
     </div>
 
-    <!-- TOASTS -->
+    <!-- Toast wrapper -->
     <div id="toastWrapper" class="toast-wrapper"></div>
+
+    <!-- Template (hidden) -->
+    <template id="post-template">
+      <div class="post animate-pop">
+        <div class="post-header">
+          <img class="post-avatar" />
+          <div class="post-meta">
+            <div class="post-username"></div>
+            <div class="post-time"></div>
+          </div>
+          <div class="post-actions-right">
+            <button class="view-profile action-btn">Xem</button>
+          </div>
+        </div>
+        <div class="post-content"></div>
+        <div class="post-img-wrap"></div>
+        <div class="post-actions">
+          <button class="action-btn like-btn" data-count="0">❤ 0</button>
+          <button class="action-btn comment-toggle">💬 Bình luận</button>
+          <button class="action-btn share-btn">⤴ Chia sẻ</button>
+        </div>
+        <div class="comments" style="display: none"></div>
+      </div>
+    </template>
 
     <script src="script_home_pro.js"></script>
   </body>
