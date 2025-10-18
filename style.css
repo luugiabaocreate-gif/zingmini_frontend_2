@@ -1,4 +1,4 @@
-/* RESET */
+/* ================= RESET ================= */
 * {
   margin: 0;
   padding: 0;
@@ -6,46 +6,48 @@
   font-family: Arial, sans-serif;
 }
 
-/* ================= INDEX ================= */
-.index-container {
-  display: flex;
+/* ================= INDEX + BACKGROUND ================= */
+body {
+  margin: 0;
+  padding: 0;
   min-height: 100vh;
+  width: 100vw;
+  background-image: url("assets/logo.png"); /* background local */
+  background-size: cover;
+  background-position: center;
+  position: relative; /* để auth-box absolute */
+  font-family: Arial, sans-serif;
 }
-.index-left {
-  flex: 1;
-  background-color: #b3e6cc;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.index-left img {
-  max-width: 80%;
-  border-radius: 15px;
-}
-.index-right {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #e6fff2;
-}
+
+/* ================= KHUNG LOGIN / REGISTER ================= */
 .auth-box {
-  width: 300px;
-  padding: 20px;
-  background: #ccf0d6;
-  border: 2px solid #00aaff;
-  border-radius: 15px;
+  position: absolute;
+
+  /* Chiều rộng khung theo ảnh gốc */
+  width: calc(360 / 1920 * 100vw);
+  max-width: 360px; /* tránh quá to trên màn hình lớn */
+  padding: 40px;
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   text-align: center;
+
+  /* Vị trí khung trùng ảnh gốc */
+  top: calc(270 / 1080 * 100vh); /* khoảng cách từ trên */
+  left: 50%;
+  transform: translateX(-50%);
 }
+
 .auth-box input {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   margin: 10px 0;
   border-radius: 12px;
   border: 1px solid #00aaff;
 }
+
 .auth-box button {
-  padding: 10px;
+  padding: 12px;
   width: 100%;
   border: none;
   border-radius: 12px;
@@ -53,184 +55,37 @@
   color: #fff;
   font-weight: bold;
   cursor: pointer;
+  transition: 0.2s;
 }
+
 .auth-box button:hover {
   background: #0077cc;
 }
+
 .auth-box p {
   margin-top: 10px;
   font-size: 0.9rem;
 }
+
 .auth-box span {
   color: #007755;
   cursor: pointer;
 }
+
 .hidden {
   display: none;
 }
 
-/* ================= HOME ================= */
-header {
-  width: 100%;
-  padding: 10px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #00aaff;
-  border-radius: 0 0 15px 15px;
-  color: #fff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-header .logo {
-  font-size: 1.8rem;
-  font-weight: bold;
-}
-header nav a {
-  margin-left: 10px;
-  color: #fff;
-  text-decoration: none;
-}
-header nav a:hover {
-  text-decoration: underline;
-}
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .auth-box {
+    width: 80%; /* nhỏ lại trên mobile */
+    padding: 30px;
+    top: 20%; /* chỉnh cao hơn trên màn hình nhỏ */
+  }
 
-.container {
-  display: flex;
-  padding: 20px;
-  gap: 20px;
-}
-.sidebar-left,
-.sidebar-right {
-  width: 220px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.sidebar-left a,
-.sidebar-right a {
-  padding: 10px;
-  border-radius: 12px;
-  text-decoration: none;
-  color: #033d2e;
-  background: #b3e6cc;
-  transition: 0.2s;
-}
-.sidebar-left a:hover,
-.sidebar-right a:hover {
-  background: #80d8a6;
-}
-
-.feed {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-.post-card {
-  background: #ccf0d6;
-  padding: 15px;
-  border-radius: 15px;
-  border: 1px solid #00aaff;
-}
-#post-content {
-  width: 100%;
-  padding: 10px;
-  border-radius: 12px;
-  border: 1px solid #00aaff;
-  background: #e6fff2;
-  color: #033d2e;
-}
-#post-submit {
-  padding: 10px 15px;
-  border-radius: 12px;
-  border: none;
-  background: #00aaff;
-  color: #fff;
-  font-weight: bold;
-  cursor: pointer;
-}
-#post-submit:hover {
-  background: #0077cc;
-}
-#posts-container .post-card {
-  margin-top: 10px;
-  border-radius: 15px;
-  background: #ccf0d6;
-  border: 1px solid #00aaff;
-  padding: 10px;
-}
-
-/* CHAT BOX */
-.chat-box {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 300px;
-  max-height: 400px;
-  background: #b3e6cc;
-  border: 2px solid #00aaff;
-  border-radius: 15px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.chat-header {
-  padding: 10px;
-  font-weight: bold;
-  background: #00aaff;
-  color: #fff;
-  cursor: default;
-}
-.chat-messages {
-  flex: 1;
-  padding: 10px;
-  overflow-y: auto;
-}
-.chat-messages .message {
-  margin-bottom: 5px;
-  font-size: 0.9rem;
-}
-.chat-messages .timestamp {
-  font-size: 0.7rem;
-  color: #033d2e;
-  margin-left: 5px;
-}
-.chat-input {
-  display: flex;
-  gap: 5px;
-  padding: 10px;
-}
-.chat-input input {
-  flex: 1;
-  padding: 5px;
-  border-radius: 12px;
-  border: 1px solid #00aaff;
-}
-.chat-input button {
-  padding: 5px 10px;
-  border-radius: 12px;
-  border: none;
-  background: #00aaff;
-  color: #fff;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-/* RESPONSIVE */
-@media (max-width: 1024px) {
-  .container {
-    flex-direction: column;
+  .auth-box input,
+  .auth-box button {
     padding: 10px;
-  }
-  .sidebar-left,
-  .sidebar-right {
-    width: 100%;
-    flex-direction: row;
-    overflow-x: auto;
-  }
-  .sidebar-left a,
-  .sidebar-right a {
-    flex: 1;
-    text-align: center;
   }
 }
