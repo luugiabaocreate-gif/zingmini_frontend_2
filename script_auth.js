@@ -1,63 +1,95 @@
-// script_auth.js — phiên bản hoàn chỉnh, giữ nguyên hiệu ứng, chỉ fix API chuẩn
+// =================== TOAST ===================
+function showToast(message, type = "info") {
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.innerText = message;
+  document.getElementById("toast-container").appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add("fade-out");
+    toast.addEventListener("transitionend", () => toast.remove());
+  }, 2500);
+}
 
-const API_BASE = "https://zingmini-backend-2.onrender.com/api"; // ✅ Backend Render có /api
+// =================== FORM TOGGLE ===================
+const loginTab = document.getElementById("login-tab");
+const registerTab = document.getElementById("register-tab");
+const loginForm = document.getElementById("login-form");
+const registerForm = document.getElementById("register-form");
 
-document.addEventListener("DOMContentLoaded", () => {
-  const loginBtn = document.getElementById("loginBtn");
-  const registerBtn = document.getElementById("registerBtn");
+loginTab.addEventListener("click", () => {
+  loginTab.classList.add("active");
+  registerTab.classList.remove("active");
+  loginForm.classList.remove("hidden");
+  registerForm.classList.add("hidden");
+});
+registerTab.addEventListener("click", () => {
+  registerTab.classList.add("active");
+  loginTab.classList.remove("active");
+  registerForm.classList.remove("hidden");
+  loginForm.classList.add("hidden");
+});
 
-  // 🔹 Đăng nhập
-  loginBtn.addEventListener("click", async () => {
-    const email = document.getElementById("loginEmail").value.trim();
-    const password = document.getElementById("loginPassword").value.trim();
+// =================== LOGIN ===================
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("login-email").value;
+  const password = document.getElementById("login-password").value;
 
-    if (!email || !password) return alert("Vui lòng nhập đủ thông tin!");
-
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
+  try {
+    const res = await fetch(
+      "https://zingmini-backend-2.onrender.com/api/auth/login",
+      {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }), // ✅ Dùng đúng field backend yêu cầu
-      });
-
-      const data = await res.json();
-      if (!res.ok)
-        throw new Error(data.message || "Sai tài khoản hoặc mật khẩu");
-
+        body: JSON.stringify({ email, password }),
+      }
+    );
+    const data = await res.json();
+    if (res.ok) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-
-      alert("🎉 Đăng nhập thành công!");
-      window.location.href = "home.html";
-    } catch (err) {
-      alert("Lỗi đăng nhập: " + err.message);
+      showToast("Đăng nhập thành công", "success");
+      setTimeout(() => {
+        window.location.href = "home.html";
+      }, 500);
+    } else {
+      showToast(data.message || "Đăng nhập thất bại", "error");
     }
-  });
+  } catch (err) {
+    showToast("Lỗi mạng", "error");
+    console.error(err);
+  }
+});
 
-  // 🔹 Đăng ký
-  registerBtn.addEventListener("click", async () => {
-    const name = document.getElementById("registerName").value.trim();
-    const email = document.getElementById("registerEmail").value.trim();
-    const password = document.getElementById("registerPassword").value.trim();
+// =================== REGISTER ===================
+registerForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = document.getElementById("register-name").value;
+  const email = document.getElementById("register-email").value;
+  const password = document.getElementById("register-password").value;
 
-    if (!name || !email || !password)
-      return alert("Vui lòng nhập đầy đủ thông tin!");
-
-    try {
-      const res = await fetch(`${API_BASE}/auth/register`, {
+  try {
+    const res = await fetch(
+      "https://zingmini-backend-2.onrender.com/api/auth/register",
+      {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }), // ✅ Chuẩn theo backend
-      });
-
-      const data = await res.json();
-      if (!res.ok)
-        throw new Error(data.message || "Không thể đăng ký tài khoản");
-
-      alert("💜 Đăng ký thành công! Hãy đăng nhập nhé ❤️");
-      switchToLogin(); // chuyển về form đăng nhập (hiệu ứng giữ nguyên)
-    } catch (err) {
-      alert("Lỗi đăng ký: " + err.message);
+        body: JSON.stringify({ name, email, password }),
+      }
+    );
+    const data = await res.json();
+    if (res.ok) {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      showToast("Đăng ký thành công", "success");
+      setTimeout(() => {
+        window.location.href = "home.html";
+      }, 500);
+    } else {
+      showToast(data.message || "Đăng ký thất bại", "error");
     }
-  });
+  } catch (err) {
+    showToast("Lỗi mạng", "error");
+    console.error(err);
+  }
 });

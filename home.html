@@ -1,161 +1,54 @@
 <!DOCTYPE html>
 <html lang="vi">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>ZingMini Classic — Premium 2025</title>
-
-    <!-- Fonts -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
-      rel="stylesheet"
-    />
-
-    <!-- Styles -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZingMini - Home</title>
     <link rel="stylesheet" href="style.css" />
-
-    <!-- socket.io -->
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   </head>
   <body>
-    <header class="topbar">
-      <div class="left">
-        <div class="logo">🌈 ZingMini Classic</div>
-        <div class="search">
-          <input id="globalSearch" placeholder="Tìm bạn, bài viết..." />
-        </div>
+    <div class="header">
+      <h1>ZingMini</h1>
+      <div class="user-menu">
+        <span id="current-user"></span>
+        <button id="logout-btn">Đăng xuất</button>
       </div>
+    </div>
 
-      <div class="right">
-        <div class="top-actions">
-          <div class="notif" id="notifBtn" title="Thông báo">
-            🔔
-            <span id="notifBadge" class="badge" style="display: none">0</span>
-          </div>
-          <button class="nav-btn" id="editProfileHeaderBtn">
-            Sửa thông tin
-          </button>
-          <button class="nav-btn" id="logoutBtn">Đăng xuất</button>
-        </div>
+    <div class="stories-container">
+      <div id="stories" class="stories-scroll">
+        <!-- Stories sẽ được load JS -->
       </div>
-    </header>
+    </div>
 
-    <main class="container">
-      <!-- LEFT -->
-      <aside class="leftcol">
-        <div class="card profile-card glass" id="profileCard">
-          <div class="avatar-wrap">
-            <img
-              id="profileAvatar"
-              class="avatar-large"
-              src="https://i.imgur.com/AVT0a.png"
-              alt="Avatar"
-            />
-          </div>
-          <h3 id="profileName">Người dùng</h3>
-          <div id="profileMeta" class="profile-meta">ZingMinier</div>
-          <div class="profile-actions">
-            <button class="btn small" id="editProfileBtn">Sửa thông tin</button>
-            <button class="btn small" id="followBtn">Kết bạn</button>
-          </div>
-        </div>
+    <div class="feed-container">
+      <div id="new-post" class="new-post">
+        <textarea id="post-content" placeholder="Bạn đang nghĩ gì?"></textarea>
+        <input type="file" id="post-image" multiple accept="image/*,video/*" />
+        <button id="post-btn">Đăng</button>
+      </div>
+      <div id="feed">
+        <!-- Post sẽ được load JS -->
+      </div>
+    </div>
 
-        <div class="card glass">
-          <h3>🟢 Ai đang online</h3>
-          <ul id="friendsList" class="friends-list"></ul>
+    <div class="chat-container">
+      <div id="chat-box">
+        <div id="messages"></div>
+        <div class="chat-input">
+          <textarea id="chat-input" placeholder="Gửi tin nhắn..."></textarea>
+          <button id="emoji-btn">😊</button>
+          <button id="send-btn">Gửi</button>
         </div>
-
-        <div class="card glass">
-          <h3>📸 Story</h3>
-          <div id="storyBox" class="stories"></div>
-        </div>
-      </aside>
-
-      <!-- CENTER FEED -->
-      <section class="feedcol">
-        <div class="card status-card glass">
-          <textarea id="statusInput" placeholder="Đang nghĩ gì thế?"></textarea>
-          <div class="status-row">
-            <input type="file" id="imageInput" accept="image/*" />
-            <div class="status-controls">
-              <button class="btn primary" id="postBtn">Đăng bài</button>
-              <button class="btn" id="draftBtn" title="Lưu tạm">
-                Lưu nháp
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div id="feed" class="card feed glass"></div>
-      </section>
-
-      <!-- RIGHT -->
-      <aside class="rightcol">
-        <div class="card glass">
-          <h3>👥 Gợi ý kết bạn</h3>
-          <div id="suggestBox" class="suggest-list"></div>
-        </div>
-
-        <div class="card glass">
-          <h3>🎮 Game</h3>
-          <div id="gameList" class="game-list"></div>
-        </div>
-      </aside>
-    </main>
-
-    <!-- Chat container -->
-    <div id="chatContainer"></div>
-
-    <!-- Profile Modal -->
-    <div id="profileModal" class="modal" style="display: none">
-      <div class="modal-card glass">
-        <button class="modal-close" id="closeProfileModal">✕</button>
-        <h3>Sửa thông tin</h3>
-        <div class="form-row">
-          <label>Họ & Tên</label>
-          <input id="editName" />
-        </div>
-        <div class="form-row">
-          <label>Email</label>
-          <input id="editEmail" disabled />
-        </div>
-        <div class="form-row">
-          <label>Avatar (URL)</label>
-          <input id="editAvatar" />
-        </div>
-        <div style="display: flex; gap: 8px; margin-top: 10px">
-          <button class="btn primary" id="saveProfileBtn">Lưu</button>
-          <button class="btn" id="cancelProfileBtn">Hủy</button>
+        <div id="emoji-picker" class="hidden">
+          <!-- Emoji + GIF picker JS -->
         </div>
       </div>
     </div>
 
-    <!-- Toast wrapper -->
-    <div id="toastWrapper" class="toast-wrapper"></div>
-
-    <!-- Template (hidden) -->
-    <template id="post-template">
-      <div class="post animate-pop">
-        <div class="post-header">
-          <img class="post-avatar" />
-          <div class="post-meta">
-            <div class="post-username"></div>
-            <div class="post-time"></div>
-          </div>
-          <div class="post-actions-right">
-            <button class="view-profile action-btn">Xem</button>
-          </div>
-        </div>
-        <div class="post-content"></div>
-        <div class="post-img-wrap"></div>
-        <div class="post-actions">
-          <button class="action-btn like-btn" data-count="0">❤ 0</button>
-          <button class="action-btn comment-toggle">💬 Bình luận</button>
-          <button class="action-btn share-btn">⤴ Chia sẻ</button>
-        </div>
-        <div class="comments" style="display: none"></div>
-      </div>
-    </template>
+    <div id="notifications" class="notifications-container">
+      <!-- Notifications realtime -->
+    </div>
 
     <script src="script_home_pro.js"></script>
   </body>
