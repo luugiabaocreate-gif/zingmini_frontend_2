@@ -1,4 +1,4 @@
-const API_URL = "https://your-backend-domain.com";
+const API_URL = "https://zingmini-backend-2.onrender.com";
 
 const loginForm = document.getElementById("login-form");
 const registerForm = document.getElementById("register-form");

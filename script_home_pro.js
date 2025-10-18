@@ -1,6 +1,6 @@
 import { io } from "https://cdn.socket.io/4.7.2/socket.io.esm.min.js";
 
-const API_URL = "https://your-backend-domain.com";
+const API_URL = "https://zingmini-backend-2.onrender.com";
 const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 const token = localStorage.getItem("token");
 
@@ -11,10 +11,6 @@ const socket = io(API_URL, { auth: { token } });
 const chatMessages = document.getElementById("chat-messages");
 const chatInput = document.getElementById("chat-input");
 const chatSend = document.getElementById("chat-send");
-const feed = document.querySelector(".feed");
-const postContent = document.getElementById("post-content");
-const postImage = document.getElementById("post-image");
-const postSubmit = document.getElementById("post-submit");
 
 function addChatMessage(user, text) {
   const div = document.createElement("div");
@@ -33,13 +29,22 @@ chatSend.addEventListener("click", () => {
 
 socket.on("chat", (msg) => addChatMessage(msg.user, msg.text));
 
+const feed = document.querySelector(".feed");
+const postContent = document.getElementById("post-content");
+const postImage = document.getElementById("post-image");
+const postSubmit = document.getElementById("post-submit");
+
 async function loadPosts() {
-  const res = await fetch(`${API_URL}/api/posts`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const posts = await res.json();
-  feed.querySelectorAll(".post-card.dynamic").forEach((el) => el.remove());
-  posts.forEach((post) => renderPost(post));
+  try {
+    const res = await fetch(`${API_URL}/api/posts`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const posts = await res.json();
+    feed.querySelectorAll(".post-card.dynamic").forEach((el) => el.remove());
+    posts.forEach((post) => renderPost(post));
+  } catch (err) {
+    console.error("Load posts error:", err);
+  }
 }
 
 function renderPost(post) {
@@ -85,6 +90,7 @@ postSubmit.addEventListener("click", async () => {
   const content = postContent.value.trim();
   const file = postImage.files[0];
   if (!content && !file) return alert("Nhập nội dung hoặc chọn ảnh!");
+
   const formData = new FormData();
   formData.append("content", content);
   if (file) formData.append("image", file);

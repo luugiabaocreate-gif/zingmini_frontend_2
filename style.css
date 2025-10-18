@@ -7,57 +7,50 @@
 }
 
 body {
-  background: #0d1117;
+  background-color: #0d1117;
   color: #c9d1d9;
-  transition: 0.3s;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
+/* ===================== LIGHT MODE ===================== */
 body.light-mode {
-  background: #f5f5f5;
-  color: #0d1117;
+  background-color: #f5f5f5;
+  color: #111;
 }
 
 /* ===================== HEADER ===================== */
 header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background: #0d1117;
-  border-bottom: 1px solid #161b22;
+  width: 100%;
+  padding: 10px 20px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
-  z-index: 1000;
+  align-items: center;
+  background: #161b22;
+  border-bottom: 1px solid #21262d;
 }
 
 body.light-mode header {
   background: #fff;
-  border-color: #ccc;
+  border-bottom: 1px solid #ccc;
 }
 
 header .logo {
-  color: #0ff;
+  font-size: 1.8rem;
   font-weight: bold;
-  font-size: 1.5rem;
+  color: #0ff;
 }
 
 header nav a {
-  color: #c9d1d9;
-  margin-left: 15px;
+  margin: 0 10px;
+  color: #0ff;
   text-decoration: none;
-  font-weight: 500;
-  transition: 0.2s;
+  font-weight: bold;
 }
 
 body.light-mode header nav a {
-  color: #0d1117;
-}
-
-header nav a:hover {
-  color: #0ff;
+  color: #0077cc;
 }
 
 .toggle-theme {
@@ -69,108 +62,124 @@ header nav a:hover {
 /* ===================== CONTAINER ===================== */
 .container {
   display: flex;
-  justify-content: space-between;
-  margin-top: 70px;
-  padding: 10px 20px;
+  padding: 20px;
+  gap: 20px;
 }
 
-/* ===================== SIDEBAR ===================== */
+body.light-mode .container {
+  color: #111;
+}
+
+/* ===================== SIDEBARS ===================== */
 .sidebar-left,
 .sidebar-right {
   width: 220px;
   display: flex;
   flex-direction: column;
+  gap: 10px;
 }
 
 .sidebar-left a,
 .sidebar-right a {
   padding: 10px;
-  margin-bottom: 5px;
-  color: #c9d1d9;
-  text-decoration: none;
   border-radius: 5px;
+  text-decoration: none;
+  color: #0ff;
+  background: #161b22;
   transition: 0.2s;
 }
 
 body.light-mode .sidebar-left a,
 body.light-mode .sidebar-right a {
-  color: #0d1117;
+  background: #e5e5e5;
+  color: #0077cc;
 }
 
 .sidebar-left a:hover,
 .sidebar-right a:hover {
-  background: #0ff2;
-  color: #0ff;
+  background: #0ff;
+  color: #0d1117;
+}
+
+body.light-mode .sidebar-left a:hover,
+body.light-mode .sidebar-right a:hover {
+  background: #0077cc;
+  color: #fff;
 }
 
 /* ===================== FEED ===================== */
 .feed {
   flex: 1;
-  margin: 0 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-/* ===================== POST CARD ===================== */
 .post-card {
   background: #161b22;
-  border: 1px solid #0ff3;
+  padding: 15px;
   border-radius: 10px;
-  margin-bottom: 20px;
-  padding: 10px;
-  transition: 0.3s;
+  border: 1px solid #21262d;
 }
 
 body.light-mode .post-card {
   background: #fff;
-  border-color: #0ff3;
+  border: 1px solid #ccc;
 }
 
-.post-card .post-header {
+.post-card textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #0ff;
+  background: #0d1117;
+  color: #c9d1d9;
+}
+
+body.light-mode .post-card textarea {
+  background: #f5f5f5;
+  color: #111;
+  border: 1px solid #0077cc;
+}
+
+.post-card img {
+  max-width: 100%;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.post-header {
   display: flex;
   align-items: center;
+  gap: 10px;
   margin-bottom: 10px;
 }
 
-.post-card .avatar {
+.post-header .avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  margin-right: 10px;
 }
 
-.post-card .username {
-  font-weight: bold;
-  color: #0ff;
-}
-
-body.light-mode .post-card .username {
-  color: #0d1117;
-}
-
-.post-card .post-content img {
-  max-width: 100%;
-  border-radius: 5px;
-  margin-top: 10px;
-}
-
-.post-card .post-actions {
+.post-actions {
   display: flex;
+  gap: 10px;
   margin-top: 10px;
 }
 
-.post-card .post-actions button {
-  background: #0ff2;
-  color: #0d1117;
-  border: none;
+.post-actions button {
   padding: 5px 10px;
-  margin-right: 5px;
   border-radius: 5px;
+  border: none;
   cursor: pointer;
+  background: #0ff;
+  color: #0d1117;
   font-weight: bold;
   transition: 0.2s;
 }
 
-.post-card .post-actions button:hover {
-  background: #0ff4;
+.post-actions button:hover {
+  background: #00e0ff;
 }
 
 /* ===================== CHAT BOX ===================== */
@@ -181,26 +190,29 @@ body.light-mode .post-card .username {
   width: 300px;
   max-height: 400px;
   background: #161b22;
-  border: 1px solid #0ff3;
+  border: 1px solid #0ff;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  z-index: 1001;
 }
 
 body.light-mode .chat-box {
   background: #fff;
-  border-color: #0ff3;
+  border: 1px solid #0077cc;
 }
 
 .chat-header {
-  background: #0ff;
-  color: #0d1117;
   padding: 10px;
   font-weight: bold;
-  display: flex;
-  justify-content: space-between;
+  background: #0d1117;
+  color: #0ff;
+  cursor: default;
+}
+
+body.light-mode .chat-header {
+  background: #0077cc;
+  color: #fff;
 }
 
 .chat-messages {
@@ -209,22 +221,25 @@ body.light-mode .chat-box {
   overflow-y: auto;
 }
 
-.message {
-  margin-bottom: 5px;
-}
-
 .chat-input {
   display: flex;
-  padding: 5px;
-  border-top: 1px solid #0ff3;
+  gap: 5px;
+  padding: 10px;
 }
 
 .chat-input input {
   flex: 1;
   padding: 5px;
   border-radius: 5px;
-  border: none;
-  margin-right: 5px;
+  border: 1px solid #0ff;
+  background: #0d1117;
+  color: #c9d1d9;
+}
+
+body.light-mode .chat-input input {
+  border: 1px solid #0077cc;
+  background: #fff;
+  color: #111;
 }
 
 .chat-input button {
@@ -233,40 +248,83 @@ body.light-mode .chat-box {
   border: none;
   background: #0ff;
   color: #0d1117;
-  cursor: pointer;
   font-weight: bold;
+  cursor: pointer;
 }
 
-.chat-input button:hover {
-  background: #0ff4;
-}
-
-/* ===================== FORM CARD ===================== */
+/* ===================== LOGIN/REGISTER FORM ===================== */
 .form-card {
   background: #161b22;
-  border: 1px solid #0ff3;
-  border-radius: 10px;
   padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #0ff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   width: 300px;
 }
 
 body.light-mode .form-card {
   background: #fff;
-  border-color: #0ff3;
+  border: 1px solid #0077cc;
+}
+
+.form-card input {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #0ff;
+  background: #0d1117;
+  color: #c9d1d9;
+}
+
+body.light-mode .form-card input {
+  background: #fff;
+  color: #111;
+  border: 1px solid #0077cc;
+}
+
+.form-card button {
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
+  background: #0ff;
+  color: #0d1117;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.form-card button:hover {
+  background: #00e0ff;
 }
 
 .hidden {
   display: none;
 }
 
+.link {
+  color: #0ff;
+  cursor: pointer;
+}
+
+body.light-mode .link {
+  color: #0077cc;
+}
+
 /* ===================== RESPONSIVE ===================== */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .container {
     flex-direction: column;
+    padding: 10px;
   }
   .sidebar-left,
   .sidebar-right {
     width: 100%;
-    margin-bottom: 10px;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+  .sidebar-left a,
+  .sidebar-right a {
+    flex: 1;
+    text-align: center;
   }
 }
