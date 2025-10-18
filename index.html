@@ -7,13 +7,11 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <!-- ===================== HEADER ===================== -->
     <header>
       <div class="logo">ZingMini</div>
       <div class="toggle-theme" id="theme-toggle">☀️/🌙</div>
     </header>
 
-    <!-- ===================== MAIN CONTENT ===================== -->
     <div
       class="container"
       style="
@@ -23,122 +21,50 @@
         min-height: 80vh;
       "
     >
-      <!-- LOGIN FORM -->
       <form id="login-form" class="form-card">
-        <h2 style="margin-bottom: 15px; color: #0ff">Đăng nhập</h2>
-        <input
-          type="text"
-          id="login-username"
-          placeholder="Tên đăng nhập"
-          required
-          style="
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            width: 250px;
-            background: #161b22;
-          "
-        />
+        <h2>Đăng nhập</h2>
+        <input type="email" id="login-email" placeholder="Email" required />
         <input
           type="password"
           id="login-password"
           placeholder="Mật khẩu"
           required
-          style="
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            width: 250px;
-            background: #161b22;
-          "
         />
-        <button
-          type="submit"
-          style="
-            width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-            background: #0ff;
-            color: #0d1117;
-            font-weight: bold;
-          "
-        >
-          Đăng nhập
-        </button>
-        <p style="margin-top: 10px; font-size: 0.9rem; color: #cdd9e5">
-          Chưa có tài khoản?
-          <span
-            id="toggle-forms"
-            style="cursor: pointer; color: #0ff; text-decoration: underline"
-            >Đăng ký</span
-          >
+        <button type="submit">Đăng nhập</button>
+        <p>
+          Chưa có tài khoản? <span id="toggle-forms" class="link">Đăng ký</span>
         </p>
       </form>
 
-      <!-- REGISTER FORM -->
-      <form
-        id="register-form"
-        class="form-card hidden"
-        style="margin-top: 20px"
-      >
-        <h2 style="margin-bottom: 15px; color: #0ff">Đăng ký</h2>
-        <input
-          type="text"
-          id="reg-username"
-          placeholder="Tên đăng nhập"
-          required
-          style="
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            width: 250px;
-            background: #161b22;
-          "
-        />
+      <form id="register-form" class="form-card hidden">
+        <h2>Đăng ký</h2>
+        <input type="text" id="reg-username" placeholder="Họ tên" required />
+        <input type="email" id="reg-email" placeholder="Email" required />
         <input
           type="password"
           id="reg-password"
           placeholder="Mật khẩu"
           required
-          style="
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            width: 250px;
-            background: #161b22;
-          "
         />
-        <button
-          type="submit"
-          style="
-            width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-            background: #0ff;
-            color: #0d1117;
-            font-weight: bold;
-          "
-        >
-          Đăng ký
-        </button>
-        <p style="margin-top: 10px; font-size: 0.9rem; color: #cdd9e5">
-          Đã có tài khoản?
-          <span
-            id="toggle-forms"
-            style="cursor: pointer; color: #0ff; text-decoration: underline"
-            >Đăng nhập</span
-          >
+        <button type="submit">Đăng ký</button>
+        <p>
+          Đã có tài khoản? <span id="toggle-forms" class="link">Đăng nhập</span>
         </p>
       </form>
     </div>
 
-    <script src="script_auth.js"></script>
-
-    <!-- ===================== LIGHT/DARK MODE ===================== -->
+    <script src="script_auth.js" type="module"></script>
     <script>
       const themeToggle = document.getElementById("theme-toggle");
-      themeToggle.addEventListener("click", () => {
-        document.body.classList.toggle("light-mode");
+      themeToggle.addEventListener("click", () =>
+        document.body.classList.toggle("light-mode")
+      );
+
+      document.querySelectorAll("#toggle-forms").forEach((el) => {
+        el.addEventListener("click", () => {
+          document.getElementById("login-form").classList.toggle("hidden");
+          document.getElementById("register-form").classList.toggle("hidden");
+        });
       });
     </script>
   </body>

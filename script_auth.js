@@ -1,66 +1,45 @@
-// ===================== script_auth.js =====================
+const API_URL = "https://your-backend-domain.com";
 
-// Lấy DOM
 const loginForm = document.getElementById("login-form");
 const registerForm = document.getElementById("register-form");
-const toggleForms = document.getElementById("toggle-forms");
 
-// Chuyển giữa login và register
-toggleForms.addEventListener("click", () => {
-  loginForm.classList.toggle("hidden");
-  registerForm.classList.toggle("hidden");
-});
-
-// Demo lưu user trong localStorage
-function getUsers() {
-  return JSON.parse(localStorage.getItem("users") || "[]");
-}
-
-function saveUser(user) {
-  const users = getUsers();
-  users.push(user);
-  localStorage.setItem("users", JSON.stringify(users));
-}
-
-// ===================== REGISTER =====================
-registerForm.addEventListener("submit", (e) => {
+loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const username = document.getElementById("reg-username").value.trim();
-  const password = document.getElementById("reg-password").value;
-
-  if (!username || !password) {
-    alert("Vui lòng điền đầy đủ thông tin!");
-    return;
-  }
-
-  const users = getUsers();
-  if (users.find((u) => u.username === username)) {
-    alert("Tên đăng nhập đã tồn tại!");
-    return;
-  }
-
-  saveUser({ username, password });
-  alert("Đăng ký thành công! Bạn có thể đăng nhập ngay.");
-  registerForm.reset();
-  loginForm.classList.remove("hidden");
-  registerForm.classList.add("hidden");
-});
-
-// ===================== LOGIN =====================
-loginForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const username = document.getElementById("login-username").value.trim();
+  const email = document.getElementById("login-email").value.trim();
   const password = document.getElementById("login-password").value;
-
-  const users = getUsers();
-  const user = users.find(
-    (u) => u.username === username && u.password === password
-  );
-
-  if (user) {
-    localStorage.setItem("currentUser", JSON.stringify(user));
+  try {
+    const res = await fetch(`${API_URL}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("currentUser", JSON.stringify(data.user));
     window.location.href = "home.html";
-  } else {
-    alert("Tên đăng nhập hoặc mật khẩu không đúng!");
+  } catch (err) {
+    alert(err.message);
+  }
+});
+
+registerForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = document.getElementById("reg-username").value.trim();
+  const email = document.getElementById("reg-email").value.trim();
+  const password = document.getElementById("reg-password").value;
+  try {
+    const res = await fetch(`${API_URL}/api/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("currentUser", JSON.stringify(data.user));
+    window.location.href = "home.html";
+  } catch (err) {
+    alert(err.message);
   }
 });

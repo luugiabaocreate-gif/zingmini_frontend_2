@@ -1,73 +1,116 @@
-// ===================== script_home_pro.js =====================
+import { io } from "https://cdn.socket.io/4.7.2/socket.io.esm.min.js";
 
-// Kiểm tra user đã login chưa
+const API_URL = "https://your-backend-domain.com";
 const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-if (!currentUser) {
-  window.location.href = "index.html";
-}
+const token = localStorage.getItem("token");
 
-// ===================== FEED =====================
-// Thêm username vào bài viết (nếu muốn)
-document.querySelectorAll(".post-card .username").forEach((el) => {
-  el.innerText += ` (${currentUser.username})`;
-});
+if (!currentUser || !token) window.location.href = "index.html";
 
-// Like/Comment demo
-document.querySelectorAll(".post-actions button").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    if (btn.innerText === "Like") {
-      btn.style.color = "#0ff";
-    } else if (btn.innerText === "Comment") {
-      const comment = prompt("Nhập bình luận của bạn:");
-      if (comment) {
-        alert(`Bạn đã bình luận: ${comment}`);
-      }
-    } else if (btn.innerText === "Share") {
-      alert("Đã share bài viết!");
-    }
-  });
-});
+const socket = io(API_URL, { auth: { token } });
 
-// ===================== CHAT REALTIME DEMO =====================
-const chatBox = document.getElementById("chat-box");
 const chatMessages = document.getElementById("chat-messages");
 const chatInput = document.getElementById("chat-input");
 const chatSend = document.getElementById("chat-send");
-const chatClose = document.getElementById("chat-close");
+const feed = document.querySelector(".feed");
+const postContent = document.getElementById("post-content");
+const postImage = document.getElementById("post-image");
+const postSubmit = document.getElementById("post-submit");
 
-// Đóng/Mở chat
-chatClose.addEventListener("click", () => {
-  chatBox.style.display = "none";
-});
-chatBox.addEventListener("click", () => {
-  chatBox.style.display = "flex";
-});
-
-// Gửi tin nhắn
-chatSend.addEventListener("click", sendMessage);
-chatInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") sendMessage();
-});
-
-function sendMessage() {
-  const msg = chatInput.value.trim();
-  if (!msg) return;
-
-  // Thêm tin nhắn của user vào chat box
+function addChatMessage(user, text) {
   const div = document.createElement("div");
   div.classList.add("message");
-  div.innerText = `${currentUser.username}: ${msg}`;
+  div.innerText = `${user}: ${text}`;
   chatMessages.appendChild(div);
-
-  chatInput.value = "";
   chatMessages.scrollTop = chatMessages.scrollHeight;
-
-  // Demo bot trả lời
-  setTimeout(() => {
-    const botDiv = document.createElement("div");
-    botDiv.classList.add("message");
-    botDiv.innerText = `ZingMini Bot: Bạn vừa gửi "${msg}"`;
-    chatMessages.appendChild(botDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }, 1000);
 }
+
+chatSend.addEventListener("click", () => {
+  const msg = chatInput.value.trim();
+  if (!msg) return;
+  socket.emit("chat", { user: currentUser.name, text: msg });
+  chatInput.value = "";
+});
+
+socket.on("chat", (msg) => addChatMessage(msg.user, msg.text));
+
+async function loadPosts() {
+  const res = await fetch(`${API_URL}/api/posts`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const posts = await res.json();
+  feed.querySelectorAll(".post-card.dynamic").forEach((el) => el.remove());
+  posts.forEach((post) => renderPost(post));
+}
+
+function renderPost(post) {
+  const card = document.createElement("div");
+  card.classList.add("post-card", "dynamic");
+  card.innerHTML = `
+    <div class="post-header">
+      <img src="https://i.pravatar.cc/40?img=${Math.floor(
+        Math.random() * 70
+      )}" class="avatar">
+      <span class="username">${post.user.name}</span>
+    </div>
+    <div class="post-content">
+      <p>${post.content}</p>
+      ${
+        post.image ? `<img src="${API_URL}${post.image}" alt="post image">` : ""
+      }
+    </div>
+    <div class="post-actions">
+      <button data-id="${post._id}" class="like-btn">Like</button>
+      <button data-id="${post._id}" class="comment-btn">Comment</button>
+    </div>
+  `;
+  feed.appendChild(card);
+
+  card
+    .querySelector(".like-btn")
+    .addEventListener("click", () =>
+      socket.emit("like", { user: currentUser.name, postId: post._id })
+    );
+  card.querySelector(".comment-btn").addEventListener("click", () => {
+    const text = prompt("Nhập bình luận:");
+    if (text)
+      socket.emit("comment", {
+        user: currentUser.name,
+        postId: post._id,
+        text,
+      });
+  });
+}
+
+postSubmit.addEventListener("click", async () => {
+  const content = postContent.value.trim();
+  const file = postImage.files[0];
+  if (!content && !file) return alert("Nhập nội dung hoặc chọn ảnh!");
+  const formData = new FormData();
+  formData.append("content", content);
+  if (file) formData.append("image", file);
+
+  try {
+    const res = await fetch(`${API_URL}/api/posts`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    const newPost = await res.json();
+    postContent.value = "";
+    postImage.value = "";
+    renderPost(newPost);
+    socket.emit("new-post", { post: newPost });
+  } catch (err) {
+    alert("Lỗi khi tạo bài: " + err.message);
+  }
+});
+
+socket.on("like", (data) =>
+  console.log(`${data.user} liked post ${data.postId}`)
+);
+socket.on("comment", (data) =>
+  console.log(`${data.user} commented: "${data.text}" on post ${data.postId}`)
+);
+socket.on("new-post", (data) => renderPost(data.post));
+
+loadPosts();
