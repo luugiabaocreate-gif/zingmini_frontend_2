@@ -1,25 +1,21 @@
 const API_URL = "https://zingmini-backend-2.onrender.com";
 
-// ✅ Tạo socket với fallback để Render hoạt động ổn định
+// ✅ Khởi tạo socket ổn định với Render
 const socket = io(API_URL, {
   transports: ["websocket", "polling"],
 });
 
-// Log trạng thái kết nối
-socket.on("connect", () => {
-  console.log("✅ Socket connected:", socket.id);
-});
-socket.on("connect_error", (err) => {
-  console.error("❌ Socket connect error:", err.message);
-});
+// Kết nối socket log trạng thái
+socket.on("connect", () => console.log("✅ Socket connected:", socket.id));
+socket.on("connect_error", (err) =>
+  console.error("❌ Socket connect error:", err.message)
+);
 
 // Khi có tin nhắn realtime gửi đến
-socket.on("chat", (msg) => {
-  addMessageToChat(msg);
-});
+socket.on("chat", (msg) => addMessageToChat(msg));
 
 // ======================
-// 🧩 Load bài đăng mới nhất lên đầu
+// 🧩 Load bài đăng (mới nhất lên đầu)
 // ======================
 async function loadFeed() {
   try {
@@ -28,9 +24,8 @@ async function loadFeed() {
     const feed = document.getElementById("feed");
     feed.innerHTML = "";
 
-    // ✅ Sắp xếp mới nhất trước
+    // ✅ Mới nhất trước
     data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
     data.forEach((p) => addPostToFeed(p, false));
   } catch (err) {
     console.error("Lỗi tải bài viết:", err);
@@ -38,24 +33,34 @@ async function loadFeed() {
 }
 
 // ======================
-// 🧩 Đăng bài
+// 🧩 Hàm đăng bài (gọi trực tiếp từ nút trong HTML)
 // ======================
-async function handlePostSubmit(e) {
-  e.preventDefault();
-  const content = document.getElementById("postContent").value.trim();
-  if (!content) return;
-
+async function createPost() {
+  const content = document.getElementById("statusInput").value.trim();
+  const imageInput = document.getElementById("imageInput");
   const user = JSON.parse(localStorage.getItem("user"));
+
   if (!user) return alert("Bạn cần đăng nhập để đăng bài!");
+  if (!content && !imageInput.files.length)
+    return alert("Hãy viết gì đó hoặc chọn ảnh!");
+
+  const formData = new FormData();
+  formData.append("content", content);
+  formData.append("userId", user._id);
+  if (imageInput.files[0]) {
+    formData.append("image", imageInput.files[0]);
+  }
 
   try {
     const res = await fetch(`${API_URL}/api/posts`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content, userId: user._id }),
+      body: formData,
     });
     const post = await res.json();
-    document.getElementById("postContent").value = "";
+
+    // ✅ Xóa nội dung nhập
+    document.getElementById("statusInput").value = "";
+    imageInput.value = "";
 
     // ✅ Thêm bài mới lên đầu
     addPostToFeed(post, true);
@@ -72,12 +77,17 @@ function addPostToFeed(post, isNew = false) {
   const div = document.createElement("div");
   div.className = "post";
 
+  const imgPart = post.imageUrl
+    ? `<img src="${post.imageUrl}" class="post-img" alt="Ảnh bài viết"/>`
+    : "";
+
   div.innerHTML = `
     <div class="post-header">
-      <span class="username">${post.username || "Người dùng ẩn danh"}</span>
+      <span class="username">${post.username || "Ẩn danh"}</span>
       <span class="time">${new Date(post.createdAt).toLocaleString()}</span>
     </div>
-    <div class="post-content">${post.content}</div>
+    <div class="post-content">${post.content || ""}</div>
+    ${imgPart}
   `;
 
   if (isNew) {
@@ -99,13 +109,12 @@ function addMessageToChat(msg) {
     <strong>${msg.user || "Ẩn danh"}:</strong> ${msg.text}
   `;
 
-  // ✅ Hiển thị tin nhắn mới nhất ở cuối
   chatBody.appendChild(div);
-  chatBody.scrollTop = chatBody.scrollHeight; // auto scroll
+  chatBody.scrollTop = chatBody.scrollHeight; // auto scroll xuống cuối
 }
 
 // ======================
-// Gửi tin nhắn
+// Gửi tin nhắn realtime
 // ======================
 function sendMessage() {
   const input = document.getElementById("chatInput");
@@ -117,24 +126,27 @@ function sendMessage() {
   };
   const msg = { user: user.username, text };
 
-  // Gửi realtime
-  socket.emit("chat", msg);
-
-  // Hiển thị luôn trên giao diện
-  addMessageToChat(msg);
+  socket.emit("chat", msg); // gửi lên server
+  addMessageToChat(msg); // hiển thị ngay tại client
 
   input.value = "";
 }
 
 // ======================
-// Khởi động ban đầu
+// Sự kiện DOM
 // ======================
 document.addEventListener("DOMContentLoaded", () => {
   loadFeed();
 
-  const postForm = document.getElementById("postForm");
-  if (postForm) postForm.addEventListener("submit", handlePostSubmit);
+  // Nút gửi chat realtime
+  const sendBtn = document.getElementById("sendBtn");
+  if (sendBtn) sendBtn.addEventListener("click", sendMessage);
 
-  const chatBtn = document.getElementById("chatSendBtn");
-  if (chatBtn) chatBtn.addEventListener("click", sendMessage);
+  // Nhấn Enter để gửi
+  const chatInput = document.getElementById("chatInput");
+  if (chatInput) {
+    chatInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+  }
 });
