@@ -60,6 +60,70 @@ setTimeout(() => {
   document.documentElement.style.transition = "";
 }, 360);
 
+// ---------------- Theme (persist to localStorage) ----------------
+// Add this right after your tiny theme transition block.
+(function initThemeToggle() {
+  const KEY = "zingmini_theme"; // localStorage key
+  // button ref (you already declared toggleThemeBtn earlier)
+  const btn = toggleThemeBtn || document.getElementById("toggle-theme");
+
+  // prefer dark if user OS prefers & no saved value
+  const systemPrefersDark =
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  // load saved or fallback
+  const saved = localStorage.getItem(KEY);
+  const initial = saved ? saved : systemPrefersDark ? "dark" : "light";
+
+  function applyTheme(theme) {
+    if (theme === "dark") {
+      document.body.classList.add("dark");
+      document.documentElement.classList.add("dark"); // in case some rules target html
+      if (btn) btn.setAttribute("aria-pressed", "true");
+      if (btn) btn.textContent = "🌞"; // sun = switch to light
+    } else {
+      document.body.classList.remove("dark");
+      document.documentElement.classList.remove("dark");
+      if (btn) btn.setAttribute("aria-pressed", "false");
+      if (btn) btn.textContent = "🌙"; // moon = switch to dark
+    }
+    try {
+      localStorage.setItem(KEY, theme);
+    } catch (e) {
+      /* ignore */
+    }
+  }
+
+  // initialize
+  applyTheme(initial);
+
+  // wire up button
+  if (btn) {
+    btn.addEventListener("click", (e) => {
+      const next = document.body.classList.contains("dark") ? "light" : "dark";
+      applyTheme(next);
+      // optional: dispatch event so other modules can react
+      window.dispatchEvent(
+        new CustomEvent("theme:changed", { detail: { theme: next } })
+      );
+    });
+  } else {
+    // If button not present, still allow toggle via keyboard shortcut (Ctrl+J) for dev convenience
+    window.addEventListener("keydown", (ev) => {
+      if (ev.ctrlKey && ev.key.toLowerCase() === "j") {
+        const next = document.body.classList.contains("dark")
+          ? "light"
+          : "dark";
+        applyTheme(next);
+        window.dispatchEvent(
+          new CustomEvent("theme:changed", { detail: { theme: next } })
+        );
+      }
+    });
+  }
+})();
+
 // ===== Socket.io init with token (auth + query fallback) =====
 let socket;
 try {
