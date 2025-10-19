@@ -664,3 +664,15 @@ window.__ZINGMINI__ = {
 };
 
 // All done
+// --- Chat auto-fix layout sync ---
+const observer = new MutationObserver(() => {
+  document.querySelectorAll(".chat-window .body").forEach((body) => {
+    // đảm bảo cuộn xuống cuối cùng mỗi khi có tin nhắn mới
+    body.scrollTop = body.scrollHeight;
+    // ép browser tính lại layout (tránh render chồng)
+    body.style.display = "none";
+    void body.offsetHeight; // force reflow
+    body.style.display = "";
+  });
+});
+observer.observe(document.body, { childList: true, subtree: true });
