@@ -840,3 +840,31 @@ document.querySelectorAll(".left-menu a").forEach((link) => {
     }
   });
 });
+// ===== MOBILE MENU TOGGLE =====
+document.addEventListener("DOMContentLoaded", () => {
+  // Thêm nút mở menu nếu chưa có
+  if (!document.getElementById("toggle-left")) {
+    const nav = document.querySelector("nav");
+    const leftBtn = document.createElement("span");
+    leftBtn.id = "toggle-left";
+    leftBtn.innerHTML = "☰";
+    nav.prepend(leftBtn);
+
+    leftBtn.addEventListener("click", () => {
+      document.querySelector(".left-menu")?.classList.toggle("active");
+    });
+  }
+
+  // Nút mở danh sách bạn bè bên phải
+  if (!document.getElementById("toggle-right")) {
+    const nav = document.querySelector("nav");
+    const rightBtn = document.createElement("span");
+    rightBtn.id = "toggle-right";
+    rightBtn.innerHTML = "💬";
+    nav.appendChild(rightBtn);
+
+    rightBtn.addEventListener("click", () => {
+      document.querySelector(".right-sidebar")?.classList.toggle("active");
+    });
+  }
+});
