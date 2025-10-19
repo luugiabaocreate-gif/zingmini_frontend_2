@@ -384,7 +384,7 @@ function isRecentSentEcho(chatId, text) {
   );
 }
 
-// Append message NEWEST ON TOP
+// Append message NEWEST AT BOTTOM (Messenger-style)
 function appendChatMessage(
   bodyEl,
   user,
@@ -395,12 +395,11 @@ function appendChatMessage(
   const el = document.createElement("div");
   el.className = `message ${cls}`;
   el.innerHTML = `<b>${escapeHtml(user)}:</b> ${escapeHtml(text)}`;
-  // insert at top
-  if (bodyEl.firstChild) bodyEl.insertBefore(el, bodyEl.firstChild);
-  else bodyEl.appendChild(el);
-  // ensure the top is visible
-  bodyEl.scrollTop = 0;
-  // if temporary flag, add subtle opacity and remove after confirmation (optional)
+  // append at bottom
+  bodyEl.appendChild(el);
+  // auto-scroll to bottom
+  bodyEl.scrollTop = bodyEl.scrollHeight;
+  // optional fade-in for temporary messages
   if (options.temporary) {
     el.style.opacity = "0.7";
     setTimeout(() => (el.style.opacity = "1"), 600);
