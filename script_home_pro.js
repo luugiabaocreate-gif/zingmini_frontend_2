@@ -299,11 +299,11 @@ function createPostNode(post) {
     likeBtn.textContent = "👍 • Bạn";
   });
 
-// === THÊM ĐOẠN NÀY SAU LIKE ===
-const commentBtn = div.querySelector(".comment-btn");
-commentBtn.addEventListener("click", () => {
-  openCommentBox(id);
-});
+  // === THÊM ĐOẠN NÀY SAU LIKE ===
+  const commentBtn = div.querySelector(".comment-btn");
+  commentBtn.addEventListener("click", () => {
+    openCommentBox(id);
+  });
 
   const img = div.querySelector("img[data-id]");
   if (img)
@@ -699,7 +699,9 @@ function openCommentBox(postId) {
   box.style.marginTop = "10px";
   box.innerHTML = `
     <div style="display:flex;gap:8px;align-items:center">
-      <img src="${currentUser.avatar || `https://i.pravatar.cc/36?u=${currentUser._id}`}" 
+      <img src="${
+        currentUser.avatar || `https://i.pravatar.cc/36?u=${currentUser._id}`
+      }" 
            style="width:36px;height:36px;border-radius:50%" />
       <input class="comment-input" placeholder="Viết bình luận..." 
              style="flex:1;padding:6px;border:1px solid #d7eefe;border-radius:8px"/>
@@ -727,10 +729,13 @@ function openCommentBox(postId) {
 
     // gửi về backend nếu có API
     try {
-      await apiFetch(`${API_URL}/api/comments`, {
+      await apiFetch(`${API_URL}/api/comments/${postId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId, text }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text }),
       });
     } catch (e) {
       console.warn("Comment save failed:", e);
