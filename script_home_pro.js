@@ -148,9 +148,9 @@ function renderPostsFromResponse(json) {
   }
 
   // ensure newest first (we will display with newest on top)
-  try {
-    posts = posts.slice().reverse();
-  } catch (e) {}
+  // try {
+  //  posts = posts.slice().reverse();
+  // } catch (e) {}
 
   postsContainer.innerHTML = "";
   if (!posts.length) {
