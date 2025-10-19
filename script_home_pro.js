@@ -347,23 +347,13 @@ function renderFriendsList() {
     friendsListEl.innerHTML = `<div class="small">Không có bạn online</div>`;
     return;
   }
-  // tạm thời chỉ hiển thị bạn online (có isOnline = true)
-  const onlineOnly = ids
-    .map((id) => friendPool[id])
-    .filter((f) => f && f.isOnline);
-
-  onlineOnly.slice(0, 12).forEach((u) => {
+  ids.slice(0, 12).forEach((id) => {
     const u = friendPool[id];
     const el = document.createElement("div");
     el.className = "s-item";
     el.innerHTML = `<img src="${escapeHtml(u.avatar)}" data-id="${escapeHtml(
       u._id
     )}" alt="${escapeHtml(u.name)}"/><div>${escapeHtml(u.name)}</div>`;
-    // thêm chấm xanh nhỏ báo online
-    const dot = document.createElement("div");
-    dot.className = "online-dot";
-    el.appendChild(dot);
-
     el.addEventListener("click", () => openChatWindow(u._id, u.name));
     friendsListEl.appendChild(el);
   });
