@@ -1,146 +1,201 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ZingMini — Home</title>
-  <link rel="stylesheet" href="style_home.css" />
-</head>
-<body class="zing-body">
-  <!-- TOPBAR (fixed) -->
-  <header class="zm-topbar" role="banner">
-    <div class="zm-left">
-      <div class="zm-logo-wrap" aria-hidden="true">
-        <div class="zm-logo-icon" aria-hidden="true">ZM</div>
-        <div class="zm-logo-txt">ZingMini</div>
-      </div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ZingMini - Mạng xã hội tuổi teen</title>
+    <link rel="stylesheet" href="style_home.css" />
+  </head>
+  <body class="zing-body">
+    <!-- TOPBAR (fixed) -->
+    <header class="zm-topbar" role="banner">
+      <div class="zm-left">
+        <div class="zm-logo-wrap" aria-hidden="true">
+          <div class="zm-logo-icon" aria-hidden="true">ZM</div>
+          <div class="zm-logo-txt">ZingMini</div>
+        </div>
 
-      <div class="zm-search" role="search">
-        <input id="nav-search" placeholder="Tìm kiếm trên ZingMini" aria-label="Tìm kiếm"/>
-      </div>
-    </div>
-
-    <nav class="zm-center" aria-label="Điều hướng chính">
-      <button class="nav-btn active" aria-pressed="true" title="Trang chủ">🏠</button>
-      <button class="nav-btn" title="Watch">🎞</button>
-      <button class="nav-btn" title="Groups">👥</button>
-      <button class="nav-btn" title="Marketplace">🛍️</button>
-    </nav>
-
-    <div class="zm-right">
-      <div id="nav-user" class="user-chip" role="button" title="Tài khoản">
-        <img id="nav-avatar" src="https://i.pravatar.cc/40" alt="avatar" />
-        <span id="nav-username">Bạn</span>
-      </div>
-
-      <div class="icon-wrap">
-        <button id="messenger-btn" class="icon-btn" title="Tin nhắn">💬</button>
-        <div id="messenger-dropdown" class="dropdown hidden" aria-hidden="true"></div>
-      </div>
-
-      <div class="icon-wrap">
-        <button id="notif-btn" class="icon-btn" title="Thông báo">🔔<span id="notif-badge" class="badge hidden">0</span></button>
-        <div id="notif-dropdown" class="dropdown hidden" aria-hidden="true"></div>
-      </div>
-
-      <div class="icon-wrap profile-wrap">
-        <button id="profile-btn" class="icon-btn" title="Menu">🧑</button>
-        <div id="profile-dropdown" class="dropdown hidden" aria-hidden="true">
-          <a href="#" id="view-profile">Xem trang cá nhân</a>
-          <a href="#" id="settings">Cài đặt</a>
-          <a href="#" id="logout-action" class="logout-link" style="color:#d00;font-weight:600;">Đăng xuất</a>
+        <div class="zm-search" role="search">
+          <input
+            id="nav-search"
+            placeholder="Tìm kiếm trên ZingMini"
+            aria-label="Tìm kiếm"
+          />
         </div>
       </div>
 
-      <button id="toggle-theme" class="icon-btn theme-btn" title="Chuyển giao diện">🌙</button>
-    </div>
-  </header>
+      <nav class="zm-center" aria-label="Điều hướng chính">
+        <button class="nav-btn active" aria-pressed="true" title="Trang chủ">
+          🏠
+        </button>
+        <button class="nav-btn" title="Watch">🎞</button>
+        <button class="nav-btn" title="Groups">👥</button>
+        <button class="nav-btn" title="Marketplace">🛍️</button>
+      </nav>
 
-  <!-- MAIN GRID -->
-  <main class="zm-container" role="main">
-    <!-- LEFT COLUMN -->
-    <aside class="left-col" aria-label="Sidebar trái">
-      <div class="card left-profile">
-        <div class="left-top">
-          <img id="left-avatar" src="https://i.pravatar.cc/48" alt="avatar"/>
-          <div>
-            <div id="left-username" class="name">Bạn</div>
-            <div class="small">Xem trang cá nhân</div>
+      <div class="zm-right">
+        <div id="nav-user" class="user-chip" role="button" title="Tài khoản">
+          <img id="nav-avatar" src="https://i.pravatar.cc/40" alt="avatar" />
+          <span id="nav-username">Bạn</span>
+        </div>
+
+        <div class="icon-wrap">
+          <button id="messenger-btn" class="icon-btn" title="Tin nhắn">
+            💬
+          </button>
+          <div
+            id="messenger-dropdown"
+            class="dropdown hidden"
+            aria-hidden="true"
+          ></div>
+        </div>
+
+        <div class="icon-wrap">
+          <button id="notif-btn" class="icon-btn" title="Thông báo">
+            🔔<span id="notif-badge" class="badge hidden">0</span>
+          </button>
+          <div
+            id="notif-dropdown"
+            class="dropdown hidden"
+            aria-hidden="true"
+          ></div>
+        </div>
+
+        <div class="icon-wrap profile-wrap">
+          <button id="profile-btn" class="icon-btn" title="Menu">🧑</button>
+          <div id="profile-dropdown" class="dropdown hidden" aria-hidden="true">
+            <a href="#" id="view-profile">Xem trang cá nhân</a>
+            <a href="#" id="settings">Cài đặt</a>
           </div>
         </div>
-        <nav class="left-menu">
-          <a href="#">Trang cá nhân</a>
-          <a href="#">Bảng tin</a>
-          <a href="#">Game</a>
-          <a href="#">Quản trị</a>
-          <a href="#">Cài đặt</a>
-        </nav>
-      </div>
 
-      <div class="card shortcuts">
-        <div class="section-title">Lối tắt</div>
-        <a href="#">Nhóm</a>
-        <a href="#">Sự kiện</a>
-        <a href="#">Fanpage</a>
-        <a href="#">Album ảnh</a>
-      </div>
-    </aside>
+        <!-- LOGOUT VISIBLE (góc phải) -->
+        <button id="logout-top" class="icon-btn" title="Đăng xuất">🔓</button>
 
-    <!-- CENTER COLUMN -->
-    <section class="center-col" aria-live="polite">
-      <div class="card create-post" aria-label="Tạo bài viết">
-        <div class="create-top">
-          <img id="create-avatar" class="avatar" src="https://i.pravatar.cc/48" alt="avatar"/>
-          <div class="create-wrap">
-            <!-- Story row ABOVE textarea -->
-            <div class="stories-inline" id="stories-row">
-              <div class="story"><img src="https://i.pravatar.cc/64?u=1" alt="Story"/> <div>Bạn</div></div>
-              <div class="story"><img src="https://i.pravatar.cc/64?u=2" alt="Story"/> <div>Người A</div></div>
-              <div class="story"><img src="https://i.pravatar.cc/64?u=3" alt="Story"/> <div>Người B</div></div>
-              <div class="story add-story">+</div>
+        <button
+          id="toggle-theme"
+          class="icon-btn theme-btn"
+          title="Chuyển giao diện"
+        >
+          🌙
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN GRID -->
+    <main class="zm-container" role="main">
+      <!-- LEFT COLUMN -->
+      <aside class="left-col" aria-label="Sidebar trái">
+        <div class="card left-profile">
+          <div class="left-top">
+            <img id="left-avatar" src="https://i.pravatar.cc/48" alt="avatar" />
+            <div>
+              <div id="left-username" class="name">Bạn</div>
+              <div class="small">Xem trang cá nhân</div>
             </div>
+          </div>
+          <nav class="left-menu">
+            <a href="#">Trang cá nhân</a>
+            <a href="#">Bảng tin</a>
+            <a href="#">Game</a>
+            <a href="#">Quản trị</a>
+            <a href="#">Cài đặt</a>
+          </nav>
+        </div>
 
-            <textarea id="post-content" placeholder="Bạn đang nghĩ gì?" rows="2"></textarea>
-            <div id="media-preview" class="preview" aria-hidden="true"></div>
+        <div class="card shortcuts">
+          <div class="section-title">Lối tắt</div>
+          <a href="#">Nhóm</a>
+          <a href="#">Sự kiện</a>
+          <a href="#">Fanpage</a>
+          <a href="#">Album ảnh</a>
+        </div>
+      </aside>
+
+      <!-- CENTER COLUMN -->
+      <section class="center-col" aria-live="polite">
+        <div class="card create-post" aria-label="Tạo bài viết">
+          <div class="create-top">
+            <img
+              id="create-avatar"
+              class="avatar"
+              src="https://i.pravatar.cc/48"
+              alt="avatar"
+            />
+            <div class="create-wrap">
+              <!-- Story row ABOVE textarea -->
+              <div class="stories-inline" id="stories-row">
+                <div class="story">
+                  <img src="https://i.pravatar.cc/64?u=1" alt="Story" />
+                  <div>Bạn</div>
+                </div>
+                <div class="story">
+                  <img src="https://i.pravatar.cc/64?u=2" alt="Story" />
+                  <div>Người A</div>
+                </div>
+                <div class="story">
+                  <img src="https://i.pravatar.cc/64?u=3" alt="Story" />
+                  <div>Người B</div>
+                </div>
+                <div class="story add-story">+</div>
+              </div>
+
+              <textarea
+                id="post-content"
+                placeholder="Bạn đang nghĩ gì?"
+                rows="2"
+              ></textarea>
+              <div id="media-preview" class="preview" aria-hidden="true"></div>
+            </div>
+          </div>
+
+          <div class="create-bottom">
+            <label class="file-btn"
+              >Ảnh/Video<input
+                id="post-image"
+                type="file"
+                accept="image/*,video/*"
+            /></label>
+            <div class="right">
+              <button id="post-submit" class="btn primary">Đăng</button>
+            </div>
           </div>
         </div>
 
-        <div class="create-bottom">
-          <label class="file-btn">Ảnh/Video<input id="post-image" type="file" accept="image/*,video/*" /></label>
-          <div class="right">
-            <button id="post-submit" class="btn primary">Đăng</button>
+        <div id="posts-container" class="feed-list">
+          <!-- posts injected by script_home_pro.js -->
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN -->
+      <aside class="right-col" aria-label="Sidebar phải">
+        <div class="card online-card">
+          <div class="section-title">Bạn bè online</div>
+          <div id="friends-list" class="friends-list">
+            <!-- friendPool injected by script -->
           </div>
         </div>
-      </div>
 
-      <div id="posts-container" class="feed-list">
-        <!-- posts injected by script_home_pro.js -->
-      </div>
-    </section>
-
-    <!-- RIGHT COLUMN -->
-    <aside class="right-col" aria-label="Sidebar phải">
-      <div class="card online-card">
-        <div class="section-title">Bạn bè online</div>
-        <div id="friends-list" class="friends-list">
-          <!-- friendPool injected by script -->
+        <div class="card suggestions-card">
+          <div class="section-title">Gợi ý kết bạn</div>
+          <div class="suggest-list">
+            <div class="s-item">
+              <img src="https://i.pravatar.cc/40?img=1" />
+              <div>Người A</div>
+            </div>
+            <div class="s-item">
+              <img src="https://i.pravatar.cc/40?img=2" />
+              <div>Người B</div>
+            </div>
+          </div>
         </div>
-      </div>
+      </aside>
+    </main>
 
-      <div class="card suggestions-card">
-        <div class="section-title">Gợi ý kết bạn</div>
-        <div class="suggest-list">
-          <div class="s-item"><img src="https://i.pravatar.cc/40?img=1"/><div>Người A</div></div>
-          <div class="s-item"><img src="https://i.pravatar.cc/40?img=2"/><div>Người B</div></div>
-        </div>
-      </div>
-    </aside>
-  </main>
+    <!-- chat windows root (floating) -->
+    <div id="chat-windows-root" aria-live="polite"></div>
 
-  <!-- chat windows root (floating) -->
-  <div id="chat-windows-root" aria-live="polite"></div>
-
-  <!-- non-blocking boot logo created by script -->
-  <script type="module" src="script_home_pro.js"></script>
-</body>
+    <!-- non-blocking boot logo created by script -->
+    <script type="module" src="script_home_pro.js"></script>
+  </body>
 </html>

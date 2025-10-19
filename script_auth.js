@@ -46,7 +46,8 @@ async function handleRegister() {
     if (!res.ok) throw new Error(data.message || "Đăng ký thất bại");
 
     alert("Đăng ký thành công! Vui lòng đăng nhập lại.");
-    document.getElementById("show-login").click();
+    const showLogin = document.getElementById("show-login");
+    if (showLogin) showLogin.click();
   } catch (err) {
     console.error("Lỗi đăng ký:", err);
     alert(err.message || "Lỗi máy chủ khi đăng ký!");
