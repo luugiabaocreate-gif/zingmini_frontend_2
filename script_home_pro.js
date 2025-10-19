@@ -811,3 +811,32 @@ function openCommentBox(postId) {
     }
   });
 }
+// ==== MENU SIDEBAR ACTIONS ====
+
+// Lấy danh sách tất cả liên kết trong menu trái
+document.querySelectorAll(".left-menu a").forEach((link) => {
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+    const label = link.textContent.trim();
+
+    switch (label) {
+      case "Trang cá nhân":
+        window.location.href = "profile.html"; // chuyển sang trang cá nhân
+        break;
+      case "Bảng tin":
+        window.location.href = "feed.html"; // trang tổng hợp tin tức
+        break;
+      case "Game":
+        window.location.href = "games.html"; // hiển thị danh sách game
+        break;
+      case "Quản trị":
+        window.location.href = "admin.html"; // giao diện admin riêng
+        break;
+      case "Cài đặt":
+        window.location.href = "settings.html"; // trang cài đặt tài khoản
+        break;
+      default:
+        alert("Chức năng đang phát triển!");
+    }
+  });
+});
