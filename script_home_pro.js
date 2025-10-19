@@ -442,9 +442,9 @@ function openChatWindow(friendId, friendName) {
       );
       let arr = Array.isArray(msgs) ? msgs : msgs.data || msgs.messages || [];
       if (!Array.isArray(arr)) arr = [];
-      // arr likely sorted oldest->newest; we want newest first => reverse
+      // arr likely sorted oldest->newest; giữ nguyên để chat hiển thị tự nhiên (tin cũ trên, tin mới dưới)
       try {
-        arr = arr.slice().reverse();
+        // arr = arr.slice().reverse(); // bỏ reverse
       } catch (e) {}
       arr.forEach((m) => {
         const cls = m.from === currentUser._id ? "you" : "them";
