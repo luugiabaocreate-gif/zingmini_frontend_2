@@ -299,6 +299,12 @@ function createPostNode(post) {
     likeBtn.textContent = "👍 • Bạn";
   });
 
+// === THÊM ĐOẠN NÀY SAU LIKE ===
+const commentBtn = div.querySelector(".comment-btn");
+commentBtn.addEventListener("click", () => {
+  openCommentBox(id);
+});
+
   const img = div.querySelector("img[data-id]");
   if (img)
     img.addEventListener("click", () => {
@@ -676,3 +682,58 @@ const observer = new MutationObserver(() => {
   });
 });
 observer.observe(document.body, { childList: true, subtree: true });
+function openCommentBox(postId) {
+  const postCard = document.querySelector(`[data-post-id="${postId}"]`);
+  if (!postCard) return;
+
+  // kiểm tra nếu đã có comment box thì ẩn/hiện
+  let box = postCard.querySelector(".comment-box");
+  if (box) {
+    box.remove();
+    return;
+  }
+
+  // tạo khung bình luận
+  box = document.createElement("div");
+  box.className = "comment-box";
+  box.style.marginTop = "10px";
+  box.innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center">
+      <img src="${currentUser.avatar || `https://i.pravatar.cc/36?u=${currentUser._id}`}" 
+           style="width:36px;height:36px;border-radius:50%" />
+      <input class="comment-input" placeholder="Viết bình luận..." 
+             style="flex:1;padding:6px;border:1px solid #d7eefe;border-radius:8px"/>
+      <button class="btn send-comment">Gửi</button>
+    </div>
+    <div class="comment-list" style="margin-top:8px;display:flex;flex-direction:column;gap:4px"></div>
+  `;
+
+  postCard.appendChild(box);
+
+  const input = box.querySelector(".comment-input");
+  const sendBtn = box.querySelector(".send-comment");
+  const list = box.querySelector(".comment-list");
+
+  sendBtn.addEventListener("click", async () => {
+    const text = input.value.trim();
+    if (!text) return;
+    const item = document.createElement("div");
+    item.style.padding = "4px 6px";
+    item.style.background = "#f6fbff";
+    item.style.borderRadius = "6px";
+    item.innerHTML = `<b>${currentUser.name}:</b> ${escapeHtml(text)}`;
+    list.appendChild(item);
+    input.value = "";
+
+    // gửi về backend nếu có API
+    try {
+      await apiFetch(`${API_URL}/api/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId, text }),
+      });
+    } catch (e) {
+      console.warn("Comment save failed:", e);
+    }
+  });
+}

@@ -571,3 +571,8 @@ body.dark .post-content p {
   background: #ccc;
   border-radius: 3px;
 }
+.comment-box {
+  background: #f9fcff;
+  border-radius: 10px;
+  padding: 8px;
+}
