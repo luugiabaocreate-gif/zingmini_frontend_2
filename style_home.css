@@ -547,3 +547,18 @@ body.dark .post-content p {
   background: #ccc;
   border-radius: 3px;
 }
+/* === Online indicator for friends === */
+.s-item {
+  position: relative;
+}
+.s-item .online-dot {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #00d26a;
+  border: 2px solid #fff;
+  box-shadow: 0 0 6px rgba(0, 210, 106, 0.6);
+}
