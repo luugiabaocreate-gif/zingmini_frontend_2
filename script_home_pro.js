@@ -1,4 +1,7 @@
-// script_home_pro.js — FINAL FIX 2 (posts newest on top, chat newest at bottom, no duplicates)
+// script_home_pro.js — FINAL (posts newest on top, chat newest on top, no-duplicate realtime)
+// Full features: load posts, create post (backend returns array), realtime chat (no duplicate),
+// reactions, logout, theme toggle, friends list -> open chat windows.
+// Import socket.io client (ESM)
 import io from "https://cdn.socket.io/4.6.1/socket.io.esm.min.js";
 
 const API_URL = "https://zingmini-backend-2.onrender.com";
@@ -21,33 +24,43 @@ const postSubmit = $("post-submit");
 const mediaPreview = $("media-preview");
 const toggleThemeBtn = $("toggle-theme");
 const logoutTop = $("logout-top");
+const profileBtn = $("profile-btn");
+const profileDropdown = $("profile-dropdown");
+const messengerBtn = $("messenger-btn");
+const messengerDropdown = $("messenger-dropdown");
+const notifBtn = $("notif-btn");
+const notifDropdown = $("notif-dropdown");
+const notifBadge = $("notif-badge");
 const friendsListEl = $("friends-list");
 const chatWindowsRoot = $("chat-windows-root");
 
-// prevent anchors "#"
+// prevent anchors with href="#" causing jump
 document.addEventListener("click", (e) => {
   const a = e.target.closest('a[href="#"]');
   if (a) e.preventDefault();
 });
 
-// show user info
+// show current user info if elements exist
 if ($("nav-username"))
   $("nav-username").textContent = currentUser.name || "Bạn";
 if ($("nav-avatar"))
   $("nav-avatar").src =
     currentUser.avatar || `https://i.pravatar.cc/40?u=${currentUser._id}`;
+if ($("left-avatar"))
+  $("left-avatar").src =
+    currentUser.avatar || `https://i.pravatar.cc/48?u=${currentUser._id}`;
 if ($("create-avatar"))
   $("create-avatar").src =
     currentUser.avatar || `https://i.pravatar.cc/48?u=${currentUser._id}`;
 
-// ===== Smooth theme toggle =====
+// tiny theme transition (CSS untouched)
 document.documentElement.style.transition =
   "background 320ms ease, color 320ms ease";
 setTimeout(() => {
   document.documentElement.style.transition = "";
 }, 360);
 
-// ===== Socket =====
+// ===== Socket.io init with token (auth + query fallback) =====
 let socket;
 try {
   socket = io(API_URL, {
@@ -56,7 +69,8 @@ try {
     query: { token },
   });
 } catch (e) {
-  socket = { on: () => {}, emit: () => {} };
+  console.warn("Socket init error:", e);
+  socket = { on: () => {}, emit: () => {}, disconnect: () => {} };
 }
 
 // ===== Helpers =====
@@ -70,7 +84,7 @@ async function safeJson(res) {
   const t = await res.text().catch(() => "");
   try {
     return JSON.parse(t);
-  } catch {
+  } catch (e) {
     return t;
   }
 }
@@ -80,88 +94,145 @@ async function apiFetch(url, opts = {}) {
     opts.headers = { ...opts.headers, Authorization: `Bearer ${token}` };
   const res = await fetch(url, opts);
   if (!res.ok) {
-    const b = await safeJson(res);
-    throw new Error(b?.message || `HTTP ${res.status}`);
+    const body = await safeJson(res);
+    const err = new Error(body?.message || `HTTP ${res.status}`);
+    err.status = res.status;
+    err.body = body;
+    throw err;
   }
   return res.json();
 }
 
-// ===== POSTS =====
+// ===== POSTS: load & render (newest on top) =====
 async function loadPosts() {
   if (!postsContainer) return;
   postsContainer.innerHTML = `<p style="text-align:center;color:#777;padding:12px">Đang tải bài viết...</p>`;
   try {
+    // try private first
     const res = await fetch(`${API_URL}/api/posts`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const json = await res.json();
-    renderPosts(json);
-  } catch (e) {
-    postsContainer.innerHTML = `<p style="text-align:center;color:#c00">Không thể tải bài viết.</p>`;
+    renderPostsFromResponse(json);
+  } catch (err) {
+    console.warn("Private posts fetch failed, trying public...", err);
+    try {
+      const pub = await fetch(`${API_URL}/api/posts`);
+      if (!pub.ok) throw new Error("Không tải được bài (public fallback).");
+      const j = await pub.json();
+      renderPostsFromResponse(j);
+    } catch (e) {
+      console.error("loadPosts error:", e);
+      postsContainer.innerHTML = `<div style="text-align:center;color:#c00;padding:12px">Không thể tải bài viết.<br/><button id="retry-posts" class="btn">Thử lại</button></div>`;
+      setTimeout(() => {
+        const r = $("retry-posts");
+        if (r) r.addEventListener("click", loadPosts);
+      }, 20);
+    }
   }
 }
 
-function renderPosts(json) {
+function renderPostsFromResponse(json) {
   let posts = [];
-  if (Array.isArray(json)) posts = json;
+  if (!json) posts = [];
+  else if (Array.isArray(json)) posts = json;
   else if (Array.isArray(json.posts)) posts = json.posts;
-  else posts = [];
+  else if (Array.isArray(json.data)) posts = json.data;
+  else {
+    // search for first array
+    for (const k of Object.keys(json || {}))
+      if (Array.isArray(json[k])) {
+        posts = json[k];
+        break;
+      }
+  }
+
+  // ensure newest first (we will display with newest on top)
+  try {
+    posts = posts.slice().reverse();
+  } catch (e) {}
+
   postsContainer.innerHTML = "";
   if (!posts.length) {
-    postsContainer.innerHTML = `<p style="text-align:center;color:#777">Chưa có bài viết.</p>`;
+    postsContainer.innerHTML = `<p style="text-align:center;color:#777;padding:12px">Chưa có bài viết nào.</p>`;
     return;
   }
-  // backend đã trả newest->oldest nên hiển thị đúng chiều
-  posts.forEach((p) => {
-    const node = createPostNode(p);
-    postsContainer.appendChild(node);
-  });
-}
 
+  posts.forEach((p) => {
+    try {
+      const node = createPostNode(p);
+      postsContainer.appendChild(node);
+      setTimeout(() => node.classList.add("loaded"), 10);
+    } catch (err) {
+      console.warn("render post error:", err);
+    }
+  });
+
+  refreshFriendPoolFromPosts();
+}
 loadPosts();
 
-// đăng bài
-if (postSubmit) {
+// When backend's POST /api/posts returns an array (confirmed) we re-render from that array
+async function createPostHandler() {
+  if (!postSubmit || !postContent) return;
   postSubmit.addEventListener("click", async (e) => {
     e.preventDefault();
     const content = postContent.value.trim();
-    const file = postImage?.files?.[0];
+    const file = postImage?.files?.[0] || null;
     if (!content && !file)
       return alert("Vui lòng nhập nội dung hoặc chọn ảnh!");
+
     const form = new FormData();
     form.append("content", content);
     if (file) form.append("image", file);
+
     try {
       const res = await fetch(`${API_URL}/api/posts`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }, // DO NOT set Content-Type
         body: form,
       });
-      const json = await res.json();
-      const newest = Array.isArray(json) ? json : json.posts || json.data || [];
-      if (Array.isArray(newest) && newest.length) {
-        // lấy phần đầu (bài mới nhất) prepend
-        const node = createPostNode(newest[0]);
-        postsContainer.prepend(node);
+
+      if (!res.ok) {
+        const body = await safeJson(res);
+        throw new Error(body?.message || `Đăng bài thất bại (${res.status})`);
       }
+
+      const json = await res.json();
+      // backend returns array of posts — render from response so newest is on top
+      if (Array.isArray(json)) {
+        renderPostsFromResponse(json);
+      } else if (json.posts || json.data) {
+        renderPostsFromResponse(json);
+      } else {
+        // fallback: insert single returned post at top
+        const realPost = json.post || json.data || json;
+        const node = createPostNode(realPost);
+        postsContainer.prepend(node);
+        setTimeout(() => node.classList.add("loaded"), 10);
+      }
+
+      // clear inputs
       postContent.value = "";
       if (postImage) postImage.value = "";
       if (mediaPreview) mediaPreview.innerHTML = "";
     } catch (err) {
-      alert("Đăng bài thất bại");
+      console.error("Create post error:", err);
+      alert(err.message || "Không thể đăng bài. Kiểm tra console.");
     }
   });
 }
+createPostHandler();
 
-// preview ảnh/video
+// preview image/video
 if (postImage && mediaPreview) {
   postImage.addEventListener("change", (e) => {
     mediaPreview.innerHTML = "";
-    const f = e.target.files[0];
-    if (!f) return;
+    const file = e.target.files[0];
+    if (!file) return;
     const fr = new FileReader();
     fr.onload = () => {
-      if (f.type.startsWith("video/")) {
+      if (file.type.startsWith("video/")) {
         const v = document.createElement("video");
         v.controls = true;
         v.src = fr.result;
@@ -174,167 +245,340 @@ if (postImage && mediaPreview) {
         mediaPreview.appendChild(img);
       }
     };
-    fr.readAsDataURL(f);
+    fr.readAsDataURL(file);
   });
 }
 
+// render post node
 function createPostNode(post) {
-  const id = post._id || post.id;
-  const user = post.user || post.author || { name: "Ẩn danh" };
-  const avatar =
-    user.avatar || `https://i.pravatar.cc/44?u=${user._id || user.id}`;
+  const id =
+    post._id || post.id || `p_${Math.random().toString(36).slice(2, 8)}`;
   const time = new Date(post.createdAt || Date.now()).toLocaleString("vi-VN");
-  const content = post.content || "";
+  const user = post.user ||
+    post.author ||
+    post.owner || { _id: "u_anon", name: post.name || "Ẩn danh", avatar: "" };
+  const avatar =
+    user.avatar || `https://i.pravatar.cc/44?u=${user._id || user.id || "x"}`;
+  const content = post.content || post.text || "";
+
   const div = document.createElement("div");
   div.className = "post-card";
   div.dataset.postId = id;
   div.innerHTML = `
-  <div class="post-header">
-    <img src="${escapeHtml(avatar)}" alt="${escapeHtml(
-    user.name
-  )}" data-id="${escapeHtml(user._id || user.id || "")}">
-    <div><div style="font-weight:700">${escapeHtml(
-      user.name
-    )}</div><div class="small">${time}</div></div>
-  </div>
-  <div class="post-content"><p>${escapeHtml(content)}</p>${
-    post.image ? renderMedia(post.image) : ""
-  }</div>
-  <div class="post-actions">
-    <button class="btn like-btn">👍 Thích</button>
-    <button class="btn comment-btn">💬 Bình luận</button>
-  </div>`;
+    <div class="post-header">
+      <img src="${escapeHtml(avatar)}" alt="${escapeHtml(
+    user.name || "Người dùng"
+  )}" data-id="${escapeHtml(user._id || user.id || "")}" />
+      <div>
+        <div style="font-weight:700">${escapeHtml(
+          user.name || "Người dùng"
+        )}</div>
+        <div class="small">${escapeHtml(time)}</div>
+      </div>
+    </div>
+    <div class="post-content">
+      <p>${escapeHtml(content)}</p>
+      ${post.image ? renderMediaHtml(post.image) : ""}
+    </div>
+    <div class="post-actions">
+      <button class="btn like-btn">👍 Thích</button>
+      <button class="btn comment-btn">💬 Bình luận</button>
+    </div>
+  `;
+
   const likeBtn = div.querySelector(".like-btn");
   likeBtn.addEventListener("click", () => {
-    socket.emit("reaction", {
-      postId: id,
-      user: currentUser.name,
-      reaction: "👍",
-    });
+    try {
+      socket.emit("reaction", {
+        postId: id,
+        user: currentUser.name,
+        reaction: "👍",
+      });
+    } catch (e) {}
+    likeBtn.classList.add("reaction-selected");
     likeBtn.textContent = "👍 • Bạn";
   });
+
   const img = div.querySelector("img[data-id]");
   if (img)
-    img.addEventListener("click", () =>
-      openChatWindow(img.dataset.id, img.alt)
-    );
+    img.addEventListener("click", () => {
+      const fid = img.getAttribute("data-id");
+      const fname = img.getAttribute("alt") || "Người dùng";
+      if (fid) openChatWindow(fid, fname);
+    });
+
   return div;
 }
-function renderMedia(path) {
-  const url = path.startsWith("http") ? path : `${API_URL}${path}`;
+function renderMediaHtml(path) {
+  if (!path) return "";
+  const url =
+    typeof path === "string" && path.startsWith("http")
+      ? path
+      : `${API_URL}${path}`;
   const ext = url.split(".").pop().toLowerCase();
-  return ["mp4", "webm", "ogg"].includes(ext)
-    ? `<video controls src="${url}" style="width:100%;border-radius:8px"></video>`
-    : `<img src="${url}" style="width:100%;border-radius:8px">`;
+  if (["mp4", "webm", "ogg"].includes(ext))
+    return `<video controls src="${escapeHtml(
+      url
+    )}" style="width:100%;border-radius:8px;margin-top:8px"></video>`;
+  return `<img src="${escapeHtml(
+    url
+  )}" style="width:100%;border-radius:8px;margin-top:8px" />`;
 }
 
-// ===== CHAT =====
+// ===== FRIENDS pool derived from posts =====
+let friendPool = {};
+function refreshFriendPoolFromPosts() {
+  friendPool = {};
+  document.querySelectorAll(".post-card").forEach((pc) => {
+    const img = pc.querySelector("img[data-id]");
+    if (!img) return;
+    const id = img.getAttribute("data-id");
+    const name = img.getAttribute("alt") || "Bạn";
+    const avatar = img.src;
+    if (id) friendPool[id] = { _id: id, name, avatar };
+  });
+  renderFriendsList();
+}
+function renderFriendsList() {
+  if (!friendsListEl) return;
+  friendsListEl.innerHTML = "";
+  const ids = Object.keys(friendPool);
+  if (!ids.length) {
+    friendsListEl.innerHTML = `<div class="small">Không có bạn online</div>`;
+    return;
+  }
+  ids.slice(0, 12).forEach((id) => {
+    const u = friendPool[id];
+    const el = document.createElement("div");
+    el.className = "s-item";
+    el.innerHTML = `<img src="${escapeHtml(u.avatar)}" data-id="${escapeHtml(
+      u._id
+    )}" alt="${escapeHtml(u.name)}"/><div>${escapeHtml(u.name)}</div>`;
+    el.addEventListener("click", () => openChatWindow(u._id, u.name));
+    friendsListEl.appendChild(el);
+  });
+}
+const postsObserver = new MutationObserver(refreshFriendPoolFromPosts);
+if (postsContainer)
+  postsObserver.observe(postsContainer, { childList: true, subtree: true });
+
+// ===== CHAT: windows, history, send, receive =====
+// We'll keep newest messages on TOP. Ensure history loads newest-first, and live messages inserted at top.
+// To avoid duplicate echoes, maintain a short-lived recentSent map per chat with texts + timestamps.
+
 const openChats = {};
-function appendChatMessage(bodyEl, user, text, cls = "them") {
+const recentSent = {}; // { chatId: [{text, ts}] }  // used to ignore server-echo duplicates within 2s
+
+function recordSent(chatId, text) {
+  if (!recentSent[chatId]) recentSent[chatId] = [];
+  recentSent[chatId].push({ text, ts: Date.now() });
+  // prune older than 5s
+  recentSent[chatId] = recentSent[chatId].filter(
+    (x) => Date.now() - x.ts < 5000
+  );
+}
+function isRecentSentEcho(chatId, text) {
+  if (!recentSent[chatId]) return false;
+  return recentSent[chatId].some(
+    (x) => x.text === text && Date.now() - x.ts <= 3000
+  );
+}
+
+// Append message NEWEST ON TOP
+function appendChatMessage(
+  bodyEl,
+  user,
+  text,
+  cls = "them",
+  options = { temporary: false }
+) {
   const el = document.createElement("div");
   el.className = `message ${cls}`;
   el.innerHTML = `<b>${escapeHtml(user)}:</b> ${escapeHtml(text)}`;
-  bodyEl.appendChild(el);
-  bodyEl.scrollTop = bodyEl.scrollHeight;
+  // insert at top
+  if (bodyEl.firstChild) bodyEl.insertBefore(el, bodyEl.firstChild);
+  else bodyEl.appendChild(el);
+  // ensure the top is visible
+  bodyEl.scrollTop = 0;
+  // if temporary flag, add subtle opacity and remove after confirmation (optional)
+  if (options.temporary) {
+    el.style.opacity = "0.7";
+    setTimeout(() => (el.style.opacity = "1"), 600);
+  }
 }
 
-function openChatWindow(fid, fname) {
-  if (openChats[fid]) return;
+// open chat window (if exists, bring to top)
+function openChatWindow(friendId, friendName) {
+  if (!chatWindowsRoot) return;
+  if (openChats[friendId]) {
+    chatWindowsRoot.prepend(openChats[friendId]);
+    return;
+  }
   const win = document.createElement("div");
   win.className = "chat-window";
-  win.dataset.uid = fid;
+  win.dataset.uid = friendId;
   win.innerHTML = `
-  <div class="head"><div>${escapeHtml(
-    fname
-  )}</div><div><button class="mini close">×</button></div></div>
-  <div class="body"></div>
-  <div class="foot"><input class="cw-input" placeholder="Nhập tin nhắn..."/><button class="cw-send btn">Gửi</button></div>`;
-  chatWindowsRoot.appendChild(win);
-  openChats[fid] = win;
-  const body = win.querySelector(".body"),
-    input = win.querySelector(".cw-input"),
-    send = win.querySelector(".cw-send"),
-    close = win.querySelector(".close");
+    <div class="head"><div style="display:flex;align-items:center;gap:8px"><div>${escapeHtml(
+      friendName
+    )}</div></div>
+      <div><button class="mini collapse">_</button><button class="mini close">×</button></div>
+    </div>
+    <div class="body"></div>
+    <div class="foot"><input class="cw-input" placeholder="Nhập tin nhắn..."/><button class="cw-send btn">Gửi</button></div>
+  `;
+  chatWindowsRoot.prepend(win);
+  chatWindowsRoot.style.pointerEvents = "auto";
+  openChats[friendId] = win;
+  const body = win.querySelector(".body");
+  const input = win.querySelector(".cw-input");
+  const sendBtn = win.querySelector(".cw-send");
+  const closeBtn = win.querySelector(".close");
+  const collapseBtn = win.querySelector(".collapse");
 
+  // load history — ensure newest-first display
   (async () => {
     try {
-      let msgs = await apiFetch(
-        `${API_URL}/api/messages/${currentUser._id}/${fid}`
+      const msgs = await apiFetch(
+        `${API_URL}/api/messages/${currentUser._id}/${friendId}`
       );
-      msgs = Array.isArray(msgs) ? msgs : msgs.data || [];
-      msgs.forEach((m) => {
-        appendChatMessage(
-          body,
-          m.from === currentUser._id ? currentUser.name : fname,
-          m.text,
-          m.from === currentUser._id ? "you" : "them"
-        );
+      let arr = Array.isArray(msgs) ? msgs : msgs.data || msgs.messages || [];
+      if (!Array.isArray(arr)) arr = [];
+      // arr likely sorted oldest->newest; we want newest first => reverse
+      try {
+        arr = arr.slice().reverse();
+      } catch (e) {}
+      arr.forEach((m) => {
+        const cls = m.from === currentUser._id ? "you" : "them";
+        const userName =
+          m.from === currentUser._id ? currentUser.name : m.userName || "Họ";
+        appendChatMessage(body, userName, m.text, cls);
       });
-      body.scrollTop = body.scrollHeight;
-    } catch (e) {}
+    } catch (e) {
+      // ignore if endpoint not available
+      console.warn("Could not load chat history:", e);
+    }
   })();
 
-  send.addEventListener("click", async () => {
+  sendBtn.addEventListener("click", async () => {
     const text = input.value.trim();
     if (!text) return;
-    appendChatMessage(body, currentUser.name, text, "you");
+    // record sent text to avoid echo duplication
+    recordSent(friendId, text);
+    // optimistic UI: insert at top as temporary
+    appendChatMessage(body, currentUser.name, text, "you", { temporary: true });
     input.value = "";
-    socket.emit("private_chat", {
-      from: currentUser._id,
-      to: fid,
-      text,
-      userName: currentUser.name,
-    });
+    // emit via socket (server should route to recipient and echo appropriately)
+    try {
+      socket.emit("private_chat", {
+        from: currentUser._id,
+        to: friendId,
+        text,
+        userName: currentUser.name,
+      });
+    } catch (e) {
+      console.warn(e);
+    }
+    // persist via API (non-blocking)
     try {
       await apiFetch(`${API_URL}/api/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           from: currentUser._id,
-          to: fid,
+          to: friendId,
           text,
           userName: currentUser.name,
         }),
       });
-    } catch (e) {}
+    } catch (e) {
+      /* ignore persist errors */
+    }
   });
-  close.addEventListener("click", () => {
+
+  closeBtn.addEventListener("click", () => {
     win.remove();
-    delete openChats[fid];
+    delete openChats[friendId];
+  });
+  collapseBtn.addEventListener("click", () => {
+    const b = win.querySelector(".body"),
+      f = win.querySelector(".foot");
+    const hidden = b.style.display === "none";
+    b.style.display = hidden ? "block" : "none";
+    f.style.display = hidden ? "flex" : "none";
   });
 }
 
+// socket handlers
 if (socket && socket.on) {
+  socket.on("connect", () => console.log("socket connected", socket.id));
+  socket.on("disconnect", () => console.log("socket disconnected"));
+
   socket.on("private_chat", (msg) => {
+    // msg: { from, to, text, userName }
+    // ignore duplicates: if server echoes the message sent by this client, skip if we recently recorded same text
     const chatId = msg.from === currentUser._id ? msg.to : msg.from;
-    const fname = msg.userName || "Họ";
-    if (!openChats[chatId]) openChatWindow(chatId, fname);
+    const isEchoOfMine =
+      msg.from === currentUser._id && isRecentSentEcho(chatId, msg.text);
+    if (isEchoOfMine) {
+      // consume and ignore echo (prune record)
+      if (recentSent[chatId])
+        recentSent[chatId] = recentSent[chatId].filter(
+          (x) => x.text !== msg.text
+        );
+      return;
+    }
+
+    // open chat if needed
+    if (!openChats[chatId]) openChatWindow(chatId, msg.userName || "Bạn");
     const body = openChats[chatId].querySelector(".body");
-    appendChatMessage(
-      body,
-      msg.from === currentUser._id ? currentUser.name : fname,
-      msg.text,
-      msg.from === currentUser._id ? "you" : "them"
-    );
+    const cls = msg.from === currentUser._id ? "you" : "them";
+    const userName =
+      msg.from === currentUser._id ? currentUser.name : msg.userName || "Họ";
+
+    // Append message at TOP (newest first)
+    appendChatMessage(body, userName, msg.text, cls);
+    if (notifBadge) {
+      notifBadge.classList.remove("hidden");
+      notifBadge.textContent =
+        (parseInt(notifBadge.textContent || "0") || 0) + 1;
+    }
   });
+
   socket.on("reaction", (r) => {
     const node = document.querySelector(
       `.post-card[data-post-id="${r.postId}"]`
     );
     if (node) {
-      const b = node.querySelector(".like-btn");
-      b.textContent = `${r.reaction} • ${
-        r.user === currentUser.name ? "Bạn" : r.user
-      }`;
+      const likeBtn = node.querySelector(".like-btn");
+      if (likeBtn) {
+        likeBtn.textContent = `${r.reaction} • ${
+          r.user === currentUser.name ? "Bạn" : r.user
+        }`;
+        likeBtn.classList.add("reaction-selected");
+      }
     }
   });
+
+  socket.on("connect_error", (err) =>
+    console.warn("socket connect_error", err)
+  );
 }
 
-// ===== LOGOUT =====
+// ===== UI: profile dropdown + logout =====
+if (profileBtn) {
+  profileBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (profileDropdown) profileDropdown.classList.toggle("hidden");
+  });
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".profile-wrap") && profileDropdown)
+      profileDropdown.classList.add("hidden");
+  });
+}
 if (logoutTop) {
   logoutTop.addEventListener("click", (e) => {
     e.preventDefault();
-    if (!confirm("Đăng xuất?")) return;
+    if (!confirm("Bạn có muốn đăng xuất?")) return;
     try {
       socket.disconnect();
     } catch (e) {}
@@ -343,3 +587,72 @@ if (logoutTop) {
     location.href = "index.html";
   });
 }
+
+// messenger dropdown lazy populate
+if (messengerBtn && messengerDropdown) {
+  messengerBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    messengerDropdown.classList.toggle("hidden");
+    if (
+      !messengerDropdown.classList.contains("hidden") &&
+      messengerDropdown.innerHTML.trim() === ""
+    ) {
+      messengerDropdown.innerHTML = "";
+      const ids = Object.keys(friendPool);
+      if (!ids.length) {
+        messengerDropdown.innerHTML = `<div class="small">Không có liên hệ</div>`;
+        return;
+      }
+      ids.slice(0, 6).forEach((id) => {
+        const u = friendPool[id];
+        const item = document.createElement("div");
+        item.className = "card";
+        item.style.display = "flex";
+        item.style.gap = "8px";
+        item.style.alignItems = "center";
+        item.innerHTML = `<img src="${escapeHtml(
+          u.avatar
+        )}" style="width:36px;height:36px;border-radius:50%"/><div style="flex:1">${escapeHtml(
+          u.name
+        )}</div><button class="btn open-chat" data-id="${escapeHtml(
+          u._id
+        )}">Chat</button>`;
+        const btn = item.querySelector(".open-chat");
+        btn.addEventListener("click", () => openChatWindow(u._id, u.name));
+        messengerDropdown.appendChild(item);
+      });
+    }
+  });
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".icon-wrap") && messengerDropdown)
+      messengerDropdown.classList.add("hidden");
+  });
+}
+
+// notif dropdown
+if (notifBtn && notifDropdown) {
+  notifBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    notifDropdown.classList.toggle("hidden");
+    if (!notifDropdown.classList.contains("hidden")) {
+      if (notifBadge) {
+        notifBadge.classList.add("hidden");
+        notifBadge.textContent = "0";
+      }
+    }
+  });
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".icon-wrap") && notifDropdown)
+      notifDropdown.classList.add("hidden");
+  });
+}
+
+// expose debug helpers
+window.__ZINGMINI__ = {
+  reloadPosts: loadPosts,
+  showFriends: () => console.log(friendPool),
+  socketId: () => socket && socket.id,
+  openChatWindow,
+};
+
+// All done
