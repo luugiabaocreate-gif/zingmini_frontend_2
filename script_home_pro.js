@@ -682,11 +682,11 @@ const observer = new MutationObserver(() => {
   });
 });
 observer.observe(document.body, { childList: true, subtree: true });
-async function openCommentBox(postId) {
+function openCommentBox(postId) {
   const postCard = document.querySelector(`[data-post-id="${postId}"]`);
   if (!postCard) return;
 
-  // nếu đã mở -> đóng lại
+  // kiểm tra nếu đã có comment box thì ẩn/hiện
   let box = postCard.querySelector(".comment-box");
   if (box) {
     box.remove();
@@ -701,7 +701,8 @@ async function openCommentBox(postId) {
     <div style="display:flex;gap:8px;align-items:center">
       <img src="${
         currentUser.avatar || `https://i.pravatar.cc/36?u=${currentUser._id}`
-      }" style="width:36px;height:36px;border-radius:50%" />
+      }" 
+           style="width:36px;height:36px;border-radius:50%" />
       <input class="comment-input" placeholder="Viết bình luận..." 
              style="flex:1;padding:6px;border:1px solid #d7eefe;border-radius:8px"/>
       <button class="btn send-comment">Gửi</button>
@@ -715,55 +716,26 @@ async function openCommentBox(postId) {
   const sendBtn = box.querySelector(".send-comment");
   const list = box.querySelector(".comment-list");
 
-  // 🟦 1. TẢI COMMENT CŨ
-  try {
-    const comments = await apiFetch(`${API_URL}/api/comments/post/${postId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (Array.isArray(comments)) {
-      comments.forEach((c) => {
-        const item = document.createElement("div");
-        item.style.padding = "4px 6px";
-        item.style.background = "#f6fbff";
-        item.style.borderRadius = "6px";
-        item.innerHTML = `<b>${escapeHtml(c.userName)}:</b> ${escapeHtml(
-          c.text
-        )}`;
-        list.appendChild(item);
-      });
-    }
-  } catch (e) {
-    console.warn("Không thể tải bình luận:", e);
-  }
-
-  // 🟩 2. GỬI COMMENT MỚI
   sendBtn.addEventListener("click", async () => {
     const text = input.value.trim();
     if (!text) return;
-
     const item = document.createElement("div");
     item.style.padding = "4px 6px";
     item.style.background = "#f6fbff";
     item.style.borderRadius = "6px";
-    item.innerHTML = `<b>${escapeHtml(currentUser.name)}:</b> ${escapeHtml(
-      text
-    )}`;
+    item.innerHTML = `<b>${currentUser.name}:</b> ${escapeHtml(text)}`;
     list.appendChild(item);
     input.value = "";
 
+    // gửi về backend nếu có API
     try {
-      await apiFetch(`${API_URL}/api/comments`, {
+      await apiFetch(`${API_URL}/api/comments/${postId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          postId,
-          text,
-          userName: currentUser.name,
-          userId: currentUser._id,
-        }),
+        body: JSON.stringify({ text }),
       });
     } catch (e) {
       console.warn("Comment save failed:", e);
