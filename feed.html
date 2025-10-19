@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Bảng tin — ZingMini</title>
+  <link rel="stylesheet" href="style_home.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    .feed-wrap{max-width:900px;margin:90px auto;padding:0 18px}
+    .post-card{background:#fff;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 6px 20px rgba(0,0,0,0.04)}
+  </style>
+</head>
+<body class="zing-body">
+  <div class="feed-wrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h2>Bảng tin</h2>
+      <button id="refresh-feed" class="btn">Làm mới</button>
+    </div>
+    <div id="feed-list">Đang tải...</div>
+  </div>
+
+  <script type="module" src="feed.js"></script>
+</body>
+</html>

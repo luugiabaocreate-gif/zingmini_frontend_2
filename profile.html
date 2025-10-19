@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Trang cá nhân — ZingMini</title>
+  <link rel="stylesheet" href="style_home.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    /* chỉnh nhỏ để khung profile trông ổn */
+    .profile-wrap{max-width:900px;margin:90px auto 60px;display:grid;grid-template-columns:280px 1fr;gap:18px;padding:0 18px}
+    .profile-card{padding:16px;border-radius:12px}
+    .post-list{display:flex;flex-direction:column;gap:12px}
+    .post-item{background:#fff;padding:12px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.04)}
+    .field{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+  </style>
+</head>
+<body class="zing-body">
+  <div class="profile-wrap">
+    <div class="card profile-card">
+      <h3>Thông tin cá nhân</h3>
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+        <img id="pf-avatar" src="" alt="avatar" style="width:84px;height:84px;border-radius:12px;border:2px solid #e6f5ff"/>
+        <div>
+          <div id="pf-name" style="font-weight:800;font-size:18px"></div>
+          <div id="pf-email" class="small"></div>
+        </div>
+      </div>
+
+      <h4>Chỉnh sửa</h4>
+      <div class="field">
+        <label>Tên hiển thị</label>
+        <input id="inp-name" type="text" />
+      </div>
+      <div class="field">
+        <label>Avatar (URL)</label>
+        <input id="inp-avatar" type="text" />
+      </div>
+      <div style="display:flex;gap:8px">
+        <button id="save-profile" class="btn primary">Lưu thay đổi</button>
+        <button id="cancel-profile" class="btn">Hoàn tác</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <h3>Bài đăng của bạn</h3>
+        <div id="user-posts" class="post-list">
+          <div class="small">Đang tải...</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Hoạt động gần đây</h3>
+        <div id="user-activity" class="small">Không có hoạt động</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="profile.js" type="module"></script>
+</body>
+</html>
