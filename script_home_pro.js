@@ -1,12 +1,12 @@
-// script_home_pro.js — Final bundle
-// Fix toàn diện: load posts, post (file/image), realtime chat, reactions, logout (logout-top),
-// theme smooth, prevent href "#", friend list -> chat windows.
-// Import socket.io client
+// script_home_pro.js — FINAL (posts newest on top, chat newest on top, no-duplicate realtime)
+// Full features: load posts, create post (backend returns array), realtime chat (no duplicate),
+// reactions, logout, theme toggle, friends list -> open chat windows.
+// Import socket.io client (ESM)
 import io from "https://cdn.socket.io/4.6.1/socket.io.esm.min.js";
 
 const API_URL = "https://zingmini-backend-2.onrender.com";
 
-// ===== Auth: chặn khách =====
+// ===== Auth check =====
 const token = localStorage.getItem("token");
 const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
 if (!token || !currentUser) {
@@ -23,7 +23,7 @@ const postImage = $("post-image");
 const postSubmit = $("post-submit");
 const mediaPreview = $("media-preview");
 const toggleThemeBtn = $("toggle-theme");
-const logoutTop = $("logout-top"); // visible logout button
+const logoutTop = $("logout-top");
 const profileBtn = $("profile-btn");
 const profileDropdown = $("profile-dropdown");
 const messengerBtn = $("messenger-btn");
@@ -40,7 +40,7 @@ document.addEventListener("click", (e) => {
   if (a) e.preventDefault();
 });
 
-// show current user info
+// show current user info if elements exist
 if ($("nav-username"))
   $("nav-username").textContent = currentUser.name || "Bạn";
 if ($("nav-avatar"))
@@ -53,14 +53,14 @@ if ($("create-avatar"))
   $("create-avatar").src =
     currentUser.avatar || `https://i.pravatar.cc/48?u=${currentUser._id}`;
 
-// add small transition for theme toggling
+// tiny theme transition (CSS untouched)
 document.documentElement.style.transition =
   "background 320ms ease, color 320ms ease";
 setTimeout(() => {
   document.documentElement.style.transition = "";
 }, 360);
 
-// ===== Socket init w/ token (auth & query fallback) =====
+// ===== Socket.io init with token (auth + query fallback) =====
 let socket;
 try {
   socket = io(API_URL, {
@@ -73,7 +73,7 @@ try {
   socket = { on: () => {}, emit: () => {}, disconnect: () => {} };
 }
 
-// ===== helper =====
+// ===== Helpers =====
 function escapeHtml(s = "") {
   return String(s)
     .replace(/&/g, "&amp;")
@@ -81,11 +81,11 @@ function escapeHtml(s = "") {
     .replace(/>/g, ">");
 }
 async function safeJson(res) {
-  const txt = await res.text().catch(() => "");
+  const t = await res.text().catch(() => "");
   try {
-    return JSON.parse(txt);
+    return JSON.parse(t);
   } catch (e) {
-    return txt;
+    return t;
   }
 }
 async function apiFetch(url, opts = {}) {
@@ -103,39 +103,32 @@ async function apiFetch(url, opts = {}) {
   return res.json();
 }
 
-// ===== Load posts (robust) =====
+// ===== POSTS: load & render (newest on top) =====
 async function loadPosts() {
   if (!postsContainer) return;
   postsContainer.innerHTML = `<p style="text-align:center;color:#777;padding:12px">Đang tải bài viết...</p>`;
   try {
+    // try private first
     const res = await fetch(`${API_URL}/api/posts`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    if (!res.ok) {
-      console.warn("Private posts fetch failed, fallback to public fetch.");
+    const json = await res.json();
+    renderPostsFromResponse(json);
+  } catch (err) {
+    console.warn("Private posts fetch failed, trying public...", err);
+    try {
       const pub = await fetch(`${API_URL}/api/posts`);
       if (!pub.ok) throw new Error("Không tải được bài (public fallback).");
       const j = await pub.json();
       renderPostsFromResponse(j);
-      return;
+    } catch (e) {
+      console.error("loadPosts error:", e);
+      postsContainer.innerHTML = `<div style="text-align:center;color:#c00;padding:12px">Không thể tải bài viết.<br/><button id="retry-posts" class="btn">Thử lại</button></div>`;
+      setTimeout(() => {
+        const r = $("retry-posts");
+        if (r) r.addEventListener("click", loadPosts);
+      }, 20);
     }
-    const json = await res.json();
-    renderPostsFromResponse(json);
-  } catch (err) {
-    console.error("loadPosts error:", err);
-    postsContainer.innerHTML = `
-      <div style="text-align:center;color:#c00;padding:12px">
-        Không thể tải bài viết.<br/>
-        <button id="retry-posts" class="btn">Thử lại</button>
-        <button id="sample-posts" class="btn" style="margin-left:8px">Xem mẫu</button>
-      </div>
-    `;
-    setTimeout(() => {
-      const r = $("retry-posts");
-      if (r) r.addEventListener("click", loadPosts);
-      const s = $("sample-posts");
-      if (s) s.addEventListener("click", showSamplePosts);
-    }, 20);
   }
 }
 
@@ -145,73 +138,50 @@ function renderPostsFromResponse(json) {
   else if (Array.isArray(json)) posts = json;
   else if (Array.isArray(json.posts)) posts = json.posts;
   else if (Array.isArray(json.data)) posts = json.data;
-  else if (Array.isArray(json.result)) posts = json.result;
-  else if (json.posts && Array.isArray(json.posts.data))
-    posts = json.posts.data;
   else {
-    for (const k of Object.keys(json || {})) {
+    // search for first array
+    for (const k of Object.keys(json || {}))
       if (Array.isArray(json[k])) {
         posts = json[k];
         break;
       }
-    }
   }
 
+  // ensure newest first (we will display with newest on top)
+  try {
+    posts = posts.slice().reverse();
+  } catch (e) {}
+
+  postsContainer.innerHTML = "";
   if (!posts.length) {
     postsContainer.innerHTML = `<p style="text-align:center;color:#777;padding:12px">Chưa có bài viết nào.</p>`;
     return;
   }
 
-  postsContainer.innerHTML = "";
-  try {
-    posts = posts.slice().reverse();
-  } catch (e) {}
   posts.forEach((p) => {
     try {
       const node = createPostNode(p);
       postsContainer.appendChild(node);
-      setTimeout(() => node.classList.add("loaded"), 15);
-    } catch (e) {
-      console.warn("render post error", e);
+      setTimeout(() => node.classList.add("loaded"), 10);
+    } catch (err) {
+      console.warn("render post error:", err);
     }
   });
+
   refreshFriendPoolFromPosts();
-}
-function showSamplePosts() {
-  const sample = [
-    {
-      _id: "s1",
-      createdAt: Date.now(),
-      content: "Bài mẫu — server chưa phản hồi",
-      user: {
-        _id: "u1",
-        name: "ZingMini",
-        avatar: "https://i.pravatar.cc/44?u=1",
-      },
-    },
-    {
-      _id: "s2",
-      createdAt: Date.now() - 3600000,
-      content: "Bài mẫu 2",
-      user: {
-        _id: "u2",
-        name: "Người A",
-        avatar: "https://i.pravatar.cc/44?u=2",
-      },
-    },
-  ];
-  renderPostsFromResponse(sample);
 }
 loadPosts();
 
-// ===== Create post (FormData) =====
-if (postSubmit && postContent) {
+// When backend's POST /api/posts returns an array (confirmed) we re-render from that array
+async function createPostHandler() {
+  if (!postSubmit || !postContent) return;
   postSubmit.addEventListener("click", async (e) => {
     e.preventDefault();
     const content = postContent.value.trim();
     const file = postImage?.files?.[0] || null;
     if (!content && !file)
       return alert("Vui lòng nhập nội dung hoặc chọn ảnh!");
+
     const form = new FormData();
     form.append("content", content);
     if (file) form.append("image", file);
@@ -222,15 +192,27 @@ if (postSubmit && postContent) {
         headers: { Authorization: `Bearer ${token}` }, // DO NOT set Content-Type
         body: form,
       });
+
       if (!res.ok) {
         const body = await safeJson(res);
         throw new Error(body?.message || `Đăng bài thất bại (${res.status})`);
       }
-      const newPostJson = await res.json();
-      const realPost = newPostJson.post || newPostJson.data || newPostJson;
-      const node = createPostNode(realPost);
-      postsContainer.prepend(node);
-      node.classList.add("loaded");
+
+      const json = await res.json();
+      // backend returns array of posts — render from response so newest is on top
+      if (Array.isArray(json)) {
+        renderPostsFromResponse(json);
+      } else if (json.posts || json.data) {
+        renderPostsFromResponse(json);
+      } else {
+        // fallback: insert single returned post at top
+        const realPost = json.post || json.data || json;
+        const node = createPostNode(realPost);
+        postsContainer.prepend(node);
+        setTimeout(() => node.classList.add("loaded"), 10);
+      }
+
+      // clear inputs
       postContent.value = "";
       if (postImage) postImage.value = "";
       if (mediaPreview) mediaPreview.innerHTML = "";
@@ -240,6 +222,7 @@ if (postSubmit && postContent) {
     }
   });
 }
+createPostHandler();
 
 // preview image/video
 if (postImage && mediaPreview) {
@@ -266,7 +249,7 @@ if (postImage && mediaPreview) {
   });
 }
 
-// ===== Render post =====
+// render post node
 function createPostNode(post) {
   const id =
     post._id || post.id || `p_${Math.random().toString(36).slice(2, 8)}`;
@@ -311,14 +294,11 @@ function createPostNode(post) {
         user: currentUser.name,
         reaction: "👍",
       });
-    } catch (e) {
-      console.warn(e);
-    }
+    } catch (e) {}
     likeBtn.classList.add("reaction-selected");
     likeBtn.textContent = "👍 • Bạn";
   });
 
-  // avatar click opens chat window
   const img = div.querySelector("img[data-id]");
   if (img)
     img.addEventListener("click", () => {
@@ -345,7 +325,7 @@ function renderMediaHtml(path) {
   )}" style="width:100%;border-radius:8px;margin-top:8px" />`;
 }
 
-// ===== Friend pool derived from posts =====
+// ===== FRIENDS pool derived from posts =====
 let friendPool = {};
 function refreshFriendPoolFromPosts() {
   friendPool = {};
@@ -382,8 +362,52 @@ const postsObserver = new MutationObserver(refreshFriendPoolFromPosts);
 if (postsContainer)
   postsObserver.observe(postsContainer, { childList: true, subtree: true });
 
-// ===== Chat windows & socket handlers =====
+// ===== CHAT: windows, history, send, receive =====
+// We'll keep newest messages on TOP. Ensure history loads newest-first, and live messages inserted at top.
+// To avoid duplicate echoes, maintain a short-lived recentSent map per chat with texts + timestamps.
+
 const openChats = {};
+const recentSent = {}; // { chatId: [{text, ts}] }  // used to ignore server-echo duplicates within 2s
+
+function recordSent(chatId, text) {
+  if (!recentSent[chatId]) recentSent[chatId] = [];
+  recentSent[chatId].push({ text, ts: Date.now() });
+  // prune older than 5s
+  recentSent[chatId] = recentSent[chatId].filter(
+    (x) => Date.now() - x.ts < 5000
+  );
+}
+function isRecentSentEcho(chatId, text) {
+  if (!recentSent[chatId]) return false;
+  return recentSent[chatId].some(
+    (x) => x.text === text && Date.now() - x.ts <= 3000
+  );
+}
+
+// Append message NEWEST ON TOP
+function appendChatMessage(
+  bodyEl,
+  user,
+  text,
+  cls = "them",
+  options = { temporary: false }
+) {
+  const el = document.createElement("div");
+  el.className = `message ${cls}`;
+  el.innerHTML = `<b>${escapeHtml(user)}:</b> ${escapeHtml(text)}`;
+  // insert at top
+  if (bodyEl.firstChild) bodyEl.insertBefore(el, bodyEl.firstChild);
+  else bodyEl.appendChild(el);
+  // ensure the top is visible
+  bodyEl.scrollTop = 0;
+  // if temporary flag, add subtle opacity and remove after confirmation (optional)
+  if (options.temporary) {
+    el.style.opacity = "0.7";
+    setTimeout(() => (el.style.opacity = "1"), 600);
+  }
+}
+
+// open chat window (if exists, bring to top)
 function openChatWindow(friendId, friendName) {
   if (!chatWindowsRoot) return;
   if (openChats[friendId]) {
@@ -411,36 +435,39 @@ function openChatWindow(friendId, friendName) {
   const closeBtn = win.querySelector(".close");
   const collapseBtn = win.querySelector(".collapse");
 
-  // try load history
+  // load history — ensure newest-first display
   (async () => {
     try {
       const msgs = await apiFetch(
         `${API_URL}/api/messages/${currentUser._id}/${friendId}`
       );
-      if (Array.isArray(msgs))
-        msgs.forEach((m) =>
-          appendChatMessage(
-            body,
-            m.from === currentUser._id ? currentUser.name : m.userName || "Họ",
-            m.text,
-            m.from === currentUser._id ? "you" : "them"
-          )
-        );
-      else if (Array.isArray(msgs.data))
-        msgs.data.forEach((m) =>
-          appendChatMessage(
-            body,
-            m.from === currentUser._id ? currentUser.name : m.userName || "Họ",
-            m.text,
-            m.from === currentUser._id ? "you" : "them"
-          )
-        );
-    } catch (e) {}
+      let arr = Array.isArray(msgs) ? msgs : msgs.data || msgs.messages || [];
+      if (!Array.isArray(arr)) arr = [];
+      // arr likely sorted oldest->newest; we want newest first => reverse
+      try {
+        arr = arr.slice().reverse();
+      } catch (e) {}
+      arr.forEach((m) => {
+        const cls = m.from === currentUser._id ? "you" : "them";
+        const userName =
+          m.from === currentUser._id ? currentUser.name : m.userName || "Họ";
+        appendChatMessage(body, userName, m.text, cls);
+      });
+    } catch (e) {
+      // ignore if endpoint not available
+      console.warn("Could not load chat history:", e);
+    }
   })();
 
   sendBtn.addEventListener("click", async () => {
     const text = input.value.trim();
     if (!text) return;
+    // record sent text to avoid echo duplication
+    recordSent(friendId, text);
+    // optimistic UI: insert at top as temporary
+    appendChatMessage(body, currentUser.name, text, "you", { temporary: true });
+    input.value = "";
+    // emit via socket (server should route to recipient and echo appropriately)
     try {
       socket.emit("private_chat", {
         from: currentUser._id,
@@ -448,9 +475,10 @@ function openChatWindow(friendId, friendName) {
         text,
         userName: currentUser.name,
       });
-    } catch (e) {}
-    appendChatMessage(body, currentUser.name, text, "you");
-    input.value = "";
+    } catch (e) {
+      console.warn(e);
+    }
+    // persist via API (non-blocking)
     try {
       await apiFetch(`${API_URL}/api/messages`, {
         method: "POST",
@@ -462,7 +490,9 @@ function openChatWindow(friendId, friendName) {
           userName: currentUser.name,
         }),
       });
-    } catch (e) {}
+    } catch (e) {
+      /* ignore persist errors */
+    }
   });
 
   closeBtn.addEventListener("click", () => {
@@ -470,47 +500,50 @@ function openChatWindow(friendId, friendName) {
     delete openChats[friendId];
   });
   collapseBtn.addEventListener("click", () => {
-    const b = win.querySelector(".body");
-    const f = win.querySelector(".foot");
+    const b = win.querySelector(".body"),
+      f = win.querySelector(".foot");
     const hidden = b.style.display === "none";
     b.style.display = hidden ? "block" : "none";
     f.style.display = hidden ? "flex" : "none";
   });
 }
-function appendChatMessage(bodyEl, user, text, cls = "them") {
-  const el = document.createElement("div");
-  el.className = `message ${cls}`;
-  el.innerHTML = `<b>${escapeHtml(user)}:</b> ${escapeHtml(text)}`;
 
-  // Thêm tin nhắn mới lên trên đầu
-  if (bodyEl.firstChild) bodyEl.insertBefore(el, bodyEl.firstChild);
-  else bodyEl.appendChild(el);
-
-  // Tự động cuộn lên trên để thấy tin mới
-  bodyEl.scrollTop = 0;
-}
-
-// socket events
+// socket handlers
 if (socket && socket.on) {
   socket.on("connect", () => console.log("socket connected", socket.id));
   socket.on("disconnect", () => console.log("socket disconnected"));
+
   socket.on("private_chat", (msg) => {
-    const otherId = msg.from === currentUser._id ? msg.to : msg.from;
-    const otherName = msg.userName || "Bạn";
-    if (!openChats[otherId]) openChatWindow(otherId, otherName);
-    const body = openChats[otherId].querySelector(".body");
-    appendChatMessage(
-      body,
-      msg.userName || otherName,
-      msg.text,
-      msg.from === currentUser._id ? "you" : "them"
-    );
+    // msg: { from, to, text, userName }
+    // ignore duplicates: if server echoes the message sent by this client, skip if we recently recorded same text
+    const chatId = msg.from === currentUser._id ? msg.to : msg.from;
+    const isEchoOfMine =
+      msg.from === currentUser._id && isRecentSentEcho(chatId, msg.text);
+    if (isEchoOfMine) {
+      // consume and ignore echo (prune record)
+      if (recentSent[chatId])
+        recentSent[chatId] = recentSent[chatId].filter(
+          (x) => x.text !== msg.text
+        );
+      return;
+    }
+
+    // open chat if needed
+    if (!openChats[chatId]) openChatWindow(chatId, msg.userName || "Bạn");
+    const body = openChats[chatId].querySelector(".body");
+    const cls = msg.from === currentUser._id ? "you" : "them";
+    const userName =
+      msg.from === currentUser._id ? currentUser.name : msg.userName || "Họ";
+
+    // Append message at TOP (newest first)
+    appendChatMessage(body, userName, msg.text, cls);
     if (notifBadge) {
       notifBadge.classList.remove("hidden");
       notifBadge.textContent =
         (parseInt(notifBadge.textContent || "0") || 0) + 1;
     }
   });
+
   socket.on("reaction", (r) => {
     const node = document.querySelector(
       `.post-card[data-post-id="${r.postId}"]`
@@ -525,12 +558,13 @@ if (socket && socket.on) {
       }
     }
   });
+
   socket.on("connect_error", (err) =>
     console.warn("socket connect_error", err)
   );
 }
 
-// ===== UI: profile dropdown toggle + logout button (top) =====
+// ===== UI: profile dropdown + logout =====
 if (profileBtn) {
   profileBtn.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -621,4 +655,4 @@ window.__ZINGMINI__ = {
   openChatWindow,
 };
 
-// done
+// All done
