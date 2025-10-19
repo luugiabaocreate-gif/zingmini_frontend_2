@@ -528,15 +528,24 @@ if (socket && socket.on) {
       return;
     }
 
-    // open chat if needed
+    // nếu chat window chưa mở -> mở mới
     if (!openChats[chatId]) openChatWindow(chatId, msg.userName || "Bạn");
-    const body = openChats[chatId].querySelector(".body");
+
+    // lấy lại body sau khi mở
+    const body = openChats[chatId]?.querySelector(".body");
+    if (!body) return;
+
+    // append tin nhắn mới vào đúng khung đang mở (ở DƯỚI cùng)
     const cls = msg.from === currentUser._id ? "you" : "them";
     const userName =
       msg.from === currentUser._id ? currentUser.name : msg.userName || "Họ";
 
-    // Append message at TOP (newest first)
-    appendChatMessage(body, userName, msg.text, cls);
+    const el = document.createElement("div");
+    el.className = `message ${cls}`;
+    el.innerHTML = `<b>${escapeHtml(userName)}:</b> ${escapeHtml(msg.text)}`;
+    body.appendChild(el);
+    body.scrollTop = body.scrollHeight;
+
     if (notifBadge) {
       notifBadge.classList.remove("hidden");
       notifBadge.textContent =
