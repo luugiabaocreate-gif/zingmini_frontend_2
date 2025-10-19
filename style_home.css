@@ -423,20 +423,44 @@ a {
 }
 
 /* messages style */
+/* CHAT bubbles song song fix */
 .message {
+  display: flex;
+  align-items: flex-end;
   margin: 6px 0;
-  padding: 6px 8px;
-  border-radius: 10px;
   max-width: 78%;
 }
 .message.them {
-  background: #fff;
-  color: #07203a;
+  justify-content: flex-start;
 }
 .message.you {
+  justify-content: flex-end;
+  margin-left: auto;
+}
+.message.them b,
+.message.you b {
+  display: none; /* ẩn tên, chỉ cần màu khác nhau là đủ */
+}
+.message.them::before,
+.message.you::before {
+  content: attr(data-text);
+  padding: 8px 10px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.4;
+  word-break: break-word;
+  white-space: pre-wrap;
+  display: inline-block;
+}
+.message.them::before {
+  background: #fff;
+  color: #07203a;
+  border: 1px solid #e0ecff;
+}
+.message.you::before {
   background: linear-gradient(90deg, #cfe4ff, #bfe0ff);
   color: #07203a;
-  margin-left: auto;
+  border: 1px solid #b3d4ff;
 }
 
 /* boot logo */
