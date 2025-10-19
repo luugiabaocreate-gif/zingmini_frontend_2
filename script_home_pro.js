@@ -840,3 +840,22 @@ document.querySelectorAll(".left-menu a").forEach((link) => {
     }
   });
 });
+// === Toggle menu hai bên trên mobile ===
+const leftToggle = document.querySelector(".menu-toggle-left");
+const rightToggle = document.querySelector(".menu-toggle-right");
+const leftCol = document.querySelector(".left-col");
+const rightCol = document.querySelector(".right-col");
+
+if (leftToggle && leftCol) {
+  leftToggle.addEventListener("click", () => {
+    leftCol.classList.toggle("show");
+    rightCol?.classList.remove("show");
+  });
+}
+
+if (rightToggle && rightCol) {
+  rightToggle.addEventListener("click", () => {
+    rightCol.classList.toggle("show");
+    leftCol?.classList.remove("show");
+  });
+}
