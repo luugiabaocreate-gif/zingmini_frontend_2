@@ -729,13 +729,18 @@ function openCommentBox(postId) {
 
     // gửi về backend nếu có API
     try {
-      await apiFetch(`${API_URL}/api/comments/${postId}`, {
+      await apiFetch(`${API_URL}/api/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({
+          postId,
+          text,
+          userName: currentUser.name,
+          userId: currentUser._id,
+        }),
       });
     } catch (e) {
       console.warn("Comment save failed:", e);
