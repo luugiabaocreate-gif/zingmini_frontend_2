@@ -1,0 +1,83 @@
+/* === ZingMini Full Dark / Light Sync === */
+:root {
+  --bg-main: #e8f5ff;
+  --bg-card: #ffffff;
+  --bg-topbar: rgba(255, 255, 255, 0.92);
+  --text-main: #183b6d;
+  --text-strong: #005bb5;
+  --input-bg: #f7fbff;
+  --border: rgba(0, 0, 0, 0.04);
+}
+
+/* Dark Mode Variables */
+body.dark {
+  --bg-main: #0e1117;
+  --bg-card: #1a1f29;
+  --bg-topbar: rgba(20, 24, 31, 0.96);
+  --text-main: #e0e8ff;
+  --text-strong: #4da6ff;
+  --input-bg: #1e2530;
+  --border: rgba(255, 255, 255, 0.06);
+}
+
+/* Apply globally */
+body {
+  background: var(--bg-main) !important;
+  color: var(--text-main) !important;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Cards, columns, posts */
+.card,
+.post-card,
+.comment-box,
+.create-post,
+.left-col,
+.center-col,
+.right-col {
+  background: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border) !important;
+  box-shadow: none !important;
+}
+
+/* Navbar / Topbar */
+.zm-topbar {
+  background: var(--bg-topbar) !important;
+  color: var(--text-main) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* Texts */
+a, .nav-btn, .btn, .left-menu a, .section-title {
+  color: var(--text-strong) !important;
+}
+
+/* Inputs */
+input, textarea {
+  background: var(--input-bg) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Friend list & chat */
+.s-item,
+.chat-window .body,
+.chat-window .head,
+.chat-window .foot {
+  background: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border) !important;
+}
+
+/* Comment items */
+.comment-list div {
+  background: var(--input-bg) !important;
+  color: var(--text-main) !important;
+}
+
+/* Buttons */
+.btn.primary {
+  background: linear-gradient(90deg, var(--text-strong), #0044aa) !important;
+  color: #fff !important;
+}
