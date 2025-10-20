@@ -66,8 +66,34 @@ const uploadBtn = document.getElementById("upload-avatar-btn");
 const pfAvatar = document.getElementById("pf-avatar");
 
 if (uploadBtn && avatarFile && pfAvatar) {
-  uploadBtn.addEventListener("click", () => {
-    if (window.uploadAvatar) window.uploadAvatar(avatarFile.files[0]);
+  uploadBtn.addEventListener("click", async () => {
+    const file = avatarFile.files[0];
+    if (!file) return alert("Vui lòng chọn ảnh!");
+
+    const form = new FormData();
+    form.append("avatar", file);
+
+    try {
+      const res = await fetch(`${API_URL}/api/users/${currentUser._id}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      });
+
+      if (!res.ok) throw new Error("Cập nhật thất bại");
+      const updated = await res.json();
+
+      // Cập nhật localStorage và UI
+      currentUser = { ...currentUser, ...updated };
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+      pfAvatar.src = updated.avatar?.startsWith("http")
+        ? updated.avatar
+        : `${API_URL}${updated.avatar}`;
+      alert("✅ Đã đổi ảnh đại diện thành công!");
+    } catch (err) {
+      console.error(err);
+      alert("❌ Lỗi khi tải ảnh lên!");
+    }
   });
 }
 

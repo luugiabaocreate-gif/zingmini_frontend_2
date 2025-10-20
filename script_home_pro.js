@@ -889,7 +889,13 @@ if (avatarInput && uploadAvatarBtn) {
       console.log("Avatar response:", json); // xem phản hồi server
 
       let newUrl =
-        json.avatar || json.user?.avatar || json.user?.avatarUrl || null;
+        json.avatar ||
+        json.user?.avatar ||
+        json.user?.path ||
+        json.user?.url ||
+        null;
+
+      console.log("Ảnh backend trả về:", newUrl);
 
       if (newUrl) {
         // chuẩn hóa đường dẫn để tránh lỗi khi backend trả "/uploads/xxx"
