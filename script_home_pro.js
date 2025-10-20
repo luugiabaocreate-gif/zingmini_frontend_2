@@ -878,7 +878,7 @@ if (avatarInput && uploadAvatarBtn) {
 
     try {
       const res = await fetch(`${API_URL}/api/users/${currentUser._id}`, {
-        method: "POST",
+        method: "PUT", // ✅ Sửa lại từ POST thành PUT
         headers: { Authorization: `Bearer ${token}` },
         body: form,
       });
