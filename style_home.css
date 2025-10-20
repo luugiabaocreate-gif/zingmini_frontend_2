@@ -669,3 +669,53 @@ body.dark .post-content p {
     z-index: 1500;
   }
 }
+/* === FIX FINAL: Sidebar & Realtime Chat colors === */
+
+/* 1️⃣ Chat Realtime – tăng độ tương phản chữ */
+.chat-window .message.you::before {
+  background: linear-gradient(90deg, #cfe4ff, #bfe0ff);
+  color: #00224d; /* chữ đậm hơn, dễ đọc */
+  border: 1px solid #b3d4ff;
+}
+
+.chat-window .message.them::before {
+  background: #ffffff;
+  color: #001a3a; /* chữ đậm hơn */
+  border: 1px solid #e0ecff;
+}
+
+/* Dark mode chat (chống lẫn màu sáng) */
+body.dark .chat-window .message.you::before {
+  background: linear-gradient(90deg, #0056b3, #003e80);
+  color: #e8f1ff;
+  border: 1px solid #004a99;
+}
+body.dark .chat-window .message.them::before {
+  background: #1a1d22;
+  color: #e5edff;
+  border: 1px solid #2d3748;
+}
+
+/* 2️⃣ Sidebar bên trái – giữ màu rõ ràng trong mọi theme */
+.left-col {
+  color: #0a1e3f;
+}
+.left-col a {
+  color: #0076ff;
+  font-weight: 600;
+}
+.left-col .small {
+  color: #5c6b80;
+}
+
+/* Dark mode sidebar */
+body.dark .left-col {
+  background: #0f1114;
+  color: #e5edff;
+}
+body.dark .left-col a {
+  color: #69aaff;
+}
+body.dark .left-col .small {
+  color: #b7c5e0;
+}
