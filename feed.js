@@ -13,8 +13,10 @@ async function loadFeed() {
     const j = await res.json();
     let posts = Array.isArray(j) ? j : j.posts || j.data || [];
     if (!Array.isArray(posts)) posts = [];
-    // newest first if backend gives newest-last
-    posts = posts.slice().reverse ? posts.slice().reverse() : posts;
+
+    // === Đảo ngược thứ tự: tin mới nhất lên trên ===
+    posts.reverse();
+
     feedList.innerHTML = "";
     if (!posts.length)
       feedList.innerHTML = "<div class='small'>Chưa có bài viết</div>";
@@ -44,7 +46,3 @@ function escapeHtml(s = "") {
     .replace(/>/g, "&gt;");
 }
 loadFeed();
-// === Hiển thị tin mới nhất lên đầu ===
-if (Array.isArray(posts)) {
-  posts.reverse(); // đảo mảng bài đăng, bài mới nhất lên trên cùng
-}
