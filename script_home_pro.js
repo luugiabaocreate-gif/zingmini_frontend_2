@@ -864,7 +864,7 @@ document.getElementById("logout-mobile")?.addEventListener("click", () => {
   localStorage.removeItem("token");
   window.location.href = "index.html";
 });
-// === ĐỔI ẢNH AVATAR NGƯỜI DÙNG ===
+// === ĐỔI ẢNH AVATAR NGƯỜI DÙNG (Chuẩn PUT, đọc đúng response) ===
 const avatarInput = document.getElementById("avatar-input");
 const uploadAvatarBtn = document.getElementById("upload-avatar-btn");
 
@@ -878,7 +878,7 @@ if (avatarInput && uploadAvatarBtn) {
 
     try {
       const res = await fetch(`${API_URL}/api/users/${currentUser._id}`, {
-        method: "PUT", // ✅ Sửa lại từ POST thành PUT
+        method: "PUT", // ✅ DÙNG PUT CHO KHỚP BACKEND
         headers: { Authorization: `Bearer ${token}` },
         body: form,
       });
@@ -886,11 +886,14 @@ if (avatarInput && uploadAvatarBtn) {
       if (!res.ok) throw new Error("Không thể cập nhật ảnh.");
 
       const json = await res.json();
+      console.log("Avatar response:", json); // ✅ Kiểm tra server trả gì
 
-      // cập nhật lại avatar hiển thị
-      const newUrl = json.avatar || json.url || json.path;
+      const newUrl = json.avatar || json.user?.avatar || null; // ✅ đọc đúng field
       if (newUrl) {
-        currentUser.avatar = newUrl;
+        const fullUrl = newUrl.startsWith("http")
+          ? newUrl
+          : `${API_URL}${newUrl}`;
+        currentUser.avatar = fullUrl;
         localStorage.setItem("currentUser", JSON.stringify(currentUser));
 
         const avatars = [
@@ -898,15 +901,15 @@ if (avatarInput && uploadAvatarBtn) {
           document.getElementById("nav-avatar"),
           document.getElementById("create-avatar"),
         ];
-        avatars.forEach((el) => el && (el.src = newUrl));
+        avatars.forEach((el) => el && (el.src = fullUrl));
 
         alert("✅ Ảnh đại diện đã được cập nhật!");
       } else {
-        alert("Cập nhật ảnh không thành công!");
+        alert("⚠️ Cập nhật ảnh không thành công!");
       }
     } catch (e) {
       console.error("Upload avatar error:", e);
-      alert("Lỗi khi tải ảnh lên server!");
+      alert("❌ Lỗi khi tải ảnh lên server!");
     }
   });
 }
