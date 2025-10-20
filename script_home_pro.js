@@ -864,6 +864,37 @@ document.getElementById("logout-mobile")?.addEventListener("click", () => {
   localStorage.removeItem("token");
   window.location.href = "index.html";
 });
+// === Logout cho mobile ===
+document.getElementById("logout-mobile")?.addEventListener("click", () => {
+  localStorage.removeItem("token");
+  window.location.href = "index.html";
+});
+
+// === Ẩn nút đăng xuất trên mobile khi bật chat ===
+function isMobile() {
+  return window.innerWidth <= 768; // ngưỡng cho mobile
+}
+
+function updateLogoutVisibilityMobile() {
+  const logoutBtn = document.getElementById("logout-mobile");
+  if (!logoutBtn) return;
+  const hasChat = document.querySelectorAll(".chat-window").length > 0;
+  // ẩn chỉ khi đang ở mobile và có cửa sổ chat mở
+  if (isMobile()) {
+    logoutBtn.style.display = hasChat ? "none" : "block";
+  } else {
+    logoutBtn.style.display = "block"; // desktop luôn hiện
+  }
+}
+
+// Quan sát thay đổi số lượng chat
+const mobileChatObserver = new MutationObserver(updateLogoutVisibilityMobile);
+mobileChatObserver.observe(document.body, { childList: true, subtree: true });
+
+// Cập nhật ngay khi load trang
+window.addEventListener("resize", updateLogoutVisibilityMobile);
+window.addEventListener("load", updateLogoutVisibilityMobile);
+
 // === ĐỔI ẢNH AVATAR NGƯỜI DÙNG (Chuẩn PUT, đọc đúng response) ===
 const avatarInput = document.getElementById("avatar-input");
 const uploadAvatarBtn = document.getElementById("upload-avatar-btn");
