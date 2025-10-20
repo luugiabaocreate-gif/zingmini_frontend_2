@@ -704,11 +704,11 @@ body.dark .chat-window .message.them::before {
 @media screen and (max-width: 900px) {
   /* Sidebar trái: chữ đen khi nền sáng */
   body:not(.dark) .left-menu a {
-    color: #111 !important;
+    color: #1e06fa !important;
   }
 
   /* Sidebar trái: chữ sáng khi nền tối */
   body.dark .left-menu a {
-    color: #045ff3 !important;
+    color: #e8f1ff !important;
   }
 }
