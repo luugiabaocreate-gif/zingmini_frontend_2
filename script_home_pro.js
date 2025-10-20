@@ -864,3 +864,49 @@ document.getElementById("logout-mobile")?.addEventListener("click", () => {
   localStorage.removeItem("token");
   window.location.href = "index.html";
 });
+// === ĐỔI ẢNH AVATAR NGƯỜI DÙNG ===
+const avatarInput = document.getElementById("avatar-input");
+const uploadAvatarBtn = document.getElementById("upload-avatar-btn");
+
+if (avatarInput && uploadAvatarBtn) {
+  uploadAvatarBtn.addEventListener("click", async () => {
+    const file = avatarInput.files?.[0];
+    if (!file) return alert("Vui lòng chọn ảnh trước!");
+
+    const form = new FormData();
+    form.append("avatar", file);
+
+    try {
+      const res = await fetch(`${API_URL}/api/users/${currentUser._id}/avatar`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      });
+
+      if (!res.ok) throw new Error("Không thể cập nhật ảnh.");
+
+      const json = await res.json();
+
+      // cập nhật lại avatar hiển thị
+      const newUrl = json.avatar || json.url || json.path;
+      if (newUrl) {
+        currentUser.avatar = newUrl;
+        localStorage.setItem("currentUser", JSON.stringify(currentUser));
+
+        const avatars = [
+          document.getElementById("left-avatar"),
+          document.getElementById("nav-avatar"),
+          document.getElementById("create-avatar"),
+        ];
+        avatars.forEach((el) => el && (el.src = newUrl));
+
+        alert("✅ Ảnh đại diện đã được cập nhật!");
+      } else {
+        alert("Cập nhật ảnh không thành công!");
+      }
+    } catch (e) {
+      console.error("Upload avatar error:", e);
+      alert("Lỗi khi tải ảnh lên server!");
+    }
+  });
+}
