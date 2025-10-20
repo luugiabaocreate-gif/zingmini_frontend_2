@@ -49,12 +49,17 @@ body {
 }
 
 /* Texts */
-a, .nav-btn, .btn, .left-menu a, .section-title {
+a,
+.nav-btn,
+.btn,
+.left-menu a,
+.section-title {
   color: var(--text-strong) !important;
 }
 
 /* Inputs */
-input, textarea {
+input,
+textarea {
   background: var(--input-bg) !important;
   color: var(--text-main) !important;
   border: 1px solid var(--border) !important;
@@ -80,4 +85,27 @@ input, textarea {
 .btn.primary {
   background: linear-gradient(90deg, var(--text-strong), #0044aa) !important;
   color: #fff !important;
+}
+/* === Fix màu chữ chat trên mobile dark mode === */
+@media (max-width: 900px) {
+  body.dark .chat-window .message,
+  body.dark .chat-window .chat-text,
+  body.dark .chat-window input[type="text"],
+  body.dark .chat-window button {
+    color: #fff !important;
+  }
+
+  body.dark .chat-window {
+    background-color: #0d1117 !important; /* cho rõ nền */
+  }
+
+  body.dark .chat-window .chat-bubble {
+    background-color: #1a1f24 !important;
+    color: #e6e6e6 !important;
+  }
+
+  body.dark .chat-window .chat-bubble.self {
+    background-color: #0059ff !important;
+    color: #fff !important;
+  }
 }
