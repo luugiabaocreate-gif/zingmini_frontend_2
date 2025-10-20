@@ -597,7 +597,7 @@ body.dark .post-content p {
     display: none !important;
   }
 }
-/* Khi màn hình nhỏ, ẩn hai cột nhưng có nút mở — bản tối ưu */
+/* Khi màn hình nhỏ, ẩn hai cột nhưng có nút mở */
 @media (max-width: 900px) {
   .zm-container {
     grid-template-columns: 1fr; /* chỉ giữ lại phần giữa */
@@ -610,37 +610,21 @@ body.dark .post-content p {
     position: fixed;
     top: 64px;
     bottom: 0;
-    background: #ffffff; /* nền trắng */
-    color: #07203a; /* chữ tối */
+    background: #fff;
     width: 260px;
     overflow-y: auto;
-    box-shadow: 0 0 18px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 0 18px rgba(0, 0, 0, 0.1);
     z-index: 1200;
     transition: transform 0.3s ease;
   }
 
-  .left-col.show,
-  .right-col.show {
+  .left-col.show {
     display: block;
     transform: translateX(0);
   }
-
-  /* tất cả chữ trong menu hiển thị rõ */
-  .left-col.show *,
-  .right-col.show * {
-    color: #07203a !important;
-    background: transparent !important;
-  }
-
-  .left-col.show a,
-  .right-col.show a {
-    color: #0076ff !important;
-    font-weight: 600;
-  }
-
-  .left-col.show a:hover,
-  .right-col.show a:hover {
-    color: #0056b3 !important;
+  .right-col.show {
+    display: block;
+    transform: translateX(0);
   }
 
   /* Nút mở menu */
@@ -650,15 +634,14 @@ body.dark .post-content p {
     top: 72px;
     width: 38px;
     height: 38px;
-    background: #ffffff; /* nền trắng */
-    color: #0076ff; /* icon xanh */
+    background: linear-gradient(135deg, #0076ff, #005bb5);
+    color: #fff;
     border-radius: 50%;
-    box-shadow: 0 6px 12px rgba(0, 118, 255, 0.12);
+    box-shadow: 0 6px 12px rgba(0, 118, 255, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1300;
-    border: 1px solid rgba(0, 0, 0, 0.06);
   }
 
   .menu-toggle-left {
