@@ -666,7 +666,7 @@ body.dark .post-content p {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1500;
+    z-index: 900;
   }
 }
 /* === FIX: sidebar text + realtime chat contrast === */
