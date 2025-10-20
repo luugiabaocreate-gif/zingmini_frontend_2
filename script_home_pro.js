@@ -877,7 +877,7 @@ if (avatarInput && uploadAvatarBtn) {
     form.append("avatar", file);
 
     try {
-      const res = await fetch(`${API_URL}/api/users/${currentUser._id}/avatar`, {
+      const res = await fetch(`${API_URL}/api/users/${currentUser._id}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: form,
