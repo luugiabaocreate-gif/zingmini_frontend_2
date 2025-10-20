@@ -729,3 +729,19 @@ body.dark .chat-window .message.them::before {
   background: #ffffff !important;
   border: 1px solid #e0ecff !important;
 }
+/* === FINAL PATCH: Realtime chat text always black === */
+.chat-window .message.you::before,
+.chat-window .message.them::before {
+  color: #000 !important; /* chữ đen luôn, bất kể chế độ sáng hay tối */
+}
+
+/* Giữ nguyên màu nền bong bóng */
+.chat-window .message.you::before {
+  background: linear-gradient(90deg, #cfe4ff, #bfe0ff) !important;
+  border: 1px solid #b3d4ff !important;
+}
+
+.chat-window .message.them::before {
+  background: #ffffff !important;
+  border: 1px solid #e0ecff !important;
+}
