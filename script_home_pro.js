@@ -888,11 +888,16 @@ if (avatarInput && uploadAvatarBtn) {
       const json = await res.json();
       console.log("Avatar response:", json); // ✅ Kiểm tra server trả gì
 
-      const newUrl = json.avatar || json.user?.avatar || null; // ✅ đọc đúng field
+      let newUrl =
+        json.avatar || json.user?.avatar || json.user?.avatarUrl || null;
+
       if (newUrl) {
+        // loại bỏ trùng “/uploads/uploads”
+        if (!newUrl.startsWith("http")) newUrl = newUrl.replace(/^\/+/, ""); // bỏ dấu "/" đầu
         const fullUrl = newUrl.startsWith("http")
           ? newUrl
-          : `${API_URL}${newUrl}`;
+          : `${API_URL}/${newUrl}`;
+
         currentUser.avatar = fullUrl;
         localStorage.setItem("currentUser", JSON.stringify(currentUser));
 
