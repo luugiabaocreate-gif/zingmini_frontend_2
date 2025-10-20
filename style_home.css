@@ -651,3 +651,21 @@ body.dark .post-content p {
     right: 10px;
   }
 }
+/* Giữ nút đổi theme luôn hiển thị trên mobile */
+@media (max-width: 900px) {
+  #toggle-theme {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    background: linear-gradient(135deg, #0076ff, #005bb5);
+    color: #fff;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    box-shadow: 0 6px 14px rgba(0, 118, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1500;
+  }
+}
