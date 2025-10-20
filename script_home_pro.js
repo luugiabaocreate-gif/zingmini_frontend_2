@@ -859,3 +859,8 @@ if (rightToggle && rightCol) {
     leftCol?.classList.remove("show");
   });
 }
+// === Logout cho mobile ===
+document.getElementById("logout-mobile")?.addEventListener("click", () => {
+  localStorage.removeItem("token");
+  window.location.href = "index.html";
+});
