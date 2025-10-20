@@ -709,7 +709,18 @@ body.dark .chat-window .message.them::before {
 
   /* Tin nhắn realtime: chữ đen khi nền tối */
   body.dark .chat-window .message.you::before,
-  body.dark .chat-window .message.them::before {
+  body.dark .chat-window .message.them::before,
+  body.dark .chat-window .message.you,
+  body.dark .chat-window .message.them {
     color: #000 !important;
+  }
+
+  /* đảm bảo nền khung chat vẫn giữ sáng để tương phản */
+  body.dark .chat-window .message.you {
+    background: linear-gradient(90deg, #f6f8ff, #e9f1ff) !important;
+  }
+
+  body.dark .chat-window .message.them {
+    background: #ffffff !important;
   }
 }
