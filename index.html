@@ -38,5 +38,13 @@
         loginBox.classList.remove("hidden");
       };
     </script>
+    <!-- Auto redirect nếu đã đăng nhập -->
+<script>
+  const token = localStorage.getItem("token");
+  const user = localStorage.getItem("currentUser");
+  if (token && user) {
+    window.location.href = "home.html";
+  }
+</script>
   </body>
 </html>
