@@ -887,6 +887,10 @@ if (avatarInput && uploadAvatarBtn) {
 
       const json = await res.json();
       console.log("Avatar response:", json);
+      console.log(
+        "🧩 JSON chi tiết từ backend:",
+        JSON.stringify(json, null, 2)
+      );
       let newUrl = null;
 
       // Ưu tiên lấy trong user trước

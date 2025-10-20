@@ -61,41 +61,41 @@ $id("save-profile").addEventListener("click", async () => {
 });
 
 // ===== Đổi ảnh đại diện bằng file upload =====
-const avatarFile = document.getElementById("avatar-file");
-const uploadBtn = document.getElementById("upload-avatar-btn");
-const pfAvatar = document.getElementById("pf-avatar");
+// const avatarFile = document.getElementById("avatar-file");
+// const uploadBtn = document.getElementById("upload-avatar-btn");
+// const pfAvatar = document.getElementById("pf-avatar");
 
-if (uploadBtn && avatarFile && pfAvatar) {
-  uploadBtn.addEventListener("click", async () => {
-    const file = avatarFile.files[0];
-    if (!file) return alert("Vui lòng chọn ảnh!");
+// if (uploadBtn && avatarFile && pfAvatar) {
+//  uploadBtn.addEventListener("click", async () => {
+//    const file = avatarFile.files[0];
+//    if (!file) return alert("Vui lòng chọn ảnh!");
 
-    const form = new FormData();
-    form.append("avatar", file);
+//    const form = new FormData();
+//    form.append("avatar", file);
 
-    try {
-      const res = await fetch(`${API_URL}/api/users/${currentUser._id}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-        body: form,
-      });
+//    try {
+//      const res = await fetch(`${API_URL}/api/users/${currentUser._id}`, {
+//        method: "PUT",
+//        headers: { Authorization: `Bearer ${token}` },
+//        body: form,
+//      });
 
-      if (!res.ok) throw new Error("Cập nhật thất bại");
-      const updated = await res.json();
+//      if (!res.ok) throw new Error("Cập nhật thất bại");
+//      const updated = await res.json();
 
       // Cập nhật localStorage và UI
-      currentUser = { ...currentUser, ...updated };
-      localStorage.setItem("currentUser", JSON.stringify(currentUser));
-      pfAvatar.src = updated.avatar?.startsWith("http")
-        ? updated.avatar
-        : `${API_URL}${updated.avatar}`;
-      alert("✅ Đã đổi ảnh đại diện thành công!");
-    } catch (err) {
-      console.error(err);
-      alert("❌ Lỗi khi tải ảnh lên!");
-    }
-  });
-}
+//      currentUser = { ...currentUser, ...updated };
+//      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+//      pfAvatar.src = updated.avatar?.startsWith("http")
+//        ? updated.avatar
+//        : `${API_URL}${updated.avatar}`;
+//      alert("✅ Đã đổi ảnh đại diện thành công!");
+//    } catch (err) {
+//      console.error(err);
+//      alert("❌ Lỗi khi tải ảnh lên!");
+//    }
+//  });
+//}
 
 // ===== Hiển thị bài viết của người dùng =====
 async function loadUserPosts() {
