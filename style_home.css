@@ -712,3 +712,11 @@ body.dark .chat-window .message.them::before {
     color: #e8f1ff !important;
   }
 }
+/* === CHỐT HẠ: chữ trong chat realtime luôn đen ở cả chế độ sáng & tối === */
+body.dark .chat-window .message.you::before,
+body.dark .chat-window .message.them::before,
+.chat-window .message.you::before,
+.chat-window .message.them::before {
+  color: #000 !important;
+  text-shadow: none !important;
+}
