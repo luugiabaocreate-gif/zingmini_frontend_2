@@ -700,24 +700,19 @@ body.dark .chat-window .message.them::before {
   color: #d8e6ff;
   border: 1px solid #2b3544;
 }
-/* === FIX MÀU CHỮ CHỈ CHO MOBILE (final safe) === */
+/* === FINAL FIX: chữ chat realtime luôn đen, menu trái theo theme === */
 @media screen and (max-width: 900px) {
-  /* Sidebar trái: chữ đen khi nền sáng */
-  body:not(.dark) .left-menu a {
-    color: #111 !important;
-  }
-
-  /* Tin nhắn realtime: CHỈ mobile, đen khi nền tối */
-  body.dark .chat-window .message.you::before,
-  body.dark .chat-window .message.them::before {
+  /* Chat realtime: chữ luôn đen cho dễ đọc */
+  .chat-window .message.you::before,
+  .chat-window .message.them::before {
     color: #000 !important;
   }
 
-  body.dark .chat-window .message.you {
-    background: linear-gradient(90deg, #f6f8ff, #e9f1ff) !important;
+  /* Menu trái theo theme bình thường */
+  body:not(.dark) .left-menu a {
+    color: #111 !important;
   }
-
-  body.dark .chat-window .message.them {
-    background: #ffffff !important;
+  body.dark .left-menu a {
+    color: #e8f1ff !important;
   }
 }
