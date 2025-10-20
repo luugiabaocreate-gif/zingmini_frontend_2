@@ -700,16 +700,16 @@ body.dark .chat-window .message.them::before {
   color: #d8e6ff;
   border: 1px solid #2b3544;
 }
-/* === FIX CHỮ CHO MOBILE (chỉ áp dụng khi nền sáng) === */
+/* === FIX CHỮ CHO MOBILE (chỉ chỉnh màu, không đổi bố cục) === */
 @media (max-width: 900px) {
-  /* Sidebar bên trái: chữ đen dễ đọc khi nền sáng */
+  /* Sidebar bên trái: chữ đen khi nền sáng */
   body:not(.dark) .left-menu a {
     color: #111 !important;
   }
 
-  /* Tin nhắn realtime: đổi chữ thành màu đen khi nền sáng */
-  body:not(.dark) .chat-window .message.you::before,
-  body:not(.dark) .chat-window .message.them::before {
+  /* Tin nhắn realtime: chữ đen khi nền tối */
+  body.dark .chat-window .message.you::before,
+  body.dark .chat-window .message.them::before {
     color: #000 !important;
   }
 }
