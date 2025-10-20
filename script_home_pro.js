@@ -905,9 +905,11 @@ if (avatarInput && uploadAvatarBtn) {
 
       if (newUrl) {
         // chuẩn hóa đường dẫn để tránh lỗi khi backend trả "/uploads/xxx"
-        if (!newUrl.startsWith("http")) {
-          newUrl = newUrl.replace(/^\/+/, ""); // bỏ dấu "/" đầu
-          newUrl = `${API_URL}/${newUrl}`;
+        if (newUrl && !newUrl.startsWith("http")) {
+          // ✅ đảm bảo chỉ có 1 dấu "/"
+          newUrl = `${API_URL}${
+            newUrl.startsWith("/") ? newUrl : "/" + newUrl
+          }`;
         }
 
         currentUser.avatar = newUrl;
