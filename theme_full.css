@@ -86,26 +86,28 @@ textarea {
   background: linear-gradient(90deg, var(--text-strong), #0044aa) !important;
   color: #fff !important;
 }
-/* === Fix màu chữ chat trên mobile dark mode === */
+/* === Fix màu menu trái/phải trên giao diện tối (mobile) === */
 @media (max-width: 900px) {
-  body.dark .chat-window .message,
-  body.dark .chat-window .chat-text,
-  body.dark .chat-window input[type="text"],
-  body.dark .chat-window button {
-    color: #fff !important;
+  .left-col.show,
+  .right-col.show {
+    background: #1e1e1e; /* nền tối hơn cho nổi bật */
+    color: #fff; /* chữ trắng rõ ràng hơn */
   }
 
-  body.dark .chat-window {
-    background-color: #0d1117 !important; /* cho rõ nền */
+  .left-col.show a,
+  .right-col.show a {
+    color: #fff !important; /* ép chữ menu trắng */
   }
 
-  body.dark .chat-window .chat-bubble {
-    background-color: #1a1f24 !important;
-    color: #e6e6e6 !important;
+  .left-col.show a:hover,
+  .right-col.show a:hover {
+    color: #00b3ff !important; /* hover xanh nhạt */
   }
 
-  body.dark .chat-window .chat-bubble.self {
-    background-color: #0059ff !important;
-    color: #fff !important;
+  /* Nút mở menu vẫn giữ nguyên để dễ nhìn */
+  .menu-toggle-left,
+  .menu-toggle-right {
+    background: #0076ff;
+    color: white;
   }
 }
