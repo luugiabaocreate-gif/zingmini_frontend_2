@@ -669,53 +669,34 @@ body.dark .post-content p {
     z-index: 1500;
   }
 }
-/* === FIX FINAL: Sidebar & Realtime Chat colors === */
+/* === FIX: sidebar text + realtime chat contrast === */
 
-/* 1️⃣ Chat Realtime – tăng độ tương phản chữ */
+/* Giữ chữ sidebar có màu rõ trên nền sáng */
+.left-menu a {
+  color: #00408a;
+  font-weight: 600;
+}
+
+/* Khi ở dark mode, sidebar chữ sáng lên */
+body.dark .left-menu a {
+  color: #dbe9ff;
+}
+
+/* Realtime chat contrast fix */
 .chat-window .message.you::before {
   background: linear-gradient(90deg, #cfe4ff, #bfe0ff);
-  color: #00224d; /* chữ đậm hơn, dễ đọc */
+  color: #0a1630; /* đậm hơn để nổi bật */
   border: 1px solid #b3d4ff;
 }
 
-.chat-window .message.them::before {
-  background: #ffffff;
-  color: #001a3a; /* chữ đậm hơn */
-  border: 1px solid #e0ecff;
-}
-
-/* Dark mode chat (chống lẫn màu sáng) */
 body.dark .chat-window .message.you::before {
-  background: linear-gradient(90deg, #0056b3, #003e80);
-  color: #e8f1ff;
-  border: 1px solid #004a99;
+  background: linear-gradient(90deg, #274b70, #1c395f);
+  color: #e8f3ff;
+  border: 1px solid #345a80;
 }
+
 body.dark .chat-window .message.them::before {
-  background: #1a1d22;
-  color: #e5edff;
-  border: 1px solid #2d3748;
-}
-
-/* 2️⃣ Sidebar bên trái – giữ màu rõ ràng trong mọi theme */
-.left-col {
-  color: #0a1e3f;
-}
-.left-col a {
-  color: #0076ff;
-  font-weight: 600;
-}
-.left-col .small {
-  color: #5c6b80;
-}
-
-/* Dark mode sidebar */
-body.dark .left-col {
-  background: #0f1114;
-  color: #e5edff;
-}
-body.dark .left-col a {
-  color: #69aaff;
-}
-body.dark .left-col .small {
-  color: #b7c5e0;
+  background: #1a1f26;
+  color: #d8e6ff;
+  border: 1px solid #2b3544;
 }
