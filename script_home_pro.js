@@ -886,14 +886,16 @@ if (avatarInput && uploadAvatarBtn) {
       if (!res.ok) throw new Error("Không thể cập nhật ảnh.");
 
       const json = await res.json();
-      console.log("Avatar response:", json); // xem phản hồi server
+      console.log("Avatar response:", json);
+      let newUrl = null;
 
-      let newUrl =
-        json.avatar ||
-        json.user?.avatar ||
-        json.user?.path ||
-        json.user?.url ||
-        null;
+      // Ưu tiên lấy trong user trước
+      if (json?.user?.avatar) newUrl = json.user.avatar;
+      else if (json?.avatar) newUrl = json.avatar;
+      else if (json?.user?.avatarUrl) newUrl = json.user.avatarUrl;
+
+      // In kiểm tra
+      console.log("Ảnh backend trả về:", newUrl);
 
       console.log("Ảnh backend trả về:", newUrl);
 
