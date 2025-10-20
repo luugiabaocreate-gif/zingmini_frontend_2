@@ -886,30 +886,30 @@ if (avatarInput && uploadAvatarBtn) {
       if (!res.ok) throw new Error("Không thể cập nhật ảnh.");
 
       const json = await res.json();
-      console.log("Avatar response:", json); // ✅ Kiểm tra server trả gì
+      console.log("Avatar response:", json); // xem phản hồi server
 
       let newUrl =
         json.avatar || json.user?.avatar || json.user?.avatarUrl || null;
 
       if (newUrl) {
-        // loại bỏ trùng “/uploads/uploads”
-        if (!newUrl.startsWith("http")) newUrl = newUrl.replace(/^\/+/, ""); // bỏ dấu "/" đầu
-        const fullUrl = newUrl.startsWith("http")
-          ? newUrl
-          : `${API_URL}/${newUrl}`;
+        // chuẩn hóa đường dẫn để tránh lỗi khi backend trả "/uploads/xxx"
+        if (!newUrl.startsWith("http")) {
+          newUrl = newUrl.replace(/^\/+/, ""); // bỏ dấu "/" đầu
+          newUrl = `${API_URL}/${newUrl}`;
+        }
 
-        currentUser.avatar = fullUrl;
+        currentUser.avatar = newUrl;
         localStorage.setItem("currentUser", JSON.stringify(currentUser));
 
-        const avatars = [
-          document.getElementById("left-avatar"),
-          document.getElementById("nav-avatar"),
-          document.getElementById("create-avatar"),
-        ];
-        avatars.forEach((el) => el && (el.src = fullUrl));
+        // cập nhật lại ảnh trong giao diện
+        ["left-avatar", "nav-avatar", "create-avatar"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.src = newUrl;
+        });
 
         alert("✅ Ảnh đại diện đã được cập nhật!");
       } else {
+        console.warn("⚠️ Không tìm thấy đường dẫn ảnh trong phản hồi:", json);
         alert("⚠️ Cập nhật ảnh không thành công!");
       }
     } catch (e) {
