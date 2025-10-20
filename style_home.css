@@ -700,3 +700,21 @@ body.dark .chat-window .message.them::before {
   color: #d8e6ff;
   border: 1px solid #2b3544;
 }
+
+@media screen and (max-width: 900px) {
+  /* Sidebar trái: chữ đen khi nền sáng */
+  body:not(.dark) .left-menu a {
+    color: #111 !important;
+  }
+
+  /* Sidebar trái: chữ sáng khi nền tối */
+  body.dark .left-menu a {
+    color: #e8f1ff !important;
+  }
+}
+
+/* === FINAL GLOBAL FIX: chữ trong chat realtime đen khi nền tối === */
+body.dark .chat-window .message.you::before,
+body.dark .chat-window .message.them::before {
+  color: #000 !important;
+}
