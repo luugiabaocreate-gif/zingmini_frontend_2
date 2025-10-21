@@ -746,54 +746,75 @@ const observer = new MutationObserver(() => {
   });
 });
 observer.observe(document.body, { childList: true, subtree: true });
-function openCommentBox(postId) {
+// ==== HIỆN / LƯU / TẢI LẠI BÌNH LUẬN ====
+async function openCommentBox(postId) {
   const postCard = document.querySelector(`[data-post-id="${postId}"]`);
   if (!postCard) return;
 
-  // kiểm tra nếu đã có comment box thì ẩn/hiện
-  let box = postCard.querySelector(".comment-box");
-  if (box) {
-    box.remove();
+  // nếu đang mở thì đóng lại
+  let existing = postCard.querySelector(".comment-box");
+  if (existing) {
+    existing.remove();
     return;
   }
 
-  // tạo khung bình luận
-  box = document.createElement("div");
+  // khung bình luận
+  const box = document.createElement("div");
   box.className = "comment-box";
   box.style.marginTop = "10px";
   box.innerHTML = `
     <div style="display:flex;gap:8px;align-items:center">
       <img src="${
         currentUser.avatar || `https://i.pravatar.cc/36?u=${currentUser._id}`
-      }" 
+      }"
            style="width:36px;height:36px;border-radius:50%" />
-      <input class="comment-input" placeholder="Viết bình luận..." 
+      <input class="comment-input" placeholder="Viết bình luận..."
              style="flex:1;padding:6px;border:1px solid #d7eefe;border-radius:8px"/>
       <button class="btn send-comment">Gửi</button>
     </div>
-    <div class="comment-list" style="margin-top:8px;display:flex;flex-direction:column;gap:4px"></div>
+    <div class="comment-list" style="margin-top:8px;display:flex;flex-direction:column;gap:6px"></div>
   `;
-
   postCard.appendChild(box);
 
   const input = box.querySelector(".comment-input");
   const sendBtn = box.querySelector(".send-comment");
   const list = box.querySelector(".comment-list");
 
+  // 🧩 Bước 1: tải các comment có sẵn
+  try {
+    const comments = await apiFetch(`${API_URL}/api/comments/post/${postId}`);
+    if (Array.isArray(comments) && comments.length) {
+      comments.forEach((c) => {
+        const item = document.createElement("div");
+        item.style.padding = "4px 6px";
+        item.style.background = "#f6fbff";
+        item.style.borderRadius = "6px";
+        item.innerHTML = `<b>${escapeHtml(
+          c.userName || "Ẩn danh"
+        )}:</b> ${escapeHtml(c.text)}`;
+        list.appendChild(item);
+      });
+    }
+  } catch (err) {
+    console.warn("Không thể tải bình luận:", err);
+  }
+
+  // 🧩 Bước 2: gửi comment mới
   sendBtn.addEventListener("click", async () => {
     const text = input.value.trim();
     if (!text) return;
-    const item = document.createElement("div");
-    item.style.padding = "4px 6px";
-    item.style.background = "#f6fbff";
-    item.style.borderRadius = "6px";
-    item.innerHTML = `<b>${currentUser.name}:</b> ${escapeHtml(text)}`;
-    list.appendChild(item);
+    const temp = document.createElement("div");
+    temp.style.padding = "4px 6px";
+    temp.style.background = "#f6fbff";
+    temp.style.borderRadius = "6px";
+    temp.innerHTML = `<b>${escapeHtml(currentUser.name)}:</b> ${escapeHtml(
+      text
+    )}`;
+    list.appendChild(temp);
     input.value = "";
 
-    // gửi về backend nếu có API
     try {
-      await apiFetch(`${API_URL}/api/comments`, {
+      const res = await apiFetch(`${API_URL}/api/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -806,11 +827,13 @@ function openCommentBox(postId) {
           userId: currentUser._id,
         }),
       });
-    } catch (e) {
-      console.warn("Comment save failed:", e);
+      console.log("✅ Bình luận đã lưu:", res);
+    } catch (err) {
+      console.warn("❌ Lỗi khi lưu bình luận:", err);
     }
   });
 }
+
 // ==== MENU SIDEBAR ACTIONS ====
 
 // Lấy danh sách tất cả liên kết trong menu trái
