@@ -487,13 +487,21 @@ function openChatWindow(friendId, friendName) {
   win.className = "chat-window";
   win.dataset.uid = friendId;
   win.innerHTML = `
-    <div class="head"><div style="display:flex;align-items:center;gap:8px"><div>${escapeHtml(
-      friendName
-    )}</div></div>
-      <div><button class="mini collapse">_</button><button class="mini close">×</button></div>
+    <div class="head">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div>${escapeHtml(friendName)}</div>
+        <button class="btn btn-voice" title="Gọi thoại">📞</button>
+      </div>
+      <div>
+        <button class="mini collapse">_</button>
+        <button class="mini close">×</button>
+      </div>
     </div>
     <div class="body"></div>
-    <div class="foot"><input class="cw-input" placeholder="Nhập tin nhắn..."/><button class="cw-send btn">Gửi</button></div>
+    <div class="foot">
+      <input class="cw-input" placeholder="Nhập tin nhắn..."/>
+      <button class="cw-send btn">Gửi</button>
+    </div>
   `;
   chatWindowsRoot.prepend(win);
   chatWindowsRoot.style.pointerEvents = "auto";
@@ -503,6 +511,11 @@ function openChatWindow(friendId, friendName) {
   const sendBtn = win.querySelector(".cw-send");
   const closeBtn = win.querySelector(".close");
   const collapseBtn = win.querySelector(".collapse");
+  // 🎧 Nút gọi thoại
+  const voiceBtn = win.querySelector(".btn-voice");
+  voiceBtn.addEventListener("click", () => {
+    startVoiceCall(friendId, friendName);
+  });
 
   // load history — ensure newest-first display
   (async () => {
@@ -746,6 +759,150 @@ const observer = new MutationObserver(() => {
   });
 });
 observer.observe(document.body, { childList: true, subtree: true });
+/******************************************************
+ * 🎧 VOICE CALL FEATURE — WebRTC + Socket.IO
+ ******************************************************/
+let currentPeer = null;
+let localStream = null;
+let remoteAudioEl = null;
+
+async function startVoiceCall(friendId, friendName) {
+  if (!socket || !socket.connected) return alert("Socket chưa sẵn sàng!");
+  if (currentPeer) return alert("Bạn đang trong một cuộc gọi khác!");
+
+  const pc = new RTCPeerConnection({
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+  });
+  currentPeer = pc;
+
+  // lấy micro
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (err) {
+    alert("Không thể truy cập micro: " + err.message);
+    currentPeer = null;
+    return;
+  }
+
+  localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+
+  pc.onicecandidate = (e) => {
+    if (e.candidate)
+      socket.emit("call-ice", { to: friendId, candidate: e.candidate });
+  };
+
+  pc.ontrack = (e) => {
+    if (!remoteAudioEl) {
+      remoteAudioEl = document.createElement("audio");
+      remoteAudioEl.autoplay = true;
+      document.body.appendChild(remoteAudioEl);
+    }
+    remoteAudioEl.srcObject = e.streams[0];
+  };
+
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  socket.emit("call-offer", {
+    to: friendId,
+    offer,
+    from: currentUser._id,
+    userName: currentUser.name,
+  });
+
+  alert(`📞 Đang gọi ${friendName}...`);
+}
+
+// Nhận cuộc gọi
+socket.on("call-offer", async (data) => {
+  if (!confirm(`📞 ${data.userName} đang gọi bạn. Nhận cuộc gọi?`)) {
+    socket.emit("call-end", { to: data.from });
+    return;
+  }
+
+  const pc = new RTCPeerConnection({
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+  });
+  currentPeer = pc;
+
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (err) {
+    alert("Không thể mở micro: " + err.message);
+    socket.emit("call-end", { to: data.from });
+    return;
+  }
+
+  localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+
+  pc.onicecandidate = (e) => {
+    if (e.candidate)
+      socket.emit("call-ice", { to: data.from, candidate: e.candidate });
+  };
+
+  pc.ontrack = (e) => {
+    if (!remoteAudioEl) {
+      remoteAudioEl = document.createElement("audio");
+      remoteAudioEl.autoplay = true;
+      document.body.appendChild(remoteAudioEl);
+    }
+    remoteAudioEl.srcObject = e.streams[0];
+  };
+
+  await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  socket.emit("call-answer", { to: data.from, answer });
+});
+
+// Nhận phản hồi
+socket.on("call-answer", async (data) => {
+  if (currentPeer) {
+    await currentPeer.setRemoteDescription(
+      new RTCSessionDescription(data.answer)
+    );
+  }
+});
+
+// ICE candidates
+socket.on("call-ice", async (data) => {
+  if (currentPeer && data.candidate) {
+    try {
+      await currentPeer.addIceCandidate(new RTCIceCandidate(data.candidate));
+    } catch (e) {
+      console.warn("ICE error:", e);
+    }
+  }
+});
+
+// Kết thúc
+socket.on("call-end", () => {
+  endVoiceCall();
+});
+
+function endVoiceCall() {
+  if (localStream) {
+    localStream.getTracks().forEach((t) => t.stop());
+    localStream = null;
+  }
+  if (currentPeer) {
+    currentPeer.close();
+    currentPeer = null;
+  }
+  if (remoteAudioEl) {
+    remoteAudioEl.remove();
+    remoteAudioEl = null;
+  }
+  alert("📴 Cuộc gọi đã kết thúc");
+}
+
+// ESC = kết thúc cuộc gọi
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && currentPeer) {
+    socket.emit("call-end", { to: null });
+    endVoiceCall();
+  }
+});
+
 // ==== HIỆN / LƯU / TẢI LẠI BÌNH LUẬN ====
 async function openCommentBox(postId) {
   const postCard = document.querySelector(`[data-post-id="${postId}"]`);
