@@ -918,9 +918,32 @@ mobileChatObserver.observe(document.body, { childList: true, subtree: true });
 window.addEventListener("resize", updateLogoutVisibilityMobile);
 window.addEventListener("load", updateLogoutVisibilityMobile);
 
-// === ĐỔI ẢNH AVATAR NGƯỜI DÙNG (Chuẩn PUT, giữ ảnh khi reload) ===
+// ------------ Upload avatar & persist (replace older block) ------------
 const avatarInput = document.getElementById("avatar-input");
 const uploadAvatarBtn = document.getElementById("upload-avatar-btn");
+
+async function fetchAndStoreCurrentUser() {
+  // gọi server lấy user mới (đảm bảo giữ avatar sau reload)
+  try {
+    const res = await fetch(`${API_URL}/api/users/${currentUser._id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Không tải được thông tin user từ server");
+    const user = await res.json();
+    // nếu API trả object user bên trong, điều chỉnh cho phù hợp:
+    const finalUser = user.user || user;
+    // lưu xuống localStorage
+    localStorage.setItem("currentUser", JSON.stringify(finalUser));
+    // cập nhật biến currentUser trong bộ nhớ (nếu cần)
+    // NOTE: currentUser được khai báo const ở trên, nên để tránh lỗi chúng ta lấy lại từ localStorage khi cần hiển thị
+    ["left-avatar", "nav-avatar", "create-avatar"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.src = finalUser.avatar || el.src;
+    });
+  } catch (err) {
+    console.warn("fetchAndStoreCurrentUser error:", err);
+  }
+}
 
 if (avatarInput && uploadAvatarBtn) {
   uploadAvatarBtn.addEventListener("click", async () => {
@@ -933,71 +956,93 @@ if (avatarInput && uploadAvatarBtn) {
     try {
       const res = await fetch(`${API_URL}/api/users/${currentUser._id}`, {
         method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`, // không set Content-Type khi gửi FormData
+        },
         body: form,
       });
 
-      if (!res.ok) throw new Error("Không thể cập nhật ảnh.");
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        let errMsg = "Không thể cập nhật ảnh.";
+        try {
+          const parsed = JSON.parse(t);
+          errMsg = parsed.message || errMsg;
+        } catch (e) {}
+        throw new Error(errMsg);
+      }
 
       const json = await res.json();
       console.log("🧩 JSON từ backend:", json);
 
+      // backend có thể trả { success:true, avatar: '/uploads/xxx', user: {...} }
       let newUrl =
-        json?.user?.avatar || json?.avatar || json?.user?.avatarUrl || null;
+        (json && (json.user?.avatar || json.avatar || json.user?.avatarUrl)) ||
+        null;
 
+      // bình thường backend nên trả URL hoàn chỉnh. Nếu trả đường dẫn relative thì prepend API_URL
       if (newUrl && !newUrl.startsWith("http")) {
-        // đảm bảo đường dẫn đầy đủ
         newUrl = `${API_URL}${newUrl.startsWith("/") ? newUrl : "/" + newUrl}`;
       }
 
-      if (newUrl) {
-        // ✅ Cập nhật lại đối tượng currentUser và lưu
-        const updatedUser = { ...currentUser, avatar: newUrl };
-        localStorage.setItem("currentUser", JSON.stringify(updatedUser));
-
-        // ✅ Cập nhật giao diện
-        ["left-avatar", "nav-avatar", "create-avatar"].forEach((id) => {
-          const el = document.getElementById(id);
-          if (el) el.src = newUrl;
-        });
-
-        // ✅ Nếu có phần tử ảnh khác (vd: avatar ở khung bình luận, post, sidebar)
-        document.querySelectorAll("img").forEach((img) => {
-          if (img.src.includes(currentUser.avatar)) img.src = newUrl;
-        });
-
-        alert("✅ Ảnh đại diện đã được cập nhật!");
-        // ✅ Đồng bộ avatar mới cho toàn bộ khung chat đang mở
-        document
-          .querySelectorAll(".chat-window .head div:first-child img")
-          .forEach((img) => {
-            if (img.dataset.id === currentUser._id) img.src = newUrl;
-          });
-
-        // ✅ Cập nhật avatar mới cho tất cả tin nhắn của chính bạn (đã gửi trước đó)
-        document.querySelectorAll(".message.you img").forEach((img) => {
-          img.src = newUrl;
-        });
-
-        // ✅ Nếu tin nhắn của bạn chưa có ảnh avatar thì tự thêm vào (tuỳ UI của bạn)
-        document.querySelectorAll(".message.you").forEach((msg) => {
-          if (!msg.querySelector("img")) {
-            const img = document.createElement("img");
-            img.src = newUrl;
-            img.style.width = "24px";
-            img.style.height = "24px";
-            img.style.borderRadius = "50%";
-            img.style.marginRight = "6px";
-            msg.prepend(img);
-          }
-        });
-      } else {
-        console.warn("⚠️ Không tìm thấy URL ảnh trong phản hồi:", json);
-        alert("⚠️ Cập nhật ảnh không thành công!");
+      if (!newUrl) {
+        // cố gắng lấy từ user object nếu API trả user
+        const candidate = json.user?.avatar || json.user?.avatarUrl;
+        if (candidate) {
+          newUrl = candidate.startsWith("http")
+            ? candidate
+            : `${API_URL}${
+                candidate.startsWith("/") ? candidate : "/" + candidate
+              }`;
+        }
       }
+
+      if (!newUrl) {
+        return alert("⚠️ Không tìm thấy URL ảnh trong phản hồi từ server.");
+      }
+
+      // cập nhật localStorage: lấy currentUser từ storage (tránh ghi đè thông tin khác)
+      try {
+        const stored = JSON.parse(localStorage.getItem("currentUser") || "{}");
+        stored.avatar = newUrl;
+        localStorage.setItem("currentUser", JSON.stringify(stored));
+      } catch (e) {
+        // fallback: ghi trực tiếp
+        localStorage.setItem(
+          "currentUser",
+          JSON.stringify({ ...currentUser, avatar: newUrl })
+        );
+      }
+
+      // cập nhật giao diện ngay
+      ["left-avatar", "nav-avatar", "create-avatar"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.src = newUrl;
+      });
+
+      // cập nhật avatar trong posts/friends/chat nếu src chứa cũ
+      document.querySelectorAll("img").forEach((img) => {
+        // tránh trường hợp img.src trả về absolute url so sánh khác nhau: so sánh phần cuối đường dẫn
+        try {
+          const src = img.getAttribute("src") || "";
+          if (!src) return;
+          const filenameOld = (currentUser.avatar || "")
+            .split("/")
+            .slice(-1)[0];
+          const filenameImg = src.split("/").slice(-1)[0];
+          if (filenameOld && filenameImg && filenameOld === filenameImg) {
+            img.src = newUrl;
+          }
+        } catch (e) {}
+      });
+
+      alert("✅ Ảnh đại diện đã được cập nhật và lưu!");
+
+      // optional: gọi lại fetchAndStoreCurrentUser để chắc chắn user ở server đã cập nhật
+      fetchAndStoreCurrentUser();
     } catch (e) {
-      console.error("❌ Upload avatar error:", e);
-      alert("Lỗi khi tải ảnh lên server!");
+      console.error("Upload avatar error:", e);
+      alert(`❌ Lỗi khi tải ảnh lên server: ${e.message || e}`);
     }
   });
 }
