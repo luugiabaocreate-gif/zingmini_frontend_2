@@ -795,9 +795,27 @@ async function startVoiceCall(friendId, friendName) {
     if (!remoteAudioEl) {
       remoteAudioEl = document.createElement("audio");
       remoteAudioEl.autoplay = true;
+      remoteAudioEl.playsInline = true; // ✅ cho phép phát audio trên iPhone
+      remoteAudioEl.controls = true; // ✅ hiển thị nút play nếu bị chặn autoplay
+      remoteAudioEl.style.position = "fixed";
+      remoteAudioEl.style.bottom = "10px";
+      remoteAudioEl.style.left = "10px";
+      remoteAudioEl.style.zIndex = "9999";
       document.body.appendChild(remoteAudioEl);
     }
+
+    console.log("🔊 Nhận stream audio từ peer:", e.streams[0]);
     remoteAudioEl.srcObject = e.streams[0];
+
+    const playAudio = async () => {
+      try {
+        await remoteAudioEl.play();
+        console.log("🎧 Phát âm thanh thành công!");
+      } catch (err) {
+        console.warn("⚠️ Audio chưa phát được, chờ người dùng tương tác:", err);
+      }
+    };
+    playAudio();
   };
 
   const offer = await pc.createOffer();
@@ -862,9 +880,27 @@ socket.on("call-offer", async (data) => {
     if (!remoteAudioEl) {
       remoteAudioEl = document.createElement("audio");
       remoteAudioEl.autoplay = true;
+      remoteAudioEl.playsInline = true; // ✅ cho phép phát audio trên iPhone
+      remoteAudioEl.controls = true; // ✅ hiển thị nút play nếu bị chặn autoplay
+      remoteAudioEl.style.position = "fixed";
+      remoteAudioEl.style.bottom = "10px";
+      remoteAudioEl.style.left = "10px";
+      remoteAudioEl.style.zIndex = "9999";
       document.body.appendChild(remoteAudioEl);
     }
+
+    console.log("🔊 Nhận stream audio từ peer:", e.streams[0]);
     remoteAudioEl.srcObject = e.streams[0];
+
+    const playAudio = async () => {
+      try {
+        await remoteAudioEl.play();
+        console.log("🎧 Phát âm thanh thành công!");
+      } catch (err) {
+        console.warn("⚠️ Audio chưa phát được, chờ người dùng tương tác:", err);
+      }
+    };
+    playAudio();
   };
 
   await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
