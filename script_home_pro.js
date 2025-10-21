@@ -1393,6 +1393,9 @@ if (avatarInput && uploadAvatarBtn) {
 let currentVideoPeer = null;
 let localVideoStream = null;
 
+/**
+ * Khởi tạo cuộc gọi video
+ */
 async function startVideoCall(friendId, friendName) {
   if (!socket || !socket.connected) return alert("Socket chưa sẵn sàng!");
   if (currentVideoPeer) return alert("Bạn đang trong một cuộc gọi video khác!");
@@ -1420,12 +1423,14 @@ async function startVideoCall(friendId, friendName) {
     return;
   }
 
+  // Thêm stream local
   localVideoStream
     .getTracks()
     .forEach((track) => pc.addTrack(track, localVideoStream));
 
-  // hiển thị video local
+  // Hiển thị video local
   const localEl = document.createElement("video");
+  localEl.setAttribute("data-zm-video", "local");
   localEl.autoplay = true;
   localEl.muted = true;
   localEl.srcObject = localVideoStream;
@@ -1439,8 +1444,9 @@ async function startVideoCall(friendId, friendName) {
   `;
   document.body.appendChild(localEl);
 
-  // remote video
+  // Tạo video remote
   const remoteEl = document.createElement("video");
+  remoteEl.setAttribute("data-zm-video", "remote");
   remoteEl.autoplay = true;
   remoteEl.playsInline = true;
   remoteEl.controls = true;
@@ -1455,27 +1461,34 @@ async function startVideoCall(friendId, friendName) {
   document.body.appendChild(remoteEl);
 
   pc.ontrack = (e) => {
+    console.log("📹 Nhận remote stream video:", e.streams[0]);
     remoteEl.srcObject = e.streams[0];
   };
 
+  // Gửi ICE candidate
   pc.onicecandidate = (e) => {
     if (e.candidate)
-      socket.emit("call-ice", { to: friendId, candidate: e.candidate });
+      socket.emit("call-ice", {
+        to: friendId,
+        candidate: e.candidate,
+        type: "video",
+      });
   };
 
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
+
   socket.emit("call-offer", {
     to: friendId,
     offer,
     from: currentUser._id,
     userName: currentUser.name,
-    type: "video", // 👈 thêm type để phân biệt
+    type: "video",
   });
 
   alert(`🎥 Đang gọi video ${friendName}...`);
 
-  // nút kết thúc
+  // Nút kết thúc
   const endBtn = document.createElement("button");
   endBtn.textContent = "📴 Kết thúc video call";
   endBtn.className = "btn end-call-btn";
@@ -1489,11 +1502,14 @@ async function startVideoCall(friendId, friendName) {
 
   endBtn.addEventListener("click", () => {
     socket.emit("call-end", { to: friendId });
-    endVideoCall(localEl, remoteEl, endBtn);
+    endVideoCall();
   });
 }
 
-function endVideoCall(localEl, remoteEl, btn) {
+/**
+ * Kết thúc cuộc gọi video
+ */
+function endVideoCall() {
   if (localVideoStream) {
     localVideoStream.getTracks().forEach((t) => t.stop());
     localVideoStream = null;
@@ -1502,9 +1518,15 @@ function endVideoCall(localEl, remoteEl, btn) {
     currentVideoPeer.close();
     currentVideoPeer = null;
   }
-  [localEl, remoteEl, btn].forEach((el) => el?.remove());
+  document
+    .querySelectorAll("video[data-zm-video], .end-call-btn")
+    .forEach((el) => el.remove());
+  console.log("📴 Đã kết thúc video call");
 }
 
+/**
+ * Xử lý khi nhận được cuộc gọi video
+ */
 async function handleIncomingVideoCall(data) {
   if (!confirm(`🎥 ${data.userName} đang gọi video bạn. Nhận không?`)) {
     socket.emit("call-end", { to: data.from });
@@ -1530,6 +1552,7 @@ async function handleIncomingVideoCall(data) {
   localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
 
   const localEl = document.createElement("video");
+  localEl.setAttribute("data-zm-video", "local");
   localEl.autoplay = true;
   localEl.muted = true;
   localEl.srcObject = localStream;
@@ -1544,6 +1567,7 @@ async function handleIncomingVideoCall(data) {
   document.body.appendChild(localEl);
 
   const remoteEl = document.createElement("video");
+  remoteEl.setAttribute("data-zm-video", "remote");
   remoteEl.autoplay = true;
   remoteEl.playsInline = true;
   remoteEl.controls = true;
@@ -1560,13 +1584,18 @@ async function handleIncomingVideoCall(data) {
   pc.ontrack = (e) => (remoteEl.srcObject = e.streams[0]);
   pc.onicecandidate = (e) =>
     e.candidate &&
-    socket.emit("call-ice", { to: data.from, candidate: e.candidate });
+    socket.emit("call-ice", {
+      to: data.from,
+      candidate: e.candidate,
+      type: "video",
+    });
 
   await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
   const answer = await pc.createAnswer();
   await pc.setLocalDescription(answer);
-  socket.emit("call-answer", { to: data.from, answer });
+  socket.emit("call-answer", { to: data.from, answer, type: "video" });
 
+  // Nút kết thúc
   const endBtn = document.createElement("button");
   endBtn.textContent = "📴 Kết thúc video call";
   endBtn.className = "btn end-call-btn";
@@ -1580,6 +1609,59 @@ async function handleIncomingVideoCall(data) {
 
   endBtn.addEventListener("click", () => {
     socket.emit("call-end", { to: data.from });
-    endVideoCall(localEl, remoteEl, endBtn);
+    endVideoCall();
   });
 }
+
+/**
+ * Xử lý phản hồi từ socket cho voice & video
+ */
+socket.off("call-answer").on("call-answer", async (data) => {
+  try {
+    if (data.type === "video") {
+      if (currentVideoPeer) {
+        await currentVideoPeer.setRemoteDescription(
+          new RTCSessionDescription(data.answer)
+        );
+      }
+    } else {
+      if (currentPeer) {
+        await currentPeer.setRemoteDescription(
+          new RTCSessionDescription(data.answer)
+        );
+      }
+    }
+  } catch (err) {
+    console.warn("❌ Lỗi xử lý call-answer:", err);
+  }
+});
+
+/**
+ * Xử lý ICE candidate cho cả voice & video
+ */
+socket.off("call-ice").on("call-ice", async (data) => {
+  if (!data || !data.candidate) return;
+  try {
+    if (data.type === "video" && currentVideoPeer) {
+      await currentVideoPeer.addIceCandidate(
+        new RTCIceCandidate(data.candidate)
+      );
+    } else if (data.type !== "video" && currentPeer) {
+      await currentPeer.addIceCandidate(new RTCIceCandidate(data.candidate));
+    }
+  } catch (err) {
+    console.warn("⚠️ ICE candidate error:", err);
+  }
+});
+
+/**
+ * Khi kết thúc cuộc gọi (voice hoặc video)
+ */
+socket.off("call-end").on("call-end", () => {
+  try {
+    endVideoCall();
+    endVoiceCall();
+  } catch (err) {
+    console.warn("❌ Lỗi khi kết thúc cuộc gọi:", err);
+  }
+});
