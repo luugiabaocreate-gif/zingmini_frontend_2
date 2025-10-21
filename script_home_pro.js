@@ -1393,7 +1393,9 @@ if (avatarInput && uploadAvatarBtn) {
 let currentVideoPeer = null;
 let localVideoStream = null;
 
-/** ======================= UPDATED VIDEO CALL UI (mobile-friendly) ======================= */
+/**
+ * Khởi tạo cuộc gọi video
+ */
 async function startVideoCall(friendId, friendName) {
   if (!socket || !socket.connected) return alert("Socket chưa sẵn sàng!");
   if (currentVideoPeer) return alert("Bạn đang trong một cuộc gọi video khác!");
@@ -1402,9 +1404,9 @@ async function startVideoCall(friendId, friendName) {
     iceServers: [
       { urls: "stun:stun.l.google.com:19302" },
       {
-        urls: "turn:relay1.expressturn.com:3478",
-        username: "efree",
-        credential: "turnpassword",
+        urls: "turn:zingmini-turn-server-2.onrender.com:3478",
+        username: "user",
+        credential: "password",
       },
     ],
   });
@@ -1421,53 +1423,49 @@ async function startVideoCall(friendId, friendName) {
     return;
   }
 
+  // Thêm stream local
   localVideoStream
     .getTracks()
     .forEach((track) => pc.addTrack(track, localVideoStream));
 
-  // === Remote video (người kia) - lớn, nằm góc trên trái ===
+  // Hiển thị video local
+  const localEl = document.createElement("video");
+  localEl.setAttribute("data-zm-video", "local");
+  localEl.autoplay = true;
+  localEl.muted = true;
+  localEl.srcObject = localVideoStream;
+  localEl.style = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 200px;
+    border-radius: 10px;
+    z-index: 10000;
+  `;
+  document.body.appendChild(localEl);
+
+  // Tạo video remote
   const remoteEl = document.createElement("video");
+  remoteEl.setAttribute("data-zm-video", "remote");
   remoteEl.autoplay = true;
   remoteEl.playsInline = true;
   remoteEl.controls = true;
-  remoteEl.setAttribute("data-zm-video", "remote");
   remoteEl.style = `
     position: fixed;
-    top: 10px;
-    left: 10px;
-    width: 90vw;
-    max-height: 60vh;
+    bottom: 20px;
+    left: 20px;
+    width: 240px;
     border-radius: 10px;
-    object-fit: cover;
-    background: #000;
     z-index: 10000;
   `;
   document.body.appendChild(remoteEl);
 
-  // === Local video (mình) - nhỏ, góc dưới phải ===
-  const localEl = document.createElement("video");
-  localEl.autoplay = true;
-  localEl.muted = true;
-  localEl.playsInline = true;
-  localEl.srcObject = localVideoStream;
-  localEl.setAttribute("data-zm-video", "local");
-  localEl.style = `
-    position: fixed;
-    bottom: 15px;
-    right: 15px;
-    width: 120px;
-    height: 160px;
-    border-radius: 10px;
-    object-fit: cover;
-    box-shadow: 0 0 6px rgba(0,0,0,0.5);
-    z-index: 10001;
-  `;
-  document.body.appendChild(localEl);
-
   pc.ontrack = (e) => {
+    console.log("📹 Nhận remote stream video:", e.streams[0]);
     remoteEl.srcObject = e.streams[0];
   };
 
+  // Gửi ICE candidate
   pc.onicecandidate = (e) => {
     if (e.candidate)
       socket.emit("call-ice", {
@@ -1479,6 +1477,7 @@ async function startVideoCall(friendId, friendName) {
 
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
+
   socket.emit("call-offer", {
     to: friendId,
     offer,
@@ -1489,19 +1488,16 @@ async function startVideoCall(friendId, friendName) {
 
   alert(`🎥 Đang gọi video ${friendName}...`);
 
+  // Nút kết thúc
   const endBtn = document.createElement("button");
   endBtn.textContent = "📴 Kết thúc video call";
   endBtn.className = "btn end-call-btn";
-  endBtn.style = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #ff4d4f;
-    color: #fff;
-    z-index: 99999;
-    padding: 10px 14px;
-    border-radius: 10px;
-  `;
+  endBtn.style.position = "fixed";
+  endBtn.style.top = "20px";
+  endBtn.style.right = "20px";
+  endBtn.style.zIndex = "99999";
+  endBtn.style.background = "#ff4d4f";
+  endBtn.style.color = "#fff";
   document.body.appendChild(endBtn);
 
   endBtn.addEventListener("click", () => {
@@ -1510,6 +1506,27 @@ async function startVideoCall(friendId, friendName) {
   });
 }
 
+/**
+ * Kết thúc cuộc gọi video
+ */
+function endVideoCall() {
+  if (localVideoStream) {
+    localVideoStream.getTracks().forEach((t) => t.stop());
+    localVideoStream = null;
+  }
+  if (currentVideoPeer) {
+    currentVideoPeer.close();
+    currentVideoPeer = null;
+  }
+  document
+    .querySelectorAll("video[data-zm-video], .end-call-btn")
+    .forEach((el) => el.remove());
+  console.log("📴 Đã kết thúc video call");
+}
+
+/**
+ * Xử lý khi nhận được cuộc gọi video
+ */
 async function handleIncomingVideoCall(data) {
   if (!confirm(`🎥 ${data.userName} đang gọi video bạn. Nhận không?`)) {
     socket.emit("call-end", { to: data.from });
@@ -1520,98 +1537,74 @@ async function handleIncomingVideoCall(data) {
     iceServers: [
       { urls: "stun:stun.l.google.com:19302" },
       {
-        urls: "turn:relay1.expressturn.com:3478",
-        username: "efree",
-        credential: "turnpassword",
+        urls: "turn:zingmini-turn-server-2.onrender.com:3478",
+        username: "user",
+        credential: "password",
       },
     ],
   });
   currentVideoPeer = pc;
 
-  let localStream;
-  try {
-    localStream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: true,
-    });
-  } catch (err) {
-    alert("Không thể mở camera/micro: " + err.message);
-    socket.emit("call-end", { to: data.from });
-    return;
-  }
-
+  const localStream = await navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: true,
+  });
   localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
 
-  // Remote video - góc trên trái
+  const localEl = document.createElement("video");
+  localEl.setAttribute("data-zm-video", "local");
+  localEl.autoplay = true;
+  localEl.muted = true;
+  localEl.srcObject = localStream;
+  localEl.style = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 200px;
+    border-radius: 10px;
+    z-index: 10000;
+  `;
+  document.body.appendChild(localEl);
+
   const remoteEl = document.createElement("video");
+  remoteEl.setAttribute("data-zm-video", "remote");
   remoteEl.autoplay = true;
   remoteEl.playsInline = true;
   remoteEl.controls = true;
-  remoteEl.setAttribute("data-zm-video", "remote");
   remoteEl.style = `
     position: fixed;
-    top: 10px;
-    left: 10px;
-    width: 90vw;
-    max-height: 60vh;
+    bottom: 20px;
+    left: 20px;
+    width: 240px;
     border-radius: 10px;
-    object-fit: cover;
-    background: #000;
     z-index: 10000;
   `;
   document.body.appendChild(remoteEl);
 
-  // Local video - góc dưới phải
-  const localEl = document.createElement("video");
-  localEl.autoplay = true;
-  localEl.muted = true;
-  localEl.playsInline = true;
-  localEl.srcObject = localStream;
-  localEl.setAttribute("data-zm-video", "local");
-  localEl.style = `
-    position: fixed;
-    bottom: 15px;
-    right: 15px;
-    width: 120px;
-    height: 160px;
-    border-radius: 10px;
-    object-fit: cover;
-    box-shadow: 0 0 6px rgba(0,0,0,0.5);
-    z-index: 10001;
-  `;
-  document.body.appendChild(localEl);
-
-  pc.ontrack = (e) => {
-    remoteEl.srcObject = e.streams[0];
-  };
-
-  pc.onicecandidate = (e) => {
-    if (e.candidate)
-      socket.emit("call-ice", {
-        to: data.from,
-        candidate: e.candidate,
-        type: "video",
-      });
-  };
+  pc.ontrack = (e) => (remoteEl.srcObject = e.streams[0]);
+  pc.onicecandidate = (e) =>
+    e.candidate &&
+    socket.emit("call-ice", {
+      to: data.from,
+      candidate: e.candidate,
+      type: "video",
+    });
 
   await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
   const answer = await pc.createAnswer();
   await pc.setLocalDescription(answer);
   socket.emit("call-answer", { to: data.from, answer, type: "video" });
 
+  // Nút kết thúc
   const endBtn = document.createElement("button");
   endBtn.textContent = "📴 Kết thúc video call";
   endBtn.className = "btn end-call-btn";
-  endBtn.style = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #ff4d4f;
-    color: #fff;
-    z-index: 99999;
-    padding: 10px 14px;
-    border-radius: 10px;
-  `;
+  endBtn.style.position = "fixed";
+  endBtn.style.top = "20px";
+  endBtn.style.right = "20px";
+  endBtn.style.zIndex = "99999";
+  endBtn.style.background = "#ff4d4f";
+  endBtn.style.color = "#fff";
   document.body.appendChild(endBtn);
 
   endBtn.addEventListener("click", () => {
