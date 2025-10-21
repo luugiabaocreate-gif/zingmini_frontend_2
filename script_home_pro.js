@@ -918,7 +918,7 @@ mobileChatObserver.observe(document.body, { childList: true, subtree: true });
 window.addEventListener("resize", updateLogoutVisibilityMobile);
 window.addEventListener("load", updateLogoutVisibilityMobile);
 
-// === ĐỔI ẢNH AVATAR NGƯỜI DÙNG (Chuẩn PUT, đọc đúng response) ===
+// === ĐỔI ẢNH AVATAR NGƯỜI DÙNG (Chuẩn PUT, giữ ảnh khi reload) ===
 const avatarInput = document.getElementById("avatar-input");
 const uploadAvatarBtn = document.getElementById("upload-avatar-btn");
 
@@ -932,7 +932,7 @@ if (avatarInput && uploadAvatarBtn) {
 
     try {
       const res = await fetch(`${API_URL}/api/users/${currentUser._id}`, {
-        method: "PUT", // ✅ DÙNG PUT CHO KHỚP BACKEND
+        method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
         body: form,
       });
@@ -940,49 +940,40 @@ if (avatarInput && uploadAvatarBtn) {
       if (!res.ok) throw new Error("Không thể cập nhật ảnh.");
 
       const json = await res.json();
-      console.log("Avatar response:", json);
-      console.log(
-        "🧩 JSON chi tiết từ backend:",
-        JSON.stringify(json, null, 2)
-      );
-      let newUrl = null;
+      console.log("🧩 JSON từ backend:", json);
 
-      // Ưu tiên lấy trong user trước
-      if (json?.user?.avatar) newUrl = json.user.avatar;
-      else if (json?.avatar) newUrl = json.avatar;
-      else if (json?.user?.avatarUrl) newUrl = json.user.avatarUrl;
+      let newUrl =
+        json?.user?.avatar || json?.avatar || json?.user?.avatarUrl || null;
 
-      // In kiểm tra
-      console.log("Ảnh backend trả về:", newUrl);
-
-      console.log("Ảnh backend trả về:", newUrl);
+      if (newUrl && !newUrl.startsWith("http")) {
+        // đảm bảo đường dẫn đầy đủ
+        newUrl = `${API_URL}${newUrl.startsWith("/") ? newUrl : "/" + newUrl}`;
+      }
 
       if (newUrl) {
-        // chuẩn hóa đường dẫn để tránh lỗi khi backend trả "/uploads/xxx"
-        if (newUrl && !newUrl.startsWith("http")) {
-          // ✅ đảm bảo chỉ có 1 dấu "/"
-          newUrl = `${API_URL}${
-            newUrl.startsWith("/") ? newUrl : "/" + newUrl
-          }`;
-        }
+        // ✅ Cập nhật lại đối tượng currentUser và lưu
+        const updatedUser = { ...currentUser, avatar: newUrl };
+        localStorage.setItem("currentUser", JSON.stringify(updatedUser));
 
-        currentUser.avatar = newUrl;
-        localStorage.setItem("currentUser", JSON.stringify(currentUser));
-
-        // cập nhật lại ảnh trong giao diện
+        // ✅ Cập nhật giao diện
         ["left-avatar", "nav-avatar", "create-avatar"].forEach((id) => {
           const el = document.getElementById(id);
           if (el) el.src = newUrl;
         });
 
+        // ✅ Nếu có phần tử ảnh khác (vd: avatar ở khung bình luận, post, sidebar)
+        document.querySelectorAll("img").forEach((img) => {
+          if (img.src.includes(currentUser.avatar)) img.src = newUrl;
+        });
+
         alert("✅ Ảnh đại diện đã được cập nhật!");
       } else {
-        console.warn("⚠️ Không tìm thấy đường dẫn ảnh trong phản hồi:", json);
+        console.warn("⚠️ Không tìm thấy URL ảnh trong phản hồi:", json);
         alert("⚠️ Cập nhật ảnh không thành công!");
       }
     } catch (e) {
-      console.error("Upload avatar error:", e);
-      alert("❌ Lỗi khi tải ảnh lên server!");
+      console.error("❌ Upload avatar error:", e);
+      alert("Lỗi khi tải ảnh lên server!");
     }
   });
 }
