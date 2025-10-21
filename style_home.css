@@ -722,10 +722,9 @@ body.dark .chat-window .message.them::before,
 }
 /* === Hiển thị nút đăng xuất riêng cho điện thoại === */
 @media (max-width: 900px) {
-  /* Nút đăng xuất (🔒) nằm ngay trên nút đổi theme (🌙), canh thẳng dọc */
   #logout-mobile {
     position: fixed;
-    bottom: 88px; /* cách nút theme 1 khoảng nhỏ */
+    bottom: 88px; /* nằm trên nút đổi theme */
     right: 20px;
     width: 48px;
     height: 48px;
@@ -733,9 +732,11 @@ body.dark .chat-window .message.them::before,
     background: linear-gradient(135deg, #ff5252, #b30000);
     color: #fff;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
+    align-items: center; /* căn giữa dọc */
+    justify-content: center; /* căn giữa ngang */
+    font-size: 24px; /* to hơn nhẹ cho vừa khít */
+    line-height: 1; /* loại bỏ khoảng dư của ký tự */
+    text-align: center;
     box-shadow: 0 6px 14px rgba(255, 0, 0, 0.35);
     z-index: 1500;
     cursor: pointer;
@@ -746,7 +747,6 @@ body.dark .chat-window .message.them::before,
     transform: scale(1.08);
   }
 
-  /* Nút theme luôn ở dưới một chút */
   #toggle-theme {
     position: fixed;
     bottom: 20px;
