@@ -771,7 +771,14 @@ async function startVoiceCall(friendId, friendName) {
   if (currentPeer) return alert("Bạn đang trong một cuộc gọi khác!");
 
   const pc = new RTCPeerConnection({
-    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" },
+      {
+        urls: "turn:relay1.expressturn.com:3478",
+        username: "efree",
+        credential: "turnpassword",
+      },
+    ],
   });
   currentPeer = pc;
 
@@ -871,7 +878,14 @@ socket.on("call-offer", async (data) => {
   }
 
   const pc = new RTCPeerConnection({
-    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" },
+      {
+        urls: "turn:relay1.expressturn.com:3478",
+        username: "efree",
+        credential: "turnpassword",
+      },
+    ],
   });
   currentPeer = pc;
 
