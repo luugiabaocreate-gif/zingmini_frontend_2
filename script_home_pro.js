@@ -816,6 +816,20 @@ async function startVoiceCall(friendId, friendName) {
       }
     };
     playAudio();
+    document.body.addEventListener(
+      "touchstart",
+      async () => {
+        if (remoteAudioEl && remoteAudioEl.paused) {
+          try {
+            await remoteAudioEl.play();
+            console.log("🎧 Bắt đầu phát âm thanh sau khi người dùng chạm!");
+          } catch (err) {
+            console.warn("Không thể phát audio:", err);
+          }
+        }
+      },
+      { once: true }
+    );
   };
 
   const offer = await pc.createOffer();
@@ -901,6 +915,20 @@ socket.on("call-offer", async (data) => {
       }
     };
     playAudio();
+    document.body.addEventListener(
+      "touchstart",
+      async () => {
+        if (remoteAudioEl && remoteAudioEl.paused) {
+          try {
+            await remoteAudioEl.play();
+            console.log("🎧 Bắt đầu phát âm thanh sau khi người dùng chạm!");
+          } catch (err) {
+            console.warn("Không thể phát audio:", err);
+          }
+        }
+      },
+      { once: true }
+    );
   };
 
   await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
