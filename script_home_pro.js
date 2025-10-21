@@ -918,32 +918,85 @@ mobileChatObserver.observe(document.body, { childList: true, subtree: true });
 window.addEventListener("resize", updateLogoutVisibilityMobile);
 window.addEventListener("load", updateLogoutVisibilityMobile);
 
-// ------------ Upload avatar & persist (replace older block) ------------
-const avatarInput = document.getElementById("avatar-input");
-const uploadAvatarBtn = document.getElementById("upload-avatar-btn");
+/************************************************************
+ *  Normalize avatar URL + safe fetch current user + upload
+ ************************************************************/
 
+// Chuẩn hoá URL avatar: đảm bảo https + chuyển /uploads/... -> full URL
+function normalizeAvatarUrl(raw) {
+  if (!raw) return null;
+  // nếu backend trả path tương đối '/uploads/..'
+  if (raw.startsWith("/")) {
+    return `${API_URL}${raw}`;
+  }
+  // nếu backend trả http (bị mixed content), chuyển sang https
+  if (raw.startsWith("http://")) {
+    try {
+      const u = new URL(raw);
+      u.protocol = "https:";
+      return u.toString();
+    } catch (e) {
+      // fallback: replace
+      return raw.replace(/^http:/, "https:");
+    }
+  }
+  // nếu đã là https hoặc bất cứ absolute url, giữ nguyên
+  return raw;
+}
+
+// Thử fetch user mới từ server; nếu lỗi 404 hoặc endpoint không tồn tại -> fallback dùng localStorage
 async function fetchAndStoreCurrentUser() {
-  // gọi server lấy user mới (đảm bảo giữ avatar sau reload)
+  if (!currentUser || !currentUser._id) return currentUser;
   try {
+    // Thử endpoint phổ biến /api/users/:id (nếu backend có)
     const res = await fetch(`${API_URL}/api/users/${currentUser._id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    if (!res.ok) throw new Error("Không tải được thông tin user từ server");
-    const user = await res.json();
-    // nếu API trả object user bên trong, điều chỉnh cho phù hợp:
-    const finalUser = user.user || user;
-    // lưu xuống localStorage
-    localStorage.setItem("currentUser", JSON.stringify(finalUser));
-    // cập nhật biến currentUser trong bộ nhớ (nếu cần)
-    // NOTE: currentUser được khai báo const ở trên, nên để tránh lỗi chúng ta lấy lại từ localStorage khi cần hiển thị
-    ["left-avatar", "nav-avatar", "create-avatar"].forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) el.src = finalUser.avatar || el.src;
-    });
+    if (!res.ok) {
+      // nếu 404 thì không báo lỗi nặng, trả về local copy
+      console.warn("fetchAndStoreCurrentUser: server returned", res.status);
+      return currentUser;
+    }
+    const j = await res.json();
+    // j có thể là { user: {...} } hoặc user object trực tiếp
+    const userObj = j?.user ? j.user : j;
+    if (!userObj) return currentUser;
+
+    // chuẩn hoá avatar (nếu có)
+    if (userObj.avatar) userObj.avatar = normalizeAvatarUrl(userObj.avatar);
+
+    // lưu vào localStorage và trả về
+    localStorage.setItem("currentUser", JSON.stringify(userObj));
+    return userObj;
   } catch (err) {
+    // lỗi mạng hoặc endpoint không tồn tại -> giữ local copy, không crash
     console.warn("fetchAndStoreCurrentUser error:", err);
+    return currentUser;
   }
 }
+
+// gọi 1 lần khi load (không bắt buộc, an toàn)
+fetchAndStoreCurrentUser()
+  .then((u) => {
+    if (!u) return;
+    // cập nhật currentUser biến trong module (nếu cần)
+    // NOTE: biến currentUser được khai báo const ở đầu -> để cập nhật UI sử dụng object lưu trong localStorage
+    // cập nhật UI avatar nếu cần
+    try {
+      const stored = JSON.parse(localStorage.getItem("currentUser") || "null");
+      if (stored && stored.avatar) {
+        ["left-avatar", "nav-avatar", "create-avatar"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.src = stored.avatar;
+        });
+      }
+    } catch (e) {}
+  })
+  .catch(() => {});
+
+// === Upload avatar handler (thay thế đoạn cũ hoàn toàn) ===
+const avatarInput = document.getElementById("avatar-input");
+const uploadAvatarBtn = document.getElementById("upload-avatar-btn");
 
 if (avatarInput && uploadAvatarBtn) {
   uploadAvatarBtn.addEventListener("click", async () => {
@@ -956,93 +1009,77 @@ if (avatarInput && uploadAvatarBtn) {
     try {
       const res = await fetch(`${API_URL}/api/users/${currentUser._id}`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`, // không set Content-Type khi gửi FormData
-        },
+        // Không set 'Content-Type' khi dùng FormData
+        headers: { Authorization: `Bearer ${token}` },
         body: form,
       });
 
       if (!res.ok) {
-        const t = await res.text().catch(() => "");
-        let errMsg = "Không thể cập nhật ảnh.";
-        try {
-          const parsed = JSON.parse(t);
-          errMsg = parsed.message || errMsg;
-        } catch (e) {}
-        throw new Error(errMsg);
+        const body = await (async () => {
+          try {
+            return await res.json();
+          } catch (e) {
+            return { message: `HTTP ${res.status}` };
+          }
+        })();
+        throw new Error(
+          body?.message || `Không thể cập nhật ảnh (${res.status})`
+        );
       }
 
       const json = await res.json();
       console.log("🧩 JSON từ backend:", json);
 
-      // backend có thể trả { success:true, avatar: '/uploads/xxx', user: {...} }
+      // backend trả { success: true, avatar: '...', user: {...} } hoặc user trong json.user
       let newUrl =
-        (json && (json.user?.avatar || json.avatar || json.user?.avatarUrl)) ||
-        null;
+        json?.user?.avatar || json?.avatar || json?.user?.avatarUrl || null;
 
-      // bình thường backend nên trả URL hoàn chỉnh. Nếu trả đường dẫn relative thì prepend API_URL
-      if (newUrl && !newUrl.startsWith("http")) {
-        newUrl = `${API_URL}${newUrl.startsWith("/") ? newUrl : "/" + newUrl}`;
-      }
+      // chuẩn hoá (convert http -> https, hoặc relative -> full)
+      newUrl = normalizeAvatarUrl(newUrl);
 
       if (!newUrl) {
-        // cố gắng lấy từ user object nếu API trả user
-        const candidate = json.user?.avatar || json.user?.avatarUrl;
-        if (candidate) {
-          newUrl = candidate.startsWith("http")
-            ? candidate
-            : `${API_URL}${
-                candidate.startsWith("/") ? candidate : "/" + candidate
-              }`;
-        }
+        console.warn("⚠️ Không tìm thấy URL ảnh trong phản hồi:", json);
+        return alert("⚠️ Cập nhật ảnh không thành công (không có url).");
       }
 
-      if (!newUrl) {
-        return alert("⚠️ Không tìm thấy URL ảnh trong phản hồi từ server.");
-      }
-
-      // cập nhật localStorage: lấy currentUser từ storage (tránh ghi đè thông tin khác)
+      // cập nhật localStorage.currentUser (ghi đè avatar)
       try {
         const stored = JSON.parse(localStorage.getItem("currentUser") || "{}");
-        stored.avatar = newUrl;
-        localStorage.setItem("currentUser", JSON.stringify(stored));
+        const updatedUser = { ...stored, avatar: newUrl };
+        localStorage.setItem("currentUser", JSON.stringify(updatedUser));
       } catch (e) {
-        // fallback: ghi trực tiếp
-        localStorage.setItem(
-          "currentUser",
-          JSON.stringify({ ...currentUser, avatar: newUrl })
-        );
+        console.warn("Không thể lưu currentUser vào localStorage:", e);
       }
 
-      // cập nhật giao diện ngay
+      // cập nhật UI: các avatar "static"
       ["left-avatar", "nav-avatar", "create-avatar"].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.src = newUrl;
       });
 
-      // cập nhật avatar trong posts/friends/chat nếu src chứa cũ
+      // cập nhật ảnh trong posts / friends list / messages (nếu dùng same URL)
       document.querySelectorAll("img").forEach((img) => {
-        // tránh trường hợp img.src trả về absolute url so sánh khác nhau: so sánh phần cuối đường dẫn
-        try {
-          const src = img.getAttribute("src") || "";
-          if (!src) return;
-          const filenameOld = (currentUser.avatar || "")
-            .split("/")
-            .slice(-1)[0];
-          const filenameImg = src.split("/").slice(-1)[0];
-          if (filenameOld && filenameImg && filenameOld === filenameImg) {
-            img.src = newUrl;
-          }
-        } catch (e) {}
+        // nếu src bằng trước đó (local copy) -> thay
+        if (
+          img.src &&
+          currentUser.avatar &&
+          img.src.includes(currentUser.avatar)
+        ) {
+          img.src = newUrl;
+        }
       });
 
-      alert("✅ Ảnh đại diện đã được cập nhật và lưu!");
+      // cập nhật avatar trong chat window headers nếu có
+      document.querySelectorAll(".chat-window .head img").forEach((img) => {
+        if (img.dataset && img.dataset.id === currentUser._id) {
+          img.src = newUrl;
+        }
+      });
 
-      // optional: gọi lại fetchAndStoreCurrentUser để chắc chắn user ở server đã cập nhật
-      fetchAndStoreCurrentUser();
+      alert("✅ Ảnh đại diện đã được cập nhật!");
     } catch (e) {
-      console.error("Upload avatar error:", e);
-      alert(`❌ Lỗi khi tải ảnh lên server: ${e.message || e}`);
+      console.error("❌ Upload avatar error:", e);
+      alert("Lỗi khi tải ảnh lên server: " + (e.message || ""));
     }
   });
 }
