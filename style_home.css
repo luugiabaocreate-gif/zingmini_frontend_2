@@ -734,17 +734,18 @@ body.dark .chat-window .message.them::before,
     display: flex;
     align-items: center; /* căn giữa dọc */
     justify-content: center; /* căn giữa ngang */
-    font-size: 24px; /* to hơn nhẹ cho vừa khít */
-    line-height: 1; /* loại bỏ khoảng dư của ký tự */
+    font-size: 26px; /* tăng nhẹ cho khít vòng tròn */
+    line-height: 1;
     text-align: center;
     box-shadow: 0 6px 14px rgba(255, 0, 0, 0.35);
     z-index: 1500;
     cursor: pointer;
     transition: transform 0.2s ease, opacity 0.2s ease;
+    transform: translateY(1px); /* ✨ đẩy nhẹ icon xuống giữa tuyệt đối */
   }
 
   #logout-mobile:hover {
-    transform: scale(1.08);
+    transform: scale(1.08) translateY(1px);
   }
 
   #toggle-theme {
