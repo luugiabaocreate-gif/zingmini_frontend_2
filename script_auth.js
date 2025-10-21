@@ -1,4 +1,3 @@
-// script_auth.js — Bản chính thức (login + register + chuyển trang)
 const API_URL = "https://zingmini-backend-2.onrender.com";
 
 const loginBtn = document.getElementById("login-btn");
@@ -15,11 +14,21 @@ async function handleLogin() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
+
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Đăng nhập thất bại");
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("currentUser", JSON.stringify(data.user));
+    // 🧩 Chuẩn hóa avatar NGAY SAU khi nhận response
+    if (data && data.user) {
+      if (data.user.avatar?.startsWith("/")) {
+        data.user.avatar = `${API_URL}${data.user.avatar}`;
+      } else if (data.user.avatar?.startsWith("http://")) {
+        data.user.avatar = data.user.avatar.replace("http://", "https://");
+      }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("currentUser", JSON.stringify(data.user));
+    }
 
     alert("Đăng nhập thành công!");
     location.href = "home.html";
