@@ -142,7 +142,7 @@ function escapeHtml(s = "") {
   return String(s)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/>/g, ">");
 }
 async function safeJson(res) {
   const t = await res.text().catch(() => "");
@@ -800,11 +800,7 @@ async function startVoiceCall(friendId, friendName) {
 
   pc.onicecandidate = (e) => {
     if (e.candidate)
-      socket.emit("call-ice", {
-        to: friendId,
-        candidate: e.candidate,
-        type: "voice",
-      });
+      socket.emit("call-ice", { to: friendId, candidate: e.candidate });
   };
 
   pc.ontrack = (e) => {
@@ -855,7 +851,6 @@ async function startVoiceCall(friendId, friendName) {
     offer,
     from: currentUser._id,
     userName: currentUser.name,
-    type: "voice",
   });
 
   alert(`📞 Đang gọi ${friendName}...`);
@@ -912,11 +907,7 @@ socket.on("call-offer", async (data) => {
 
   pc.onicecandidate = (e) => {
     if (e.candidate)
-      socket.emit("call-ice", {
-        to: data.from,
-        candidate: e.candidate,
-        type: "voice",
-      });
+      socket.emit("call-ice", { to: data.from, candidate: e.candidate });
   };
 
   pc.ontrack = (e) => {
@@ -968,72 +959,28 @@ socket.on("call-offer", async (data) => {
 
 // Nhận phản hồi
 socket.on("call-answer", async (data) => {
-  try {
-    if (data?.type === "video") {
-      if (currentVideoPeer) {
-        await currentVideoPeer.setRemoteDescription(
-          new RTCSessionDescription(data.answer)
-        );
-      } else {
-        console.warn("call-answer (video) received but no currentVideoPeer");
-      }
-    } else {
-      if (currentPeer) {
-        await currentPeer.setRemoteDescription(
-          new RTCSessionDescription(data.answer)
-        );
-      } else {
-        console.warn("call-answer (voice) received but no currentPeer");
-      }
-    }
-  } catch (err) {
-    console.warn("Error handling call-answer:", err);
+  if (currentPeer) {
+    await currentPeer.setRemoteDescription(
+      new RTCSessionDescription(data.answer)
+    );
   }
 });
 
 // ICE candidates
 socket.on("call-ice", async (data) => {
-  if (!data || !data.candidate) return;
-  try {
-    if (data.type === "video") {
-      if (currentVideoPeer) {
-        await currentVideoPeer.addIceCandidate(
-          new RTCIceCandidate(data.candidate)
-        );
-      } else {
-        console.warn("Received ICE (video) but no currentVideoPeer");
-      }
-    } else {
-      if (currentPeer) {
-        await currentPeer.addIceCandidate(new RTCIceCandidate(data.candidate));
-      } else {
-        console.warn("Received ICE (voice) but no currentPeer");
-      }
+  if (currentPeer && data.candidate) {
+    try {
+      await currentPeer.addIceCandidate(new RTCIceCandidate(data.candidate));
+    } catch (e) {
+      console.warn("ICE error:", e);
     }
-  } catch (e) {
-    console.warn("ICE error:", e);
   }
 });
 
 // Kết thúc
 socket.on("call-end", () => {
   endVoiceCall();
-  // remove end button if any
   document.querySelector(".end-call-btn")?.remove();
-
-  // cleanup video if present
-  try {
-    if (localVideoStream) {
-      localVideoStream.getTracks().forEach((t) => t.stop());
-      localVideoStream = null;
-    }
-    if (currentVideoPeer) {
-      currentVideoPeer.close();
-      currentVideoPeer = null;
-    }
-  } catch (e) {}
-  // remove any video elements we created (tagged with data-zm-video)
-  document.querySelectorAll("video[data-zm-video]").forEach((v) => v.remove());
 });
 
 function endVoiceCall() {
@@ -1054,236 +1001,183 @@ function endVoiceCall() {
 
 // ESC = kết thúc cuộc gọi
 window.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && (currentPeer || currentVideoPeer)) {
+  if (e.key === "Escape" && currentPeer) {
     socket.emit("call-end", { to: null });
-    // end both
-    try {
-      endVoiceCall();
-    } catch (e) {}
-    try {
-      if (localVideoStream) {
-        localVideoStream.getTracks().forEach((t) => t.stop());
-        localVideoStream = null;
-      }
-      if (currentVideoPeer) {
-        currentVideoPeer.close();
-        currentVideoPeer = null;
-      }
-    } catch (e) {}
-    document
-      .querySelectorAll("video[data-zm-video]")
-      .forEach((v) => v.remove());
+    endVoiceCall();
   }
 });
 
-/******************************************************
- * 🎥 VIDEO CALL FEATURE — WebRTC + Socket.IO
- ******************************************************/
-let currentVideoPeer = null;
-let localVideoStream = null;
+// ==== HIỆN / LƯU / TẢI LẠI BÌNH LUẬN ====
+async function openCommentBox(postId) {
+  const postCard = document.querySelector(`[data-post-id="${postId}"]`);
+  if (!postCard) return;
 
-async function startVideoCall(friendId, friendName) {
-  if (!socket || !socket.connected) return alert("Socket chưa sẵn sàng!");
-  if (currentVideoPeer) return alert("Bạn đang trong một cuộc gọi video khác!");
+  // nếu đang mở thì đóng lại
+  let existing = postCard.querySelector(".comment-box");
+  if (existing) {
+    existing.remove();
+    return;
+  }
 
-  const pc = new RTCPeerConnection({
-    iceServers: [
-      { urls: "stun:stun.l.google.com:19302" },
-      {
-        urls: "turn:relay1.expressturn.com:3478",
-        username: "efree",
-        credential: "turnpassword",
-      },
-    ],
-  });
-  currentVideoPeer = pc;
+  // khung bình luận
+  const box = document.createElement("div");
+  box.className = "comment-box";
+  box.style.marginTop = "10px";
+  box.innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center">
+      <img src="${
+        currentUser.avatar || `https://i.pravatar.cc/36?u=${currentUser._id}`
+      }"
+           style="width:36px;height:36px;border-radius:50%" />
+      <input class="comment-input" placeholder="Viết bình luận..."
+             style="flex:1;padding:6px;border:1px solid #d7eefe;border-radius:8px"/>
+      <button class="btn send-comment">Gửi</button>
+    </div>
+    <div class="comment-list" style="margin-top:8px;display:flex;flex-direction:column;gap:6px"></div>
+  `;
+  postCard.appendChild(box);
 
+  const input = box.querySelector(".comment-input");
+  const sendBtn = box.querySelector(".send-comment");
+  const list = box.querySelector(".comment-list");
+
+  // 🧩 Bước 1: tải các comment có sẵn
   try {
-    localVideoStream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: true,
-    });
-  } catch (err) {
-    alert("Không thể truy cập camera/micro: " + err.message);
-    currentVideoPeer = null;
-    return;
-  }
-
-  localVideoStream
-    .getTracks()
-    .forEach((track) => pc.addTrack(track, localVideoStream));
-
-  // hiển thị video local
-  const localEl = document.createElement("video");
-  localEl.autoplay = true;
-  localEl.muted = true;
-  localEl.srcObject = localVideoStream;
-  localEl.setAttribute("data-zm-video", "local");
-  localEl.style = `
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 200px;
-    border-radius: 10px;
-    z-index: 10000;
-  `;
-  document.body.appendChild(localEl);
-
-  // remote video
-  const remoteEl = document.createElement("video");
-  remoteEl.autoplay = true;
-  remoteEl.playsInline = true;
-  remoteEl.controls = true;
-  remoteEl.setAttribute("data-zm-video", "remote");
-  remoteEl.style = `
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 240px;
-    border-radius: 10px;
-    z-index: 10000;
-  `;
-  document.body.appendChild(remoteEl);
-
-  pc.ontrack = (e) => {
-    remoteEl.srcObject = e.streams[0];
-  };
-
-  pc.onicecandidate = (e) => {
-    if (e.candidate)
-      socket.emit("call-ice", {
-        to: friendId,
-        candidate: e.candidate,
-        type: "video",
+    const comments = await apiFetch(`${API_URL}/api/comments/post/${postId}`);
+    if (Array.isArray(comments) && comments.length) {
+      comments.forEach((c) => {
+        const item = document.createElement("div");
+        item.style.padding = "4px 6px";
+        item.style.background = "#f6fbff";
+        item.style.borderRadius = "6px";
+        item.innerHTML = `<b>${escapeHtml(
+          c.userName || "Ẩn danh"
+        )}:</b> ${escapeHtml(c.text)}`;
+        list.appendChild(item);
       });
-  };
+    }
+  } catch (err) {
+    console.warn("Không thể tải bình luận:", err);
+  }
 
-  const offer = await pc.createOffer();
-  await pc.setLocalDescription(offer);
-  socket.emit("call-offer", {
-    to: friendId,
-    offer,
-    from: currentUser._id,
-    userName: currentUser.name,
-    type: "video", // 👈 thêm type để phân biệt
-  });
+  // 🧩 Bước 2: gửi comment mới
+  sendBtn.addEventListener("click", async () => {
+    const text = input.value.trim();
+    if (!text) return;
+    const temp = document.createElement("div");
+    temp.style.padding = "4px 6px";
+    temp.style.background = "#f6fbff";
+    temp.style.borderRadius = "6px";
+    temp.innerHTML = `<b>${escapeHtml(currentUser.name)}:</b> ${escapeHtml(
+      text
+    )}`;
+    list.appendChild(temp);
+    input.value = "";
 
-  alert(`🎥 Đang gọi video ${friendName}...`);
-
-  // nút kết thúc
-  const endBtn = document.createElement("button");
-  endBtn.textContent = "📴 Kết thúc video call";
-  endBtn.className = "btn end-call-btn";
-  endBtn.style.position = "fixed";
-  endBtn.style.top = "20px";
-  endBtn.style.right = "20px";
-  endBtn.style.zIndex = "99999";
-  endBtn.style.background = "#ff4d4f";
-  endBtn.style.color = "#fff";
-  document.body.appendChild(endBtn);
-
-  endBtn.addEventListener("click", () => {
-    socket.emit("call-end", { to: friendId });
-    endVideoCall(localEl, remoteEl, endBtn);
+    try {
+      const res = await apiFetch(`${API_URL}/api/comments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          postId,
+          text,
+          userName: currentUser.name,
+          userId: currentUser._id,
+        }),
+      });
+      console.log("✅ Bình luận đã lưu:", res);
+    } catch (err) {
+      console.warn("❌ Lỗi khi lưu bình luận:", err);
+    }
   });
 }
 
-function endVideoCall(localEl, remoteEl, btn) {
-  if (localVideoStream) {
-    localVideoStream.getTracks().forEach((t) => t.stop());
-    localVideoStream = null;
-  }
-  if (currentVideoPeer) {
-    currentVideoPeer.close();
-    currentVideoPeer = null;
-  }
-  [localEl, remoteEl, btn].forEach((el) => el?.remove());
-}
+// ==== MENU SIDEBAR ACTIONS ====
 
-async function handleIncomingVideoCall(data) {
-  if (!confirm(`🎥 ${data.userName} đang gọi video bạn. Nhận không?`)) {
-    socket.emit("call-end", { to: data.from });
-    return;
-  }
+// Lấy danh sách tất cả liên kết trong menu trái
+document.querySelectorAll(".left-menu a").forEach((link) => {
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+    const label = link.textContent.trim();
 
-  const pc = new RTCPeerConnection({
-    iceServers: [
-      { urls: "stun:stun.l.google.com:19302" },
-      {
-        urls: "turn:relay1.expressturn.com:3478",
-        username: "efree",
-        credential: "turnpassword",
-      },
-    ],
+    switch (label) {
+      case "Trang cá nhân":
+        window.location.href = "profile.html"; // chuyển sang trang cá nhân
+        break;
+      case "Bảng tin":
+        window.location.href = "feed.html"; // trang tổng hợp tin tức
+        break;
+      case "Game":
+        window.location.href = "games.html"; // hiển thị danh sách game
+        break;
+      case "Quản trị":
+        window.location.href = "admin.html"; // giao diện admin riêng
+        break;
+      case "Cài đặt":
+        window.location.href = "settings.html"; // trang cài đặt tài khoản
+        break;
+      default:
+        alert("Chức năng đang phát triển!");
+    }
   });
-  currentVideoPeer = pc;
+});
+// === Toggle menu hai bên trên mobile ===
+const leftToggle = document.querySelector(".menu-toggle-left");
+const rightToggle = document.querySelector(".menu-toggle-right");
+const leftCol = document.querySelector(".left-col");
+const rightCol = document.querySelector(".right-col");
 
-  const localStream = await navigator.mediaDevices.getUserMedia({
-    audio: true,
-    video: true,
-  });
-  localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
-
-  const localEl = document.createElement("video");
-  localEl.autoplay = true;
-  localEl.muted = true;
-  localEl.srcObject = localStream;
-  localEl.setAttribute("data-zm-video", "local");
-  localEl.style = `
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 200px;
-    border-radius: 10px;
-    z-index: 10000;
-  `;
-  document.body.appendChild(localEl);
-
-  const remoteEl = document.createElement("video");
-  remoteEl.autoplay = true;
-  remoteEl.playsInline = true;
-  remoteEl.controls = true;
-  remoteEl.setAttribute("data-zm-video", "remote");
-  remoteEl.style = `
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 240px;
-    border-radius: 10px;
-    z-index: 10000;
-  `;
-  document.body.appendChild(remoteEl);
-
-  pc.ontrack = (e) => (remoteEl.srcObject = e.streams[0]);
-  pc.onicecandidate = (e) =>
-    e.candidate &&
-    socket.emit("call-ice", {
-      to: data.from,
-      candidate: e.candidate,
-      type: "video",
-    });
-
-  await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
-  const answer = await pc.createAnswer();
-  await pc.setLocalDescription(answer);
-  socket.emit("call-answer", { to: data.from, answer });
-
-  const endBtn = document.createElement("button");
-  endBtn.textContent = "📴 Kết thúc video call";
-  endBtn.className = "btn end-call-btn";
-  endBtn.style.position = "fixed";
-  endBtn.style.top = "20px";
-  endBtn.style.right = "20px";
-  endBtn.style.zIndex = "99999";
-  endBtn.style.background = "#ff4d4f";
-  endBtn.style.color = "#fff";
-  document.body.appendChild(endBtn);
-
-  endBtn.addEventListener("click", () => {
-    socket.emit("call-end", { to: data.from });
-    endVideoCall(localEl, remoteEl, endBtn);
+if (leftToggle && leftCol) {
+  leftToggle.addEventListener("click", () => {
+    leftCol.classList.toggle("show");
+    rightCol?.classList.remove("show");
   });
 }
+
+if (rightToggle && rightCol) {
+  rightToggle.addEventListener("click", () => {
+    rightCol.classList.toggle("show");
+    leftCol?.classList.remove("show");
+  });
+}
+// === Logout cho mobile ===
+document.getElementById("logout-mobile")?.addEventListener("click", () => {
+  localStorage.removeItem("token");
+  window.location.href = "index.html";
+});
+// === Logout cho mobile ===
+document.getElementById("logout-mobile")?.addEventListener("click", () => {
+  localStorage.removeItem("token");
+  window.location.href = "index.html";
+});
+
+// === Ẩn nút đăng xuất trên mobile khi bật chat ===
+function isMobile() {
+  return window.innerWidth <= 768; // ngưỡng cho mobile
+}
+
+function updateLogoutVisibilityMobile() {
+  const logoutBtn = document.getElementById("logout-mobile");
+  if (!logoutBtn) return;
+  const hasChat = document.querySelectorAll(".chat-window").length > 0;
+  // ẩn chỉ khi đang ở mobile và có cửa sổ chat mở
+  if (isMobile()) {
+    logoutBtn.style.display = hasChat ? "none" : "block";
+  } else {
+    logoutBtn.style.display = "block"; // desktop luôn hiện
+  }
+}
+
+// Quan sát thay đổi số lượng chat
+const mobileChatObserver = new MutationObserver(updateLogoutVisibilityMobile);
+mobileChatObserver.observe(document.body, { childList: true, subtree: true });
+
+// Cập nhật ngay khi load trang
+window.addEventListener("resize", updateLogoutVisibilityMobile);
+window.addEventListener("load", updateLogoutVisibilityMobile);
 
 /************************************************************
  *  Normalize avatar URL + safe fetch current user + upload
@@ -1491,5 +1385,201 @@ if (avatarInput && uploadAvatarBtn) {
       console.error("❌ Upload avatar error:", e);
       alert("Lỗi khi tải ảnh lên server: " + (e.message || ""));
     }
+  });
+}
+/******************************************************
+ * 🎥 VIDEO CALL FEATURE — WebRTC + Socket.IO
+ ******************************************************/
+let currentVideoPeer = null;
+let localVideoStream = null;
+
+async function startVideoCall(friendId, friendName) {
+  if (!socket || !socket.connected) return alert("Socket chưa sẵn sàng!");
+  if (currentVideoPeer) return alert("Bạn đang trong một cuộc gọi video khác!");
+
+  const pc = new RTCPeerConnection({
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" },
+      {
+        urls: "turn:zingmini-turn-server-2.onrender.com:3478",
+        username: "user",
+        credential: "password",
+      },
+    ],
+  });
+  currentVideoPeer = pc;
+
+  try {
+    localVideoStream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: true,
+    });
+  } catch (err) {
+    alert("Không thể truy cập camera/micro: " + err.message);
+    currentVideoPeer = null;
+    return;
+  }
+
+  localVideoStream
+    .getTracks()
+    .forEach((track) => pc.addTrack(track, localVideoStream));
+
+  // hiển thị video local
+  const localEl = document.createElement("video");
+  localEl.autoplay = true;
+  localEl.muted = true;
+  localEl.srcObject = localVideoStream;
+  localEl.style = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 200px;
+    border-radius: 10px;
+    z-index: 10000;
+  `;
+  document.body.appendChild(localEl);
+
+  // remote video
+  const remoteEl = document.createElement("video");
+  remoteEl.autoplay = true;
+  remoteEl.playsInline = true;
+  remoteEl.controls = true;
+  remoteEl.style = `
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 240px;
+    border-radius: 10px;
+    z-index: 10000;
+  `;
+  document.body.appendChild(remoteEl);
+
+  pc.ontrack = (e) => {
+    remoteEl.srcObject = e.streams[0];
+  };
+
+  pc.onicecandidate = (e) => {
+    if (e.candidate)
+      socket.emit("call-ice", { to: friendId, candidate: e.candidate });
+  };
+
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  socket.emit("call-offer", {
+    to: friendId,
+    offer,
+    from: currentUser._id,
+    userName: currentUser.name,
+    type: "video", // 👈 thêm type để phân biệt
+  });
+
+  alert(`🎥 Đang gọi video ${friendName}...`);
+
+  // nút kết thúc
+  const endBtn = document.createElement("button");
+  endBtn.textContent = "📴 Kết thúc video call";
+  endBtn.className = "btn end-call-btn";
+  endBtn.style.position = "fixed";
+  endBtn.style.top = "20px";
+  endBtn.style.right = "20px";
+  endBtn.style.zIndex = "99999";
+  endBtn.style.background = "#ff4d4f";
+  endBtn.style.color = "#fff";
+  document.body.appendChild(endBtn);
+
+  endBtn.addEventListener("click", () => {
+    socket.emit("call-end", { to: friendId });
+    endVideoCall(localEl, remoteEl, endBtn);
+  });
+}
+
+function endVideoCall(localEl, remoteEl, btn) {
+  if (localVideoStream) {
+    localVideoStream.getTracks().forEach((t) => t.stop());
+    localVideoStream = null;
+  }
+  if (currentVideoPeer) {
+    currentVideoPeer.close();
+    currentVideoPeer = null;
+  }
+  [localEl, remoteEl, btn].forEach((el) => el?.remove());
+}
+
+async function handleIncomingVideoCall(data) {
+  if (!confirm(`🎥 ${data.userName} đang gọi video bạn. Nhận không?`)) {
+    socket.emit("call-end", { to: data.from });
+    return;
+  }
+
+  const pc = new RTCPeerConnection({
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" },
+      {
+        urls: "turn:zingmini-turn-server-2.onrender.com:3478",
+        username: "user",
+        credential: "password",
+      },
+    ],
+  });
+  currentVideoPeer = pc;
+
+  const localStream = await navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: true,
+  });
+  localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+
+  const localEl = document.createElement("video");
+  localEl.autoplay = true;
+  localEl.muted = true;
+  localEl.srcObject = localStream;
+  localEl.style = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 200px;
+    border-radius: 10px;
+    z-index: 10000;
+  `;
+  document.body.appendChild(localEl);
+
+  const remoteEl = document.createElement("video");
+  remoteEl.autoplay = true;
+  remoteEl.playsInline = true;
+  remoteEl.controls = true;
+  remoteEl.style = `
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 240px;
+    border-radius: 10px;
+    z-index: 10000;
+  `;
+  document.body.appendChild(remoteEl);
+
+  pc.ontrack = (e) => (remoteEl.srcObject = e.streams[0]);
+  pc.onicecandidate = (e) =>
+    e.candidate &&
+    socket.emit("call-ice", { to: data.from, candidate: e.candidate });
+
+  await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  socket.emit("call-answer", { to: data.from, answer });
+
+  const endBtn = document.createElement("button");
+  endBtn.textContent = "📴 Kết thúc video call";
+  endBtn.className = "btn end-call-btn";
+  endBtn.style.position = "fixed";
+  endBtn.style.top = "20px";
+  endBtn.style.right = "20px";
+  endBtn.style.zIndex = "99999";
+  endBtn.style.background = "#ff4d4f";
+  endBtn.style.color = "#fff";
+  document.body.appendChild(endBtn);
+
+  endBtn.addEventListener("click", () => {
+    socket.emit("call-end", { to: data.from });
+    endVideoCall(localEl, remoteEl, endBtn);
   });
 }
