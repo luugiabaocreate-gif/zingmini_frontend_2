@@ -810,6 +810,25 @@ async function startVoiceCall(friendId, friendName) {
   });
 
   alert(`📞 Đang gọi ${friendName}...`);
+  // Thêm nút kết thúc cuộc gọi
+  const endBtn = document.createElement("button");
+  endBtn.textContent = "📴 Kết thúc cuộc gọi";
+  endBtn.className = "btn end-call-btn";
+  endBtn.style.position = "fixed";
+  endBtn.style.bottom = "20px";
+  endBtn.style.right = "20px";
+  endBtn.style.zIndex = "9999";
+  endBtn.style.padding = "10px 14px";
+  endBtn.style.borderRadius = "10px";
+  endBtn.style.background = "#ff4d4f";
+  endBtn.style.color = "#fff";
+  document.body.appendChild(endBtn);
+
+  endBtn.addEventListener("click", () => {
+    socket.emit("call-end", { to: friendId });
+    endVoiceCall();
+    endBtn.remove();
+  });
 }
 
 // Nhận cuộc gọi
@@ -877,6 +896,7 @@ socket.on("call-ice", async (data) => {
 // Kết thúc
 socket.on("call-end", () => {
   endVoiceCall();
+  document.querySelector(".end-call-btn")?.remove();
 });
 
 function endVoiceCall() {
