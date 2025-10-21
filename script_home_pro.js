@@ -918,7 +918,7 @@ mobileChatObserver.observe(document.body, { childList: true, subtree: true });
 window.addEventListener("resize", updateLogoutVisibilityMobile);
 window.addEventListener("load", updateLogoutVisibilityMobile);
 
-/* === ĐỔI ẢNH AVATAR NGƯỜI DÙNG (Giữ sau reload + đồng bộ toàn trang) === */
+// === ĐỔI ẢNH AVATAR NGƯỜI DÙNG (Chuẩn PUT, giữ ảnh khi reload) ===
 const avatarInput = document.getElementById("avatar-input");
 const uploadAvatarBtn = document.getElementById("upload-avatar-btn");
 
@@ -946,45 +946,51 @@ if (avatarInput && uploadAvatarBtn) {
         json?.user?.avatar || json?.avatar || json?.user?.avatarUrl || null;
 
       if (newUrl && !newUrl.startsWith("http")) {
+        // đảm bảo đường dẫn đầy đủ
         newUrl = `${API_URL}${newUrl.startsWith("/") ? newUrl : "/" + newUrl}`;
       }
 
       if (newUrl) {
-        // ✅ Cập nhật localStorage
+        // ✅ Cập nhật lại đối tượng currentUser và lưu
         const updatedUser = { ...currentUser, avatar: newUrl };
         localStorage.setItem("currentUser", JSON.stringify(updatedUser));
 
-        // ✅ Cập nhật giao diện chung
+        // ✅ Cập nhật giao diện
         ["left-avatar", "nav-avatar", "create-avatar"].forEach((id) => {
           const el = document.getElementById(id);
           if (el) el.src = newUrl;
         });
 
-        // ✅ Cập nhật các ảnh trùng avatar cũ
+        // ✅ Nếu có phần tử ảnh khác (vd: avatar ở khung bình luận, post, sidebar)
         document.querySelectorAll("img").forEach((img) => {
           if (img.src.includes(currentUser.avatar)) img.src = newUrl;
         });
 
-        // ✅ Cập nhật avatar ở khung chat (nếu đang mở)
-        document.querySelectorAll(".chat-window .head img").forEach((img) => {
-          if (img.dataset.id === currentUser._id) img.src = newUrl;
-        });
-
-        // ✅ Cập nhật avatar cho tin nhắn của bạn
-        document.querySelectorAll(".message.you").forEach((msg) => {
-          let avatarImg = msg.querySelector("img");
-          if (!avatarImg) {
-            avatarImg = document.createElement("img");
-            avatarImg.style.width = "24px";
-            avatarImg.style.height = "24px";
-            avatarImg.style.borderRadius = "50%";
-            avatarImg.style.marginRight = "6px";
-            msg.prepend(avatarImg);
-          }
-          avatarImg.src = newUrl;
-        });
-
         alert("✅ Ảnh đại diện đã được cập nhật!");
+        // ✅ Đồng bộ avatar mới cho toàn bộ khung chat đang mở
+        document
+          .querySelectorAll(".chat-window .head div:first-child img")
+          .forEach((img) => {
+            if (img.dataset.id === currentUser._id) img.src = newUrl;
+          });
+
+        // ✅ Cập nhật avatar mới cho tất cả tin nhắn của chính bạn (đã gửi trước đó)
+        document.querySelectorAll(".message.you img").forEach((img) => {
+          img.src = newUrl;
+        });
+
+        // ✅ Nếu tin nhắn của bạn chưa có ảnh avatar thì tự thêm vào (tuỳ UI của bạn)
+        document.querySelectorAll(".message.you").forEach((msg) => {
+          if (!msg.querySelector("img")) {
+            const img = document.createElement("img");
+            img.src = newUrl;
+            img.style.width = "24px";
+            img.style.height = "24px";
+            img.style.borderRadius = "50%";
+            img.style.marginRight = "6px";
+            msg.prepend(img);
+          }
+        });
       } else {
         console.warn("⚠️ Không tìm thấy URL ảnh trong phản hồi:", json);
         alert("⚠️ Cập nhật ảnh không thành công!");
