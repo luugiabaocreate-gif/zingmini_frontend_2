@@ -1077,6 +1077,49 @@ if (avatarInput && uploadAvatarBtn) {
       });
 
       alert("✅ Ảnh đại diện đã được cập nhật!");
+      // --- ĐỒNG BỘ ẢNH MỚI CHO TOÀN TRANG ---
+      try {
+        // Cập nhật avatar trong toàn bộ bài viết, danh sách bạn bè, bình luận, chat
+        document.querySelectorAll("img[data-id]").forEach((img) => {
+          if (
+            img.dataset.id === currentUser._id ||
+            img.dataset.id === String(currentUser._id)
+          ) {
+            img.src = newUrl;
+          }
+        });
+
+        // Cập nhật cả những ảnh không có data-id nhưng đang hiển thị avatar cũ
+        document.querySelectorAll("img").forEach((img) => {
+          if (
+            img.src &&
+            currentUser.avatar &&
+            img.src.includes(currentUser.avatar)
+          ) {
+            img.src = newUrl;
+          }
+        });
+
+        // Cập nhật avatar trong các cửa sổ chat
+        document.querySelectorAll(".chat-window .head img").forEach((img) => {
+          if (img.dataset?.id === currentUser._id) {
+            img.src = newUrl;
+          }
+        });
+
+        // Cập nhật dữ liệu trong friendPool (để Messenger và danh sách bạn bè đồng bộ)
+        if (window.friendPool) {
+          Object.keys(friendPool).forEach((id) => {
+            if (id === currentUser._id) {
+              friendPool[id].avatar = newUrl;
+            }
+          });
+        }
+
+        console.log("✅ Avatar synced across posts, chats, and friends!");
+      } catch (err) {
+        console.warn("⚠️ Lỗi khi đồng bộ avatar:", err);
+      }
     } catch (e) {
       console.error("❌ Upload avatar error:", e);
       alert("Lỗi khi tải ảnh lên server: " + (e.message || ""));
