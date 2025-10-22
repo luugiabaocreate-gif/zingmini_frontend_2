@@ -1208,29 +1208,51 @@ function normalizeAvatarUrl(raw) {
 // Thử fetch user mới từ server; nếu lỗi 404 hoặc endpoint không tồn tại -> fallback dùng localStorage
 async function fetchAndStoreCurrentUser() {
   if (!currentUser || !currentUser._id) return currentUser;
+
   try {
-    // Thử endpoint phổ biến /api/users/:id (nếu backend có)
+    // Thử endpoint chính (yêu cầu token)
     const res = await fetch(`${API_URL}/api/users/${currentUser._id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
+
+    // === Nếu token hết hạn hoặc mất token, fallback sang /api/users/public/:id ===
     if (!res.ok) {
-      // nếu 404 thì không báo lỗi nặng, trả về local copy
-      console.warn("fetchAndStoreCurrentUser: server returned", res.status);
-      return currentUser;
+      console.warn("⚠️ Token có thể hết hạn, thử tải public profile...");
+      const res2 = await fetch(
+        `${API_URL}/api/users/public/${currentUser._id}`
+      );
+      const data2 = await res2.json();
+      if (data2?.success && data2?.user) {
+        if (data2.user.avatar)
+          data2.user.avatar = normalizeAvatarUrl(data2.user.avatar);
+        localStorage.setItem("currentUser", JSON.stringify(data2.user));
+        console.log("✅ Avatar đã được đồng bộ lại qua public API.");
+        // Cập nhật UI avatar ngay
+        ["left-avatar", "nav-avatar", "create-avatar"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el && data2.user.avatar) el.src = data2.user.avatar;
+        });
+        return data2.user;
+      } else {
+        console.warn(
+          "⚠️ Không thể tải public profile, dùng localStorage thay thế."
+        );
+        return currentUser;
+      }
     }
+
+    // === Nếu token hợp lệ (200 OK) ===
     const j = await res.json();
-    // j có thể là { user: {...} } hoặc user object trực tiếp
     const userObj = j?.user ? j.user : j;
     if (!userObj) return currentUser;
 
-    // chuẩn hoá avatar (nếu có)
+    // Chuẩn hoá avatar URL
     if (userObj.avatar) userObj.avatar = normalizeAvatarUrl(userObj.avatar);
 
-    // lưu vào localStorage và trả về
+    // Lưu lại
     localStorage.setItem("currentUser", JSON.stringify(userObj));
     return userObj;
   } catch (err) {
-    // lỗi mạng hoặc endpoint không tồn tại -> giữ local copy, không crash
     console.warn("fetchAndStoreCurrentUser error:", err);
     return currentUser;
   }
@@ -1434,14 +1456,18 @@ async function startVideoCall(friendId, friendName) {
   localEl.autoplay = true;
   localEl.muted = true;
   localEl.srcObject = localVideoStream;
+  // LOCAL VIDEO (người gọi)
   localEl.style = `
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 200px;
-    border-radius: 10px;
-    z-index: 10000;
-  `;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 160px;
+  height: 120px;
+  border-radius: 10px;
+  z-index: 10001;
+  object-fit: cover;
+  background: #000;
+`;
   document.body.appendChild(localEl);
 
   // Tạo video remote
@@ -1450,14 +1476,18 @@ async function startVideoCall(friendId, friendName) {
   remoteEl.autoplay = true;
   remoteEl.playsInline = true;
   remoteEl.controls = true;
+  // REMOTE VIDEO (người kia)
   remoteEl.style = `
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 240px;
-    border-radius: 10px;
-    z-index: 10000;
-  `;
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 320px;
+  height: 240px;
+  border-radius: 10px;
+  z-index: 10000;
+  object-fit: cover;
+  background: #000;
+`;
   document.body.appendChild(remoteEl);
 
   pc.ontrack = (e) => {
@@ -1556,14 +1586,18 @@ async function handleIncomingVideoCall(data) {
   localEl.autoplay = true;
   localEl.muted = true;
   localEl.srcObject = localStream;
+  // LOCAL VIDEO (người gọi)
   localEl.style = `
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 200px;
-    border-radius: 10px;
-    z-index: 10000;
-  `;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 160px;
+  height: 120px;
+  border-radius: 10px;
+  z-index: 10001;
+  object-fit: cover;
+  background: #000;
+`;
   document.body.appendChild(localEl);
 
   const remoteEl = document.createElement("video");
@@ -1571,14 +1605,18 @@ async function handleIncomingVideoCall(data) {
   remoteEl.autoplay = true;
   remoteEl.playsInline = true;
   remoteEl.controls = true;
+  // REMOTE VIDEO (người kia)
   remoteEl.style = `
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 240px;
-    border-radius: 10px;
-    z-index: 10000;
-  `;
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 320px;
+  height: 240px;
+  border-radius: 10px;
+  z-index: 10000;
+  object-fit: cover;
+  background: #000;
+`;
   document.body.appendChild(remoteEl);
 
   pc.ontrack = (e) => (remoteEl.srcObject = e.streams[0]);
