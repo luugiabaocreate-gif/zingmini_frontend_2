@@ -111,3 +111,29 @@ textarea {
     color: white;
   }
 }
+/* ======== ONLINE GREEN DOT (chấm xanh cuối tên) ======== */
+.online-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #00ff57;
+  border-radius: 50%;
+  margin-left: 6px;
+  box-shadow: 0 0 6px #00ff57;
+  vertical-align: middle;
+}
+
+/* File/video hiển thị trong bài đăng */
+.post-card img,
+.post-card video {
+  width: 100%;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.file-link {
+  display: inline-block;
+  margin-top: 6px;
+  color: #0076ff;
+  font-weight: 600;
+}
