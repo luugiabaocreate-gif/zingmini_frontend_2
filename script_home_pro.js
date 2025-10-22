@@ -1267,7 +1267,37 @@ async function fetchAndStoreCurrentUser() {
     }
 
     // Lưu lại và cập nhật biến global currentUser
+    // Chuẩn hoá avatar URL nếu backend trả về (relative -> absolute)
+    if (userObj.avatar) userObj.avatar = normalizeAvatarUrl(userObj.avatar);
+
+    // === BẢO VỆ: nếu localStorage đã có avatar mới (dạng /uploads/...) thì giữ lại, không ghi đè ===
+    try {
+      const stored = JSON.parse(localStorage.getItem("currentUser") || "{}");
+      if (
+        stored &&
+        stored.avatar &&
+        (stored.avatar.startsWith("/uploads/") ||
+          stored.avatar.includes("/uploads/"))
+      ) {
+        userObj.avatar = stored.avatar;
+      }
+    } catch (e) {
+      console.warn("⚠️ Lỗi đọc localStorage currentUser:", e);
+    }
+
+    // Lưu lại và cập nhật biến module currentUser
+    if (userObj.avatar) userObj.avatar = normalizeAvatarUrl(userObj.avatar);
+
+    // Giữ avatar local nếu đã có và đang là /uploads/...
+    try {
+      const stored = JSON.parse(localStorage.getItem("currentUser") || "{}");
+      if (stored && stored.avatar && stored.avatar.includes("/uploads/")) {
+        userObj.avatar = stored.avatar;
+      }
+    } catch (e) {}
+
     localStorage.setItem("currentUser", JSON.stringify(userObj));
+    console.log("✅ Avatar lưu cuối cùng:", userObj.avatar);
     currentUser = userObj;
     return userObj;
   } catch (err) {

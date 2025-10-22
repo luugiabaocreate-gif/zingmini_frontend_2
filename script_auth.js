@@ -20,11 +20,21 @@ async function handleLogin() {
 
     // 🧩 Chuẩn hóa avatar NGAY SAU khi nhận response
     if (data && data.user) {
-      if (data.user.avatar?.startsWith("/")) {
-        data.user.avatar = `${API_URL}${data.user.avatar}`;
-      } else if (data.user.avatar?.startsWith("http://")) {
-        data.user.avatar = data.user.avatar.replace("http://", "https://");
-      }
+      // ✅ Luôn chuẩn hóa đường dẫn avatar (relative -> full URL)
+if (data.user.avatar) {
+  if (data.user.avatar.startsWith("/")) {
+    data.user.avatar = `${API_URL}${data.user.avatar}`;
+  } else if (data.user.avatar.startsWith("http://")) {
+    data.user.avatar = data.user.avatar.replace("http://", "https://");
+  }
+} else {
+  data.user.avatar = `${API_URL}/uploads/default_avatar.png`;
+}
+
+// ✅ Lưu vào localStorage để frontend đọc được khi F5
+localStorage.setItem("token", data.token);
+localStorage.setItem("currentUser", JSON.stringify(data.user));
+console.log("✅ Saved currentUser:", data.user);
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("currentUser", JSON.stringify(data.user));
