@@ -1295,6 +1295,16 @@ async function fetchAndStoreCurrentUser() {
         userObj.avatar = stored.avatar;
       }
     } catch (e) {}
+    // Chuẩn hoá avatar nếu backend trả về
+    if (userObj.avatar) {
+      if (userObj.avatar.startsWith("/")) {
+        userObj.avatar = `${API_URL}${userObj.avatar}`;
+      } else if (userObj.avatar.startsWith("http://")) {
+        userObj.avatar = userObj.avatar.replace("http://", "https://");
+      }
+    } else {
+      userObj.avatar = `${API_URL}/uploads/default_avatar.png`;
+    }
 
     localStorage.setItem("currentUser", JSON.stringify(userObj));
     console.log("✅ Avatar lưu cuối cùng:", userObj.avatar);
