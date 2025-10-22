@@ -8,7 +8,7 @@ const API_URL = "https://zingmini-backend-2.onrender.com";
 
 // ===== Auth check =====
 const token = localStorage.getItem("token");
-const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+let currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
 if (!token || !currentUser) {
   alert("Vui lòng đăng nhập để vào ZingMini!");
   location.href = "index.html";
@@ -1249,8 +1249,26 @@ async function fetchAndStoreCurrentUser() {
     // Chuẩn hoá avatar URL
     if (userObj.avatar) userObj.avatar = normalizeAvatarUrl(userObj.avatar);
 
-    // Lưu lại
+    // Chuẩn hoá avatar URL nếu backend trả về (relative -> absolute)
+    if (userObj.avatar) userObj.avatar = normalizeAvatarUrl(userObj.avatar);
+
+    // === BẢO VỆ: nếu localStorage đã có avatar mới dạng /uploads/... thì giữ cái đó, không ghi đè ===
+    try {
+      const stored = JSON.parse(localStorage.getItem("currentUser") || "{}");
+      if (
+        stored &&
+        stored.avatar &&
+        String(stored.avatar).startsWith("/uploads/")
+      ) {
+        userObj.avatar = stored.avatar;
+      }
+    } catch (e) {
+      console.warn("⚠️ Parse currentUser lỗi:", e);
+    }
+
+    // Lưu lại và cập nhật biến global currentUser
     localStorage.setItem("currentUser", JSON.stringify(userObj));
+    currentUser = userObj;
     return userObj;
   } catch (err) {
     console.warn("fetchAndStoreCurrentUser error:", err);
@@ -1330,6 +1348,7 @@ if (avatarInput && uploadAvatarBtn) {
         const stored = JSON.parse(localStorage.getItem("currentUser") || "{}");
         const updatedUser = { ...stored, avatar: newUrl };
         localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+        currentUser = updatedUser;
       } catch (e) {
         console.warn("Không thể lưu currentUser vào localStorage:", e);
       }
