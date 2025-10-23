@@ -421,9 +421,15 @@ function renderFriendsList() {
     const u = friendPool[id];
     const el = document.createElement("div");
     el.className = "s-item";
-    el.innerHTML = `<img src="${escapeHtml(u.avatar)}" data-id="${escapeHtml(
+    el.innerHTML = `
+  <img src="${escapeHtml(u.avatar)}" data-id="${escapeHtml(
       u._id
-    )}" alt="${escapeHtml(u.name)}"/><div>${escapeHtml(u.name)}</div>`;
+    )}" alt="${escapeHtml(u.name)}"/>
+  <div style="flex:1;display:flex;align-items:center;justify-content:space-between">
+    <span>${escapeHtml(u.name)}</span>
+    ${u.online ? '<span class="online-dot" title="Đang online"></span>' : ""}
+  </div>
+`;
     el.addEventListener("click", () => openChatWindow(u._id, u.name));
     friendsListEl.appendChild(el);
   });
@@ -658,6 +664,19 @@ if (socket && socket.on) {
   socket.on("connect_error", (err) =>
     console.warn("socket connect_error", err)
   );
+  // ===== Realtime: nhận danh sách user online =====
+  socket.on("online_users", (ids) => {
+    try {
+      const set = new Set((ids || []).map(String));
+      Object.keys(friendPool).forEach((id) => {
+        friendPool[id].online = set.has(String(id));
+      });
+      // render lại danh sách
+      renderFriendsList();
+    } catch (e) {
+      console.warn("online_users handler error:", e);
+    }
+  });
 }
 
 // ===== UI: profile dropdown + logout =====
@@ -1336,6 +1355,7 @@ fetchAndStoreCurrentUser()
   .catch(() => {});
 
 // === Upload avatar handler (thay thế đoạn cũ hoàn toàn) ===
+// === Upload avatar handler (ổn định, đồng bộ & không mất sau reload) ===
 const avatarInput = document.getElementById("avatar-input");
 const uploadAvatarBtn = document.getElementById("upload-avatar-btn");
 
@@ -1350,124 +1370,55 @@ if (avatarInput && uploadAvatarBtn) {
     try {
       const res = await fetch(`${API_URL}/api/users/${currentUser._id}`, {
         method: "PUT",
-        // Không set 'Content-Type' khi dùng FormData
         headers: { Authorization: `Bearer ${token}` },
         body: form,
       });
 
       if (!res.ok) {
-        const body = await (async () => {
-          try {
-            return await res.json();
-          } catch (e) {
-            return { message: `HTTP ${res.status}` };
-          }
-        })();
-        throw new Error(
-          body?.message || `Không thể cập nhật ảnh (${res.status})`
-        );
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || `HTTP ${res.status}`);
       }
 
-      const json = await res.json();
-      console.log("🧩 JSON từ backend:", json);
+      const data = await res.json();
+      console.log("📦 Kết quả upload:", data);
 
-      // backend trả { success: true, avatar: '...', user: {...} } hoặc user trong json.user
-      let newUrl =
-        json?.user?.avatar || json?.avatar || json?.user?.avatarUrl || null;
+      const newUrl = data.user?.avatar || data.avatar;
+      if (!newUrl) return alert("Không nhận được URL avatar mới từ server!");
 
-      // chuẩn hoá (convert http -> https, hoặc relative -> full)
-      newUrl = normalizeAvatarUrl(newUrl);
+      const finalUrl = newUrl.startsWith("http")
+        ? newUrl
+        : `${API_URL}${newUrl}`;
 
-      if (!newUrl) {
-        console.warn("⚠️ Không tìm thấy URL ảnh trong phản hồi:", json);
-        return alert("⚠️ Cập nhật ảnh không thành công (không có url).");
-      }
+      // === Cập nhật localStorage.currentUser ===
+      const stored = JSON.parse(localStorage.getItem("currentUser") || "{}");
+      const updatedUser = { ...stored, avatar: finalUrl };
+      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+      currentUser = updatedUser;
 
-      // cập nhật localStorage.currentUser (ghi đè avatar)
-      try {
-        const stored = JSON.parse(localStorage.getItem("currentUser") || "{}");
-        const updatedUser = { ...stored, avatar: newUrl };
-        localStorage.setItem("currentUser", JSON.stringify(updatedUser));
-        currentUser = updatedUser;
-      } catch (e) {
-        console.warn("Không thể lưu currentUser vào localStorage:", e);
-      }
-
-      // cập nhật UI: các avatar "static"
+      // === Cập nhật UI ngay lập tức ===
       ["left-avatar", "nav-avatar", "create-avatar"].forEach((id) => {
         const el = document.getElementById(id);
-        if (el) el.src = newUrl;
+        if (el) el.src = finalUrl;
       });
 
-      // cập nhật ảnh trong posts / friends list / messages (nếu dùng same URL)
-      document.querySelectorAll("img").forEach((img) => {
-        // nếu src bằng trước đó (local copy) -> thay
+      // === Đồng bộ ảnh trong toàn hệ thống ===
+      document.querySelectorAll("img[data-id]").forEach((img) => {
         if (
-          img.src &&
-          currentUser.avatar &&
-          img.src.includes(currentUser.avatar)
+          img.dataset.id === currentUser._id ||
+          img.dataset.id === String(currentUser._id)
         ) {
-          img.src = newUrl;
+          img.src = finalUrl;
         }
       });
 
-      // cập nhật avatar trong chat window headers nếu có
-      document.querySelectorAll(".chat-window .head img").forEach((img) => {
-        if (img.dataset && img.dataset.id === currentUser._id) {
-          img.src = newUrl;
-        }
-      });
-
-      alert("✅ Ảnh đại diện đã được cập nhật!");
-      // --- ĐỒNG BỘ ẢNH MỚI CHO TOÀN TRANG ---
-      try {
-        // Cập nhật avatar trong toàn bộ bài viết, danh sách bạn bè, bình luận, chat
-        document.querySelectorAll("img[data-id]").forEach((img) => {
-          if (
-            img.dataset.id === currentUser._id ||
-            img.dataset.id === String(currentUser._id)
-          ) {
-            img.src = newUrl;
-          }
-        });
-
-        // Cập nhật cả những ảnh không có data-id nhưng đang hiển thị avatar cũ
-        document.querySelectorAll("img").forEach((img) => {
-          if (
-            img.src &&
-            currentUser.avatar &&
-            img.src.includes(currentUser.avatar)
-          ) {
-            img.src = newUrl;
-          }
-        });
-
-        // Cập nhật avatar trong các cửa sổ chat
-        document.querySelectorAll(".chat-window .head img").forEach((img) => {
-          if (img.dataset?.id === currentUser._id) {
-            img.src = newUrl;
-          }
-        });
-
-        // Cập nhật dữ liệu trong friendPool (để Messenger và danh sách bạn bè đồng bộ)
-        if (window.friendPool) {
-          Object.keys(friendPool).forEach((id) => {
-            if (id === currentUser._id) {
-              friendPool[id].avatar = newUrl;
-            }
-          });
-        }
-
-        console.log("✅ Avatar synced across posts, chats, and friends!");
-      } catch (err) {
-        console.warn("⚠️ Lỗi khi đồng bộ avatar:", err);
-      }
-    } catch (e) {
-      console.error("❌ Upload avatar error:", e);
-      alert("Lỗi khi tải ảnh lên server: " + (e.message || ""));
+      alert("✅ Ảnh đại diện đã được cập nhật và lưu vĩnh viễn!");
+    } catch (err) {
+      console.error("❌ Upload avatar error:", err);
+      alert("Lỗi khi tải ảnh: " + err.message);
     }
   });
 }
+
 /******************************************************
  * 🎥 VIDEO CALL FEATURE — WebRTC + Socket.IO
  ******************************************************/

@@ -762,3 +762,19 @@ body.dark .chat-window .message.them::before,
     display: none !important;
   }
 }
+/* === Online dot (bạn bè online) === */
+.online-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #39e35a;
+  box-shadow: 0 0 8px rgba(57,227,90,0.85);
+  display: inline-block;
+  margin-left: 8px;
+}
+.s-item div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
