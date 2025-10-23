@@ -778,3 +778,46 @@ body.dark .chat-window .message.them::before,
   gap: 8px;
   justify-content: space-between;
 }
+/* ==========================
+   🎬 STORY BAR (24h realtime)
+   ========================== */
+.story-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  background: #fff;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.story-list {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding-bottom: 5px;
+}
+
+.story-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 120px;
+}
+
+.story-item img,
+.story-item video {
+  width: 100px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.story-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-bottom: 5px;
+  border: 2px solid #00b6ff;
+  box-shadow: 0 0 6px rgba(0, 182, 255, 0.4);
+}

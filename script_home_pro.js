@@ -1418,6 +1418,81 @@ if (avatarInput && uploadAvatarBtn) {
     }
   });
 }
+/******************************************************
+ * 📸 STORY REALTIME FEATURE (24h)
+ ******************************************************/
+const storyInput = document.getElementById("storyInput");
+const storyBtn = document.getElementById("btnStory");
+const storyContainer = document.getElementById("storyContainer");
+
+async function loadStories() {
+  try {
+    const res = await fetch(`${API_URL}/api/story`);
+    const data = await res.json();
+    storyContainer.innerHTML = data
+      .map(
+        (s) => `
+        <div class="story-item">
+          <img src="${
+            s.userId?.avatar || `${API_URL}/uploads/default_avatar.png`
+          }" class="story-avatar" />
+          <p>${s.userId?.name || "Người dùng"}</p>
+          ${
+            s.type === "video"
+              ? `<video controls src="${API_URL}${s.mediaUrl}"></video>`
+              : `<img src="${API_URL}${s.mediaUrl}" alt="story" />`
+          }
+        </div>`
+      )
+      .join("");
+  } catch (err) {
+    console.error("Lỗi tải story:", err);
+  }
+}
+
+if (storyBtn && storyInput) {
+  storyBtn.addEventListener("click", async () => {
+    const file = storyInput.files?.[0];
+    if (!file) return alert("Chọn ảnh hoặc video trước!");
+
+    const form = new FormData();
+    form.append("media", file);
+
+    const res = await fetch(`${API_URL}/api/story/upload`, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + token },
+      body: form,
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert("🎉 Story đã được đăng!");
+      socket.emit("new-story", data.story); // realtime emit
+      loadStories();
+    } else {
+      alert(data.message || "Lỗi đăng story");
+    }
+  });
+}
+
+// Realtime story nhận
+socket.on("new-story", (story) => {
+  const html = `
+  <div class="story-item">
+    <img src="${
+      story.userId?.avatar || `${API_URL}/uploads/default_avatar.png`
+    }" class="story-avatar" />
+    <p>${story.userId?.name || "Người dùng"}</p>
+    ${
+      story.type === "video"
+        ? `<video controls src="${API_URL}${story.mediaUrl}"></video>`
+        : `<img src="${API_URL}${story.mediaUrl}" />`
+    }
+  </div>`;
+  storyContainer.insertAdjacentHTML("afterbegin", html);
+});
+
+loadStories();
 
 /******************************************************
  * 🎥 VIDEO CALL FEATURE — WebRTC + Socket.IO
