@@ -248,7 +248,16 @@ async function createPostHandler() {
 
     const form = new FormData();
     form.append("content", content);
-    if (file) form.append("image", file);
+    if (file) {
+      const ext = file.name.split(".").pop().toLowerCase();
+      if (["mp4", "mov", "avi", "webm"].includes(ext)) {
+        form.append("video", file);
+      } else if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) {
+        form.append("image", file);
+      } else {
+        form.append("file", file);
+      }
+    }
 
     try {
       const res = await fetch(`${API_URL}/api/posts`, {
@@ -294,22 +303,25 @@ if (postImage && mediaPreview) {
     mediaPreview.innerHTML = "";
     const file = e.target.files[0];
     if (!file) return;
-    const fr = new FileReader();
-    fr.onload = () => {
-      if (file.type.startsWith("video/")) {
-        const v = document.createElement("video");
-        v.controls = true;
-        v.src = fr.result;
-        v.style.maxWidth = "220px";
-        mediaPreview.appendChild(v);
-      } else {
-        const img = document.createElement("img");
-        img.src = fr.result;
-        img.style.maxWidth = "220px";
-        mediaPreview.appendChild(img);
-      }
-    };
-    fr.readAsDataURL(file);
+    const ext = file.name.split(".").pop().toLowerCase();
+
+    if (["mp4", "mov", "avi", "webm"].includes(ext)) {
+      const v = document.createElement("video");
+      v.controls = true;
+      v.src = URL.createObjectURL(file);
+      v.style.maxWidth = "220px";
+      mediaPreview.appendChild(v);
+    } else if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) {
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(file);
+      img.style.maxWidth = "220px";
+      mediaPreview.appendChild(img);
+    } else {
+      const link = document.createElement("div");
+      link.textContent = `📎 ${file.name}`;
+      link.style.color = "#007bff";
+      mediaPreview.appendChild(link);
+    }
   });
 }
 
@@ -342,7 +354,22 @@ function createPostNode(post) {
     </div>
     <div class="post-content">
       <p>${escapeHtml(content)}</p>
-      ${post.image ? renderMediaHtml(post.image) : ""}
+      ${
+        post.video
+          ? `<video controls src="${escapeHtml(
+              post.video
+            )}" style="width:100%;border-radius:8px;margin-top:8px"></video>`
+          : post.image
+          ? `<img src="${escapeHtml(
+              post.image
+            )}" style="width:100%;border-radius:8px;margin-top:8px" />`
+          : post.file
+          ? `<a href="${escapeHtml(post.file)}" target="_blank">📎 ${escapeHtml(
+              post.file.split("/").pop()
+            )}</a>`
+          : ""
+      }
+
     </div>
     <div class="post-actions">
       <button class="btn like-btn">👍 Thích</button>
@@ -1419,78 +1446,92 @@ if (avatarInput && uploadAvatarBtn) {
   });
 }
 /******************************************************
- * 📸 STORY REALTIME FEATURE (24h)
+ * 🟦 STORY REAL (24H + Realtime)
  ******************************************************/
-const storyInput = document.getElementById("storyInput");
-const storyBtn = document.getElementById("btnStory");
 const storyContainer = document.getElementById("storyContainer");
+const storyInput = document.getElementById("storyInput");
+const btnPostStory = document.getElementById("btnPostStory");
 
-async function loadStories() {
-  try {
-    const res = await fetch(`${API_URL}/api/story`);
-    const data = await res.json();
-    storyContainer.innerHTML = data
-      .map(
-        (s) => `
-        <div class="story-item">
-          <img src="${
-            s.userId?.avatar || `${API_URL}/uploads/default_avatar.png`
-          }" class="story-avatar" />
-          <p>${s.userId?.name || "Người dùng"}</p>
-          ${
-            s.type === "video"
-              ? `<video controls src="${API_URL}${s.mediaUrl}"></video>`
-              : `<img src="${API_URL}${s.mediaUrl}" alt="story" />`
-          }
-        </div>`
-      )
-      .join("");
-  } catch (err) {
-    console.error("Lỗi tải story:", err);
+// Khi click vào dấu "+"
+document
+  .querySelector(".add-story .story-thumb")
+  .addEventListener("click", () => storyInput.click());
+
+// Khi chọn xong file -> hiện nút "Đăng"
+storyInput.addEventListener("change", () => {
+  if (storyInput.files && storyInput.files.length > 0) {
+    btnPostStory.classList.remove("hidden");
   }
-}
+});
 
-if (storyBtn && storyInput) {
-  storyBtn.addEventListener("click", async () => {
-    const file = storyInput.files?.[0];
-    if (!file) return alert("Chọn ảnh hoặc video trước!");
+// Khi bấm "Đăng"
+btnPostStory.addEventListener("click", async () => {
+  const file = storyInput.files?.[0];
+  if (!file) return alert("Vui lòng chọn ảnh hoặc video!");
 
-    const form = new FormData();
-    form.append("media", file);
+  const formData = new FormData();
+  formData.append("story", file);
 
-    const res = await fetch(`${API_URL}/api/story/upload`, {
+  try {
+    const res = await fetch(`${API_URL}/api/stories`, {
       method: "POST",
-      headers: { Authorization: "Bearer " + token },
-      body: form,
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
     });
 
     const data = await res.json();
     if (res.ok) {
-      alert("🎉 Story đã được đăng!");
-      socket.emit("new-story", data.story); // realtime emit
+      alert("✅ Story đã được đăng!");
+      storyInput.value = "";
+      btnPostStory.classList.add("hidden");
       loadStories();
     } else {
-      alert(data.message || "Lỗi đăng story");
+      alert(data.message || "Không thể đăng story!");
     }
-  });
+  } catch (err) {
+    console.error("Lỗi đăng story:", err);
+    alert("Không thể đăng story!");
+  }
+});
+
+// Load danh sách story
+async function loadStories() {
+  try {
+    const res = await fetch(`${API_URL}/api/stories`);
+    const stories = await res.json();
+    // Xoá tất cả story cũ (trừ story add)
+    const addEl = document.querySelector(".add-story");
+    storyContainer.innerHTML = "";
+    storyContainer.appendChild(addEl);
+
+    stories.forEach((s) => {
+      const item = document.createElement("div");
+      item.className = "story-item";
+      const thumb =
+        s.mediaType === "video"
+          ? `<video src="${s.mediaUrl}" muted></video>`
+          : `<img src="${s.mediaUrl}" alt="story" />`;
+      item.innerHTML = thumb;
+      storyContainer.appendChild(item);
+    });
+  } catch (err) {
+    console.warn("Không thể load story:", err);
+  }
 }
 
-// Realtime story nhận
-socket.on("new-story", (story) => {
-  const html = `
-  <div class="story-item">
-    <img src="${
-      story.userId?.avatar || `${API_URL}/uploads/default_avatar.png`
-    }" class="story-avatar" />
-    <p>${story.userId?.name || "Người dùng"}</p>
-    ${
-      story.type === "video"
-        ? `<video controls src="${API_URL}${story.mediaUrl}"></video>`
-        : `<img src="${API_URL}${story.mediaUrl}" />`
-    }
-  </div>`;
-  storyContainer.insertAdjacentHTML("afterbegin", html);
-});
+// Socket realtime
+if (socket && socket.on) {
+  socket.on("new-story", (s) => {
+    const item = document.createElement("div");
+    item.className = "story-item";
+    const thumb =
+      s.mediaType === "video"
+        ? `<video src="${s.mediaUrl}" muted></video>`
+        : `<img src="${s.mediaUrl}" alt="story" />`;
+    item.innerHTML = thumb;
+    storyContainer.appendChild(item);
+  });
+}
 
 loadStories();
 

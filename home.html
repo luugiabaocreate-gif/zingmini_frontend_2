@@ -100,10 +100,19 @@
             </div>
           </div>
           <!-- 👇 Thêm ngay dưới đây -->
-<input type="file" id="avatar-input" accept="image/*" style="margin-top:8px" />
-<button id="upload-avatar-btn" class="btn primary" style="margin-top:6px">
-  Đổi ảnh
-</button>
+          <input
+            type="file"
+            id="avatar-input"
+            accept="image/*"
+            style="margin-top: 8px"
+          />
+          <button
+            id="upload-avatar-btn"
+            class="btn primary"
+            style="margin-top: 6px"
+          >
+            Đổi ảnh
+          </button>
           <nav class="left-menu">
             <a href="#">Trang cá nhân</a>
             <a href="#">Bảng tin</a>
@@ -124,11 +133,23 @@
 
       <!-- CENTER COLUMN -->
       <section class="center-col" aria-live="polite">
+        <!-- ==== STORY REAL ==== -->
         <div class="story-bar">
-  <input type="file" id="storyInput" accept="image/*,video/*" />
-  <button id="btnStory">Đăng Story</button>
-  <div id="storyContainer" class="story-list"></div>
-</div>
+          <div id="storyContainer" class="story-list">
+            <!-- Story thật sẽ được load vào đây -->
+            <div class="story-item add-story">
+              <div class="story-thumb">+</div>
+              <span>Thêm</span>
+              <input
+                type="file"
+                id="storyInput"
+                accept="image/*,video/*"
+                hidden
+              />
+              <button id="btnPostStory" class="btn hidden">Đăng</button>
+            </div>
+          </div>
+        </div>
 
         <div class="card create-post" aria-label="Tạo bài viết">
           <div class="create-top">
@@ -211,7 +232,7 @@
     <!-- chat windows root (floating) -->
     <div id="chat-windows-root" aria-live="polite"></div>
     <!-- Nút đăng xuất cho điện thoại -->
-<div id="logout-mobile" title="Đăng xuất">🔓</div>
+    <div id="logout-mobile" title="Đăng xuất">🔓</div>
     <!-- non-blocking boot logo created by script -->
     <script type="module" src="script_home_pro.js"></script>
   </body>

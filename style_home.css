@@ -821,3 +821,66 @@ body.dark .chat-window .message.them::before,
   border: 2px solid #00b6ff;
   box-shadow: 0 0 6px rgba(0, 182, 255, 0.4);
 }
+/* ==== STORY GIAO DIỆN THẬT ==== */
+.story-bar {
+  display: flex;
+  padding: 10px;
+  background: #fff;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  overflow-x: auto;
+}
+
+.story-list {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.story-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.story-thumb {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #e7f1ff;
+  border: 2px solid #2196f3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  font-weight: bold;
+  color: #2196f3;
+  transition: 0.3s;
+}
+.story-thumb:hover {
+  background: #d0e8ff;
+}
+.story-item img,
+.story-item video {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #2196f3;
+}
+#btnPostStory {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: #2196f3;
+  color: #fff;
+}
+.hidden {
+  display: none !important;
+}
