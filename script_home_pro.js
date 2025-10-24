@@ -1428,6 +1428,10 @@ if (avatarInput && uploadAvatarBtn) {
         if (el) el.src = finalUrl;
       });
 
+      // 🟦 Cập nhật avatar cho ô "Tạo tin (Story)"
+const myStoryAvatarEl = document.querySelector(".add-story .story-avatar");
+if (myStoryAvatarEl) myStoryAvatarEl.src = finalUrl;
+
       // === Đồng bộ ảnh trong toàn hệ thống ===
       document.querySelectorAll("img[data-id]").forEach((img) => {
         if (
@@ -1451,11 +1455,27 @@ if (avatarInput && uploadAvatarBtn) {
 const storyContainer = document.getElementById("storyContainer");
 const storyInput = document.getElementById("storyInput");
 const btnPostStory = document.getElementById("btnPostStory");
+// Cập nhật avatar và tên cho ô story đầu tiên ("Tạo tin")
+const myStoryAvatar = document.querySelector(".add-story .story-avatar");
+const myStoryLabel = document.querySelector(".add-story .story-label");
 
-// Khi click vào dấu "+"
-document
-  .querySelector(".add-story .story-thumb")
-  .addEventListener("click", () => storyInput.click());
+if (myStoryAvatar && currentUser?.avatar) {
+  myStoryAvatar.src =
+    currentUser.avatar || `https://i.pravatar.cc/60?u=${currentUser._id}`;
+}
+if (myStoryLabel) {
+  myStoryLabel.textContent = "Tạo tin";
+}
+
+// ===== STORY: mở chọn file khi click vào dấu "+" =====
+const addStoryEl = document.querySelector(".add-story");
+
+if (addStoryEl) {
+  addStoryEl.addEventListener("click", () => {
+    const input = document.getElementById("storyInput");
+    if (input) input.click();
+  });
+}
 
 // Khi chọn xong file -> hiện nút "Đăng"
 storyInput.addEventListener("change", () => {
@@ -1463,6 +1483,7 @@ storyInput.addEventListener("change", () => {
     btnPostStory.classList.remove("hidden");
   }
 });
+
 
 // Khi bấm "Đăng"
 btnPostStory.addEventListener("click", async () => {
