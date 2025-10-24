@@ -249,14 +249,7 @@ async function createPostHandler() {
     const form = new FormData();
     form.append("content", content);
     if (file) {
-      const ext = file.name.split(".").pop().toLowerCase();
-      if (["mp4", "mov", "avi", "webm"].includes(ext)) {
-        form.append("video", file);
-      } else if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) {
-        form.append("image", file);
-      } else {
-        form.append("file", file);
-      }
+      form.append("file", file);
     }
 
     try {
