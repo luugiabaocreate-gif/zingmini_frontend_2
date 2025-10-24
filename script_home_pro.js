@@ -250,7 +250,13 @@ async function createPostHandler() {
     form.append("content", content);
     if (file) {
       const ext = file.name.split(".").pop().toLowerCase();
-      form.append("file", file);
+      if (["mp4", "mov", "avi", "webm"].includes(ext)) {
+        form.append("video", file);
+      } else if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) {
+        form.append("image", file);
+      } else {
+        form.append("file", file);
+      }
     }
 
     try {
@@ -1464,7 +1470,7 @@ btnPostStory.addEventListener("click", async () => {
   if (!file) return alert("Vui lòng chọn ảnh hoặc video!");
 
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("story", file);
 
   try {
     const res = await fetch(`${API_URL}/api/stories`, {
