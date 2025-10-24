@@ -249,7 +249,14 @@ async function createPostHandler() {
     const form = new FormData();
     form.append("content", content);
     if (file) {
-      form.append("file", file);
+      const ext = file.name.split(".").pop().toLowerCase();
+      if (["mp4", "mov", "avi", "webm"].includes(ext)) {
+        form.append("video", file); // gửi video vào field "video"
+      } else if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) {
+        form.append("image", file); // gửi ảnh vào field "image"
+      } else {
+        form.append("file", file); // các file khác: pdf, zip...
+      }
     }
 
     try {
