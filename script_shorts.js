@@ -1,6 +1,20 @@
 // === SHORTS SCRIPT ===
 // ZingMini Short Reels Feature (TikTok-style)
 // Author: ChatGPT x ZingMini
+// === NÚT QUAY LẠI HOME ===
+document.addEventListener("DOMContentLoaded", () => {
+  // Nếu chưa có nút back-home thì thêm vào
+  if (!document.querySelector(".back-home")) {
+    const backBtn = document.createElement("button");
+    backBtn.className = "back-home";
+    backBtn.innerHTML = "🏠";
+    backBtn.title = "Quay lại Home";
+    backBtn.addEventListener("click", () => {
+      window.location.href = "home.html";
+    });
+    document.body.appendChild(backBtn);
+  }
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("shortsContainer");

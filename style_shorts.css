@@ -1,65 +1,35 @@
+/* === RESET & BODY === */
 body {
   margin: 0;
-  background: #000;
-  overflow: hidden;
-}
-
-.shorts-feed {
-  height: 100vh;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  scroll-snap-type: y mandatory;
-  overflow-y: scroll;
-}
-
-.short-item {
-  position: relative;
-  flex: 0 0 100vh;
-  scroll-snap-align: start;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #000;
-}
-
-.short-item video {
-  height: 100%;
-  width: auto;
-  object-fit: contain;
-}
-
-#back-home {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  background: rgba(0, 0, 0, 0.6);
-  color: #fff;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  z-index: 100;
-}
-body {
-  margin: 0;
-  overflow: hidden;
+  padding: 0;
   font-family: "Inter", sans-serif;
+  overflow: hidden;
+  background-color: var(--bg-color, #000);
+  color: var(--text-color, #fff);
+  transition: background 0.3s, color 0.3s;
 }
 
+/* === CONTAINER CHÍNH === */
 .shorts-container {
   height: 100vh;
   width: 100%;
   scroll-snap-type: y mandatory;
   overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
+/* === VIDEO ITEM === */
 .short-item {
   position: relative;
   height: 100vh;
   width: 100%;
   scroll-snap-align: start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
 }
 
 .short-item video {
@@ -69,6 +39,7 @@ body {
   background: #000;
 }
 
+/* === OVERLAY: USER + NÚT HÀNH ĐỘNG === */
 .short-overlay {
   position: absolute;
   bottom: 70px;
@@ -81,6 +52,7 @@ body {
   pointer-events: none;
 }
 
+/* === THÔNG TIN NGƯỜI DÙNG === */
 .short-info {
   display: flex;
   align-items: center;
@@ -93,6 +65,7 @@ body {
   height: 48px;
   border-radius: 50%;
   border: 2px solid white;
+  object-fit: cover;
 }
 
 .short-user {
@@ -100,12 +73,14 @@ body {
   font-size: 16px;
 }
 
+/* === CỘT NÚT HÀNH ĐỘNG (LIKE, COMMENT, SHARE) === */
 .short-actions {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   pointer-events: auto;
+  margin-right: 5px;
 }
 
 .short-btn {
@@ -114,6 +89,11 @@ body {
   border: none;
   color: white;
   cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.short-btn:hover {
+  transform: scale(1.2);
 }
 
 .short-btn.liked {
@@ -124,15 +104,7 @@ body {
   font-size: 14px;
 }
 
-/* Dark / Light mode sync */
-body.dark-mode {
-  background-color: #000;
-  color: white;
-}
-body:not(.dark-mode) {
-  background-color: #f0f0f0;
-  color: black;
-}
+/* === NÚT QUAY LẠI HOME === */
 .back-home {
   position: fixed;
   top: 15px;
@@ -153,7 +125,35 @@ body:not(.dark-mode) {
 .back-home:hover {
   background: rgba(255, 255, 255, 0.25);
 }
+
+/* === CHẾ ĐỘ SÁNG / TỐI === */
+body.dark-mode {
+  --bg-color: #000;
+  --text-color: #fff;
+}
+
+body:not(.dark-mode) {
+  --bg-color: #f0f0f0;
+  --text-color: #000;
+}
+
 body:not(.dark-mode) .back-home {
   background: rgba(255, 255, 255, 0.8);
   color: black;
+}
+
+/* === RESPONSIVE === */
+@media (min-width: 768px) {
+  .short-item video {
+    width: auto;
+    height: 100%;
+    max-height: 100vh;
+    aspect-ratio: 9 / 16;
+    border-radius: 12px;
+  }
+
+  .short-item {
+    justify-content: center;
+    background: #000;
+  }
 }

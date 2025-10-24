@@ -1,14 +1,32 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZingMini Shorts</title>
-  <link rel="stylesheet" href="shorts.css" />
-</head>
-<body>
-    <button class="back-home" onclick="window.location.href='home.html'">🏠</button>
-    <div class="shorts-container" id="shortsContainer"></div>
-  <script src="scripts/script_shorts.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZingMini Shorts</title>
+
+    <!-- Kết nối đúng file CSS -->
+    <link rel="stylesheet" href="style_shorts.css" />
+  </head>
+
+  <body>
+    <!-- Nút quay lại Home -->
+    <button class="back-home" onclick="window.location.href='home.html'">
+      🏠
+    </button>
+
+    <!-- Container chính để render short -->
+    <div id="shortsContainer" class="shorts-container">
+      <!-- Các short sẽ được thêm tự động bằng script_shorts.js -->
+    </div>
+
+    <!-- Script -->
+    <script src="scripts/script_shorts.js"></script>
+
+    <script>
+      // Đồng bộ theme với home
+      const isDark = localStorage.getItem("theme") === "dark";
+      document.body.classList.toggle("dark-mode", isDark);
+    </script>
+  </body>
 </html>
