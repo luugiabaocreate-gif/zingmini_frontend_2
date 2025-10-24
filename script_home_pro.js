@@ -33,6 +33,15 @@ const notifDropdown = $("notif-dropdown");
 const notifBadge = $("notif-badge");
 const friendsListEl = $("friends-list");
 const chatWindowsRoot = $("chat-windows-root");
+// ===== SHORTS DOM REFS =====
+const navShorts = $("nav-shorts"); // nút trong top nav
+const shortsSection = $("shorts-section"); // toàn khung shorts
+const shortsContainer = $("shortsContainer"); // nơi render các short
+const shortInput = $("shortInput"); // file input (upload)
+const shortDesc = $("shortDesc"); // mô tả (optional)
+const uploadShortBtn = $("uploadShortBtn"); // nút upload
+// helper: normal feed (posts)
+const normalFeed = document.querySelector(".feed-list");
 
 // prevent anchors with href="#" causing jump
 document.addEventListener("click", (e) => {
@@ -235,6 +244,53 @@ function renderPostsFromResponse(json) {
   refreshFriendPoolFromPosts();
 }
 loadPosts();
+// ===== LOAD & RENDER SHORTS =====
+async function loadShorts() {
+  if (!shortsContainer) return;
+  try {
+    shortsContainer.innerHTML = `<p style="text-align:center;color:#777;padding:12px">Đang tải Shorts...</p>`;
+    const res = await fetch(`${API_URL}/api/getShorts`);
+    if (!res.ok) throw new Error("Không tải được shorts");
+    const data = await res.json();
+    if (!Array.isArray(data)) {
+      // nếu backend trả object, cố gắng lấy array trực tiếp
+      const arr = data.shorts || data.data || data.items || [];
+      renderShorts(arr);
+      return;
+    }
+    renderShorts(data);
+  } catch (err) {
+    console.error("loadShorts error:", err);
+    shortsContainer.innerHTML = `<div style="text-align:center;color:#c00;padding:12px">Không thể tải Shorts.</div>`;
+  }
+}
+
+// helper render function (separate để tidy)
+function renderShorts(list) {
+  if (!shortsContainer) return;
+  if (!list || !list.length) {
+    shortsContainer.innerHTML = `<p style="text-align:center;color:#777;padding:12px">Chưa có Short nào.</p>`;
+    return;
+  }
+  // render cards (simple grid; you can later style into full-screen swipe)
+  shortsContainer.innerHTML = "";
+  list.forEach((s) => {
+    const div = document.createElement("div");
+    div.className = "short-card";
+    // video source may already be absolute (cloudinary) or relative
+    const src =
+      s.videoUrl || s.video || (s.videoUrl && `${API_URL}${s.videoUrl}`);
+    div.innerHTML = `
+      <video src="${escapeHtml(
+        src
+      )}" controls playsinline preload="metadata" style="width:100%;height:auto;display:block;border-radius:8px;object-fit:cover"></video>
+      <div style="padding:8px;font-size:13px;color:var(--text-color,#183b6d)">${escapeHtml(
+        s.description || s.caption || ""
+      )}</div>
+    `;
+    shortsContainer.appendChild(div);
+  });
+}
 
 // When backend's POST /api/posts returns an array (confirmed) we re-render from that array
 async function createPostHandler() {
@@ -704,6 +760,31 @@ if (socket && socket.on) {
       console.warn("online_users handler error:", e);
     }
   });
+  // socket realtime: nhận short mới
+  socket.on &&
+    socket.on("newShort", (s) => {
+      try {
+        // nếu đang hiển thị shorts, prepend mới
+        if (shortsContainer) {
+          const div = document.createElement("div");
+          div.className = "short-card";
+          const src =
+            s.videoUrl || s.video || (s.videoUrl && `${API_URL}${s.videoUrl}`);
+          div.innerHTML = `
+        <video src="${escapeHtml(
+          src
+        )}" controls playsinline preload="metadata" style="width:100%;height:auto;display:block;border-radius:8px;object-fit:cover"></video>
+        <div style="padding:8px;font-size:13px;color:var(--text-color,#183b6d)">${escapeHtml(
+          s.description || s.caption || ""
+        )}</div>
+      `;
+          // insert on top
+          shortsContainer.prepend(div);
+        }
+      } catch (err) {
+        console.warn("socket newShort error:", err);
+      }
+    });
 }
 
 // ===== UI: profile dropdown + logout =====
@@ -796,6 +877,25 @@ window.__ZINGMINI__ = {
   socketId: () => socket && socket.id,
   openChatWindow,
 };
+// ===== SHORTS NAV HANDLER =====
+if (navShorts) {
+  navShorts.addEventListener("click", (e) => {
+    e.preventDefault();
+    // bật active trên nav
+    document
+      .querySelectorAll(".nav-btn")
+      .forEach((n) => n.classList.remove("active"));
+    navShorts.classList.add("active");
+    // ẩn feed cũ, hiện section short
+    if (normalFeed) normalFeed.style.display = "none";
+    if (shortsSection) {
+      shortsSection.classList.remove("hidden");
+      shortsSection.setAttribute("aria-hidden", "false");
+    }
+    // load list shorts
+    if (typeof loadShorts === "function") loadShorts();
+  });
+}
 
 // All done
 // --- Chat auto-fix layout sync ---
@@ -1445,6 +1545,61 @@ if (avatarInput && uploadAvatarBtn) {
     }
   });
 }
+// ===== UPLOAD SHORT HANDLER =====
+if (uploadShortBtn && shortInput) {
+  uploadShortBtn.addEventListener("click", async () => {
+    const file = shortInput.files?.[0];
+    const desc = shortDesc?.value?.trim() || "";
+    if (!file) return alert("Vui lòng chọn video!");
+
+    // basic frontend validation (size, type)
+    const ext = (file.name.split(".").pop() || "").toLowerCase();
+    if (!["mp4", "webm", "mov", "ogg", "mkv"].includes(ext)) {
+      return alert("Vui lòng chọn file video (mp4/webm/etc).");
+    }
+    // optional: limit size to e.g. 60MB
+    const maxBytes = 60 * 1024 * 1024;
+    if (file.size > maxBytes) return alert("Video quá lớn (max 60MB).");
+
+    uploadShortBtn.disabled = true;
+    uploadShortBtn.textContent = "Đang tải...";
+
+    try {
+      const form = new FormData();
+      // backend expected field name: either "video" or "shortVideo" depending how you implemented server
+      // In server instructions earlier we used field "video" for /api/uploadShort - ensure match
+      form.append("video", file);
+      form.append("description", desc);
+      form.append(
+        "userId",
+        currentUser?._id ||
+          (localStorage.getItem("currentUser") &&
+            JSON.parse(localStorage.getItem("currentUser"))._id) ||
+          "anonymous"
+      );
+
+      const res = await fetch(`${API_URL}/api/uploadShort`, {
+        method: "POST",
+        body: form,
+      });
+      const body = await safeJson(res);
+      if (!res.ok) throw new Error(body?.message || "Upload failed");
+      alert("✅ Đăng Short thành công!");
+      // clear inputs
+      shortInput.value = "";
+      if (shortDesc) shortDesc.value = "";
+      // reload shorts (prepend new short)
+      if (typeof loadShorts === "function") loadShorts();
+    } catch (err) {
+      console.error("Upload short error:", err);
+      alert("Lỗi khi upload Short: " + (err.message || err));
+    } finally {
+      uploadShortBtn.disabled = false;
+      uploadShortBtn.textContent = "Đăng Short";
+    }
+  });
+}
+
 /******************************************************
  * 🟦 STORY REAL (24H + Realtime)
  ******************************************************/
@@ -1827,5 +1982,51 @@ socket.off("call-end").on("call-end", () => {
     endVoiceCall();
   } catch (err) {
     console.warn("❌ Lỗi khi kết thúc cuộc gọi:", err);
+  }
+});
+/******************************************************
+ * ⏪ NÚT TRỞ VỀ FEED HOME (tùy chọn)
+ ******************************************************/
+function addBackToFeedButton() {
+  // kiểm tra xem có short container không (nếu có tức là đang ở chế độ Short)
+  const shortSection = document.getElementById("shorts-section");
+  if (!shortSection) return; // không phải trang Short thì bỏ qua
+
+  // tạo nút quay lại
+  const backBtn = document.createElement("button");
+  backBtn.textContent = "⏪ Quay lại Trang chính";
+  backBtn.className = "btn-back-home";
+  backBtn.style.position = "fixed";
+  backBtn.style.top = "20px";
+  backBtn.style.left = "20px";
+  backBtn.style.zIndex = "99999";
+  backBtn.style.padding = "10px 14px";
+  backBtn.style.borderRadius = "10px";
+  backBtn.style.background = "#1e90ff";
+  backBtn.style.color = "#fff";
+  backBtn.style.border = "none";
+  backBtn.style.cursor = "pointer";
+  backBtn.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
+  backBtn.style.fontWeight = "600";
+
+  backBtn.addEventListener("click", () => {
+    // trở về feed chính
+    window.location.href = "home.html"; // hoặc feed.html nếu trang chính là feed
+  });
+
+  document.body.appendChild(backBtn);
+}
+
+// gọi hàm này khi trang short load xong
+window.addEventListener("DOMContentLoaded", addBackToFeedButton);
+window.addEventListener("resize", () => {
+  const btn = document.querySelector(".btn-back-home");
+  if (!btn) return;
+  if (window.innerWidth < 768) {
+    btn.style.fontSize = "12px";
+    btn.style.padding = "6px 8px";
+  } else {
+    btn.style.fontSize = "14px";
+    btn.style.padding = "10px 14px";
   }
 });
