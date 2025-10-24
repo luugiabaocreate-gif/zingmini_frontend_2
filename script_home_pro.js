@@ -2030,3 +2030,6 @@ window.addEventListener("resize", () => {
     btn.style.padding = "10px 14px";
   }
 });
+document.getElementById("watch-btn")?.addEventListener("click", () => {
+  window.location.href = "shorts.html";
+});
