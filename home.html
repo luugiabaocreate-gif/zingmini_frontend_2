@@ -133,16 +133,21 @@
 
       <!-- CENTER COLUMN -->
       <section class="center-col" aria-live="polite">
-        <!-- ==== STORY BAR (FACEBOOK STYLE) ==== -->
+        <!-- ==== STORY FACEBOOK STYLE ==== -->
         <div class="story-bar">
-          <div class="story-scroll">
-            <!-- Thẻ "Tạo tin" -->
-            <div class="story-card create-story">
-              <div class="story-bg">
-                <img src="https://i.pravatar.cc/150?u=me" alt="Tạo tin" />
+          <div id="storyContainer" class="story-list">
+            <!-- Ô đầu tiên: Tạo tin -->
+            <div class="story-item add-story" id="myStoryBox">
+              <div class="story-cover">
+                <img
+                  class="story-avatar"
+                  id="myStoryAvatar"
+                  src="https://i.pravatar.cc/80"
+                  alt="avatar"
+                />
                 <div class="story-plus">+</div>
               </div>
-              <div class="story-name">Tạo tin</div>
+              <p class="story-label">Tạo tin</p>
               <input
                 type="file"
                 id="storyInput"
@@ -150,37 +155,6 @@
                 hidden
               />
               <button id="btnPostStory" class="btn hidden">Đăng</button>
-            </div>
-
-            <!-- Story ví dụ -->
-            <div class="story-card">
-              <div class="story-bg">
-                <img src="https://i.pravatar.cc/150?u=1" alt="Người A" />
-                <div class="story-user">
-                  <img src="https://i.pravatar.cc/40?u=1" alt="Avatar A" />
-                </div>
-              </div>
-              <div class="story-name">Người A</div>
-            </div>
-
-            <div class="story-card">
-              <div class="story-bg">
-                <img src="https://i.pravatar.cc/150?u=2" alt="Người B" />
-                <div class="story-user">
-                  <img src="https://i.pravatar.cc/40?u=2" alt="Avatar B" />
-                </div>
-              </div>
-              <div class="story-name">Người B</div>
-            </div>
-
-            <div class="story-card">
-              <div class="story-bg">
-                <img src="https://i.pravatar.cc/150?u=3" alt="Người C" />
-                <div class="story-user">
-                  <img src="https://i.pravatar.cc/40?u=3" alt="Avatar C" />
-                </div>
-              </div>
-              <div class="story-name">Người C</div>
             </div>
           </div>
         </div>

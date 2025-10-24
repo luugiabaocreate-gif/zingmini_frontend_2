@@ -884,107 +884,85 @@ body.dark .chat-window .message.them::before,
 .hidden {
   display: none !important;
 }
-/* ==== FACEBOOK STYLE STORY ==== */
+/* ==== FACEBOOK STYLE STORY BAR ==== */
 .story-bar {
-  padding: 12px 0;
-  background: #fff;
-  border-radius: 12px;
-  margin-bottom: 15px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-.story-scroll {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   overflow-x: auto;
-  padding: 0 10px;
+  padding: 10px;
+  background: #fff;
+  border-radius: 12px;
+  margin-bottom: 16px;
 }
 
-.story-scroll::-webkit-scrollbar {
-  display: none;
+.story-list {
+  display: flex;
+  gap: 12px;
 }
 
-.story-card {
-  flex: 0 0 120px;
+.story-item {
+  width: 120px;
+  flex-shrink: 0;
+  cursor: pointer;
+  position: relative;
+  text-align: center;
+  font-size: 13px;
+}
+
+.story-cover {
+  position: relative;
+  height: 180px;
   border-radius: 12px;
   overflow: hidden;
-  position: relative;
-  background: #f0f2f5;
-  cursor: pointer;
-  transition: transform 0.2s;
+  background: linear-gradient(180deg, #dcefff, #f5faff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
 }
 
-.story-card:hover {
-  transform: scale(1.03);
+.story-cover:hover {
+  transform: translateY(-4px);
 }
 
-.story-bg {
-  position: relative;
-  width: 100%;
-  height: 180px;
-  overflow: hidden;
-}
-
-.story-bg img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.story-name {
-  font-size: 14px;
-  font-weight: 600;
-  text-align: center;
-  padding: 6px 0;
-  color: #333;
-  background: #fff;
-}
-
-/* Avatar góc trái */
-.story-user {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  width: 36px;
-  height: 36px;
+.story-avatar {
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  border: 3px solid #1877f2;
-  overflow: hidden;
-}
-
-.story-user img {
-  width: 100%;
-  height: 100%;
+  border: 3px solid #fff;
   object-fit: cover;
-}
-
-/* Thẻ tạo tin */
-.create-story .story-bg {
-  position: relative;
-}
-
-.create-story .story-bg img {
-  filter: brightness(0.8);
+  box-shadow: 0 0 0 3px #0076ff;
 }
 
 .story-plus {
   position: absolute;
-  bottom: -14px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
-  background: #1877f2;
-  color: white;
-  width: 36px;
-  height: 36px;
+  background: #0076ff;
+  color: #fff;
+  font-weight: bold;
+  font-size: 20px;
   border-radius: 50%;
-  border: 3px solid #fff;
-  font-size: 28px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
+  border: 3px solid #fff;
+  box-shadow: 0 0 10px rgba(0, 118, 255, 0.3);
 }
 
-.create-story .story-name {
-  margin-top: 10px;
+.story-label {
+  margin-top: 6px;
+  font-weight: 600;
+  color: #003e91;
+}
+
+.story-item img,
+.story-item video {
+  width: 120px;
+  height: 180px;
+  border-radius: 12px;
+  object-fit: cover;
 }
