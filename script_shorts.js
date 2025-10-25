@@ -67,7 +67,9 @@ function createShortItem(short) {
 
     <div class="short-overlay">
       <div class="short-info">
-        <img src="${short.userAvatar || 'https://i.pravatar.cc/50'}" class="short-avatar"/>
+        <img src="${
+          short.userAvatar || "https://i.pravatar.cc/50"
+        }" class="short-avatar"/>
         <div class="short-user">@${short.userName || "Ẩn danh"}</div>
       </div>
 
@@ -107,7 +109,8 @@ async function loadShorts() {
       comments: 8,
     },
     {
-      videoUrl: "https://videos.pexels.com/video-files/856846/856846-hd_1920_1080_24fps.mp4",
+      videoUrl:
+        "https://videos.pexels.com/video-files/856846/856846-hd_1920_1080_24fps.mp4",
       userName: "carol",
       userAvatar: "https://i.pravatar.cc/150?u=carol",
       likes: 67,
