@@ -150,17 +150,24 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       const data = await res.json();
 
-      if (data && data.videoUrl) {
+      if (data && data.success && data.short && data.short.videoUrl) {
         statusEl.textContent = "✅ Đăng short thành công!";
         captionInput.value = "";
         videoInput.value = "";
 
-        // Tạo phần tử video mới để hiển thị ngay
-        const newItem = createShortItem(data);
+        // Lấy short thật từ phản hồi backend
+        const newItem = createShortItem({
+          videoUrl: data.short.videoUrl,
+          userName: "Ẩn danh",
+          userAvatar: "https://i.pravatar.cc/150?u=guest",
+          likes: 0,
+          comments: 0,
+        });
+
         container.prepend(newItem);
       } else {
         statusEl.textContent = "❌ Lỗi khi đăng short.";
-        console.error(data);
+        console.error("Upload short lỗi:", data);
       }
     } catch (err) {
       console.error("Lỗi upload short:", err);
