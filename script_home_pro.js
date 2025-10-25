@@ -1626,6 +1626,7 @@ btnPostStory.addEventListener("click", async () => {
 
   const formData = new FormData();
   formData.append("story", file);
+  formData.append("media", file);
 
   try {
     const res = await fetch(`${API_URL}/api/stories`, {
