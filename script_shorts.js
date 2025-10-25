@@ -43,7 +43,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // 💬 COMMENT
     if (e.target.classList.contains("comment-btn")) {
       const popup = document.getElementById("commentPopup");
+      const uploadForm = document.getElementById("uploadShortForm");
+
       if (popup) popup.classList.add("show");
+      if (uploadForm) uploadForm.style.display = "none"; // ẩn form upload
     }
 
     // ↗️ SHARE
@@ -104,13 +107,16 @@ async function loadShorts() {
   container.innerHTML = `<div class="loading">⏳ Đang tải video...</div>`;
 
   try {
-    const res = await fetch("https://zingmini-backend-2.onrender.com/api/getShorts");
+    const res = await fetch(
+      "https://zingmini-backend-2.onrender.com/api/getShorts"
+    );
     const data = await res.json();
 
     container.innerHTML = "";
 
     if (!Array.isArray(data) || !data.length) {
-      container.innerHTML = "<p class='no-shorts'>Chưa có video nào được đăng.</p>";
+      container.innerHTML =
+        "<p class='no-shorts'>Chưa có video nào được đăng.</p>";
       return;
     }
 
@@ -159,10 +165,13 @@ document.addEventListener("DOMContentLoaded", () => {
     uploadBtn.disabled = true;
 
     try {
-      const res = await fetch("https://zingmini-backend-2.onrender.com/api/uploadShort", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        "https://zingmini-backend-2.onrender.com/api/uploadShort",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
       const data = await res.json();
 
       if (data && data.success && data.short && data.short.videoUrl) {
@@ -201,17 +210,21 @@ function setupScrollPlayback() {
   videos.forEach((video) => observer.observe(video));
 }
 
-// === POPUP BÌNH LUẬN (AN TOÀN NẾU CHƯA TẠO HTML) ===
+// === POPUP BÌNH LUẬN (ẨN/HIỆN FORM UPLOAD SHORT) ===
 document.addEventListener("DOMContentLoaded", () => {
   const popup = document.getElementById("commentPopup");
   const closeBtn = document.getElementById("closeComment");
   const sendBtn = document.getElementById("sendComment");
   const input = document.getElementById("commentInput");
   const list = document.getElementById("commentList");
+  const uploadForm = document.getElementById("uploadShortForm");
 
   if (!popup || !closeBtn || !sendBtn) return;
 
-  closeBtn.addEventListener("click", () => popup.classList.remove("show"));
+  closeBtn.addEventListener("click", () => {
+    popup.classList.remove("show");
+    if (uploadForm) uploadForm.style.display = "flex"; // hiện lại form upload
+  });
 
   sendBtn.addEventListener("click", () => {
     if (input.value.trim()) {
