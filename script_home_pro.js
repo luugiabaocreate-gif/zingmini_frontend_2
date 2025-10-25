@@ -2033,3 +2033,25 @@ window.addEventListener("resize", () => {
 document.getElementById("watch-btn")?.addEventListener("click", () => {
   window.location.href = "shorts.html";
 });
+/******************************************************
+ * 🔹 Tích hợp chức năng "Quay lại Trang chính" vào logo ZM
+ ******************************************************/
+window.addEventListener("DOMContentLoaded", () => {
+  // Ẩn chữ nút back cũ nhưng vẫn giữ DOM + logic
+  const backBtn = document.querySelector(".btn-back-home");
+  if (backBtn) backBtn.style.display = "none";
+
+  // Thêm sự kiện click cho logo ZM
+  const zmLogo = document.getElementById("zm-logo");
+  if (zmLogo) {
+    zmLogo.style.cursor = "pointer"; // đổi con trỏ khi hover
+    zmLogo.addEventListener("click", () => {
+      if (backBtn) {
+        backBtn.click(); // trigger toàn bộ logic cũ
+      } else {
+        // fallback: nếu chưa tồn tại nút, chỉ chuyển về home
+        window.location.href = "home.html";
+      }
+    });
+  }
+});
