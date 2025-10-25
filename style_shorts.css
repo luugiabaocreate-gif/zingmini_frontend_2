@@ -157,3 +157,52 @@ body:not(.dark-mode) .back-home {
     background: #000;
   }
 }
+/* === UPLOAD SHORT FORM === */
+.upload-short-form {
+  position: fixed;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  padding: 10px 15px;
+  border-radius: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 10000;
+}
+
+.upload-short-form input[type="file"] {
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.upload-short-form input[type="text"] {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 6px;
+  padding: 6px 8px;
+  width: 180px;
+}
+
+.upload-btn {
+  background: #1db954;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.upload-btn:hover {
+  background: #1ed760;
+}
+
+.upload-status {
+  color: #fff;
+  font-size: 13px;
+}

@@ -88,40 +88,89 @@ function createShortItem(short) {
 }
 
 // === TẢI SHORTS DEMO ===
+// === TẢI SHORTS TỪ BACKEND ===
 async function loadShorts() {
   const container = document.getElementById("shortsContainer");
-  container.innerHTML = "";
+  container.innerHTML = `<div class="loading">⏳ Đang tải video...</div>`;
 
-  // DEMO dữ liệu tạm
-  const shorts = [
-    {
-      videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
-      userName: "alice",
-      userAvatar: "https://i.pravatar.cc/150?u=alice",
-      likes: 23,
-      comments: 5,
-    },
-    {
-      videoUrl: "https://samplelib.com/lib/preview/mp4/sample-5s.mp4",
-      userName: "bob",
-      userAvatar: "https://i.pravatar.cc/150?u=bob",
-      likes: 40,
-      comments: 8,
-    },
-    {
-      videoUrl:
-        "https://videos.pexels.com/video-files/856846/856846-hd_1920_1080_24fps.mp4",
-      userName: "carol",
-      userAvatar: "https://i.pravatar.cc/150?u=carol",
-      likes: 67,
-      comments: 15,
-    },
-  ];
+  try {
+    const res = await fetch(
+      "https://zingmini-backend-2.onrender.com/api/getShorts"
+    );
+    const data = await res.json();
 
-  shorts.forEach((short) => container.appendChild(createShortItem(short)));
+    container.innerHTML = "";
 
-  setupScrollPlayback();
+    if (!Array.isArray(data) || !data.length) {
+      container.innerHTML =
+        "<p class='no-shorts'>Chưa có video nào được đăng.</p>";
+      return;
+    }
+
+    data.forEach((short) => container.appendChild(createShortItem(short)));
+    setupScrollPlayback();
+  } catch (err) {
+    console.error("Lỗi tải shorts:", err);
+    container.innerHTML = "<p class='error'>❌ Không thể tải video!</p>";
+  }
 }
+
+// === UPLOAD SHORT FUNCTIONALITY ===
+document.addEventListener("DOMContentLoaded", () => {
+  const uploadBtn = document.getElementById("uploadShortBtn");
+  const videoInput = document.getElementById("shortVideoInput");
+  const captionInput = document.getElementById("shortCaption");
+  const statusEl = document.getElementById("uploadStatus");
+  const container = document.getElementById("shortsContainer");
+
+  if (!uploadBtn) return;
+
+  uploadBtn.addEventListener("click", async () => {
+    const file = videoInput.files[0];
+    if (!file) {
+      alert("🎥 Vui lòng chọn một video để đăng!");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("video", file);
+    formData.append("caption", captionInput.value.trim());
+    // TODO: nếu bạn có auth: formData.append("userId", userId);
+
+    statusEl.textContent = "⏳ Đang tải video lên...";
+    uploadBtn.disabled = true;
+
+    try {
+      const res = await fetch(
+        "https://zingmini-backend-2.onrender.com/api/uploadShort",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const data = await res.json();
+
+      if (data && data.videoUrl) {
+        statusEl.textContent = "✅ Đăng short thành công!";
+        captionInput.value = "";
+        videoInput.value = "";
+
+        // Tạo phần tử video mới để hiển thị ngay
+        const newItem = createShortItem(data);
+        container.prepend(newItem);
+      } else {
+        statusEl.textContent = "❌ Lỗi khi đăng short.";
+        console.error(data);
+      }
+    } catch (err) {
+      console.error("Lỗi upload short:", err);
+      statusEl.textContent = "❌ Upload thất bại.";
+    } finally {
+      uploadBtn.disabled = false;
+      setTimeout(() => (statusEl.textContent = ""), 3000);
+    }
+  });
+});
 
 // === CHẠY TỰ ĐỘNG VIDEO NÀO Ở TRONG KHUNG ===
 function setupScrollPlayback() {

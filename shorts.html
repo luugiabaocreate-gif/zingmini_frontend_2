@@ -20,6 +20,19 @@
       <!-- Các short sẽ được thêm tự động bằng script_shorts.js -->
     </div>
 
+    <!-- FORM UPLOAD SHORT (nên nằm ngoài để cố định vị trí) -->
+  <div id="uploadShortForm" class="upload-short-form">
+    <input type="file" id="shortVideoInput" accept="video/*" />
+    <input
+      type="text"
+      id="shortCaption"
+      placeholder="Mô tả video (tùy chọn)"
+      maxlength="120"
+    />
+    <button id="uploadShortBtn" class="upload-btn">⬆️ Đăng Short</button>
+    <div id="uploadStatus" class="upload-status"></div>
+  </div>
+
     <!-- Script -->
     <script src="script_shorts.js" type="module"></script>
 
