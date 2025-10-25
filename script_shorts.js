@@ -68,9 +68,9 @@ function createShortItem(short) {
     <div class="short-overlay">
       <div class="short-info">
         <img src="${
-          short.userAvatar || "https://i.pravatar.cc/50"
+          short.userAvatar || "https://i.pravatar.cc/150?u=guest"
         }" class="short-avatar"/>
-        <div class="short-user">@${short.userName || "Ẩn danh"}</div>
+        <div class="short-user">@${short.userName || "Người dùng"}</div>
       </div>
 
       <div class="short-actions">
@@ -84,6 +84,16 @@ function createShortItem(short) {
       </div>
     </div>
   `;
+
+  // 🎧 Click video để bật/tắt tiếng
+  const video = item.querySelector("video");
+  video.addEventListener("click", () => {
+    video.muted = !video.muted;
+    video.muted
+      ? video.setAttribute("title", "Bật tiếng 🔇")
+      : video.setAttribute("title", "Tắt tiếng 🔊");
+  });
+
   return item;
 }
 
@@ -134,7 +144,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const formData = new FormData();
     formData.append("video", file);
-    formData.append("caption", captionInput.value.trim());
+    formData.append("description", captionInput.value.trim());
+
+    // ✅ Thêm thông tin user từ localStorage (nếu có)
+    const userId = localStorage.getItem("userId");
+    const userName = localStorage.getItem("username");
+    const userAvatar = localStorage.getItem("avatar");
+
+    if (userId) formData.append("userId", userId);
+    if (userName) formData.append("userName", userName);
+    if (userAvatar) formData.append("userAvatar", userAvatar);
+
     // TODO: nếu bạn có auth: formData.append("userId", userId);
 
     statusEl.textContent = "⏳ Đang tải video lên...";
@@ -155,11 +175,10 @@ document.addEventListener("DOMContentLoaded", () => {
         captionInput.value = "";
         videoInput.value = "";
 
-        // Lấy short thật từ phản hồi backend
         const newItem = createShortItem({
           videoUrl: data.short.videoUrl,
-          userName: "Ẩn danh",
-          userAvatar: "https://i.pravatar.cc/150?u=guest",
+          userName: data.short.userName,
+          userAvatar: data.short.userAvatar,
           likes: 0,
           comments: 0,
         });
