@@ -1,9 +1,9 @@
 // === SHORTS SCRIPT ===
 // ZingMini Short Reels Feature (TikTok-style)
 // Author: ChatGPT x ZingMini
-// === NÚT QUAY LẠI HOME ===
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Nếu chưa có nút back-home thì thêm vào
+  // === NÚT QUAY LẠI HOME ===
   if (!document.querySelector(".back-home")) {
     const backBtn = document.createElement("button");
     backBtn.className = "back-home";
@@ -14,19 +14,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     document.body.appendChild(backBtn);
   }
-});
 
-document.addEventListener("DOMContentLoaded", () => {
-  const container = document.getElementById("shortsContainer");
-  if (!container) return;
-
-  // Load theme từ localStorage (theo home)
+  // === THEME ===
   const isDark = localStorage.getItem("theme") === "dark";
   document.body.classList.toggle("dark-mode", isDark);
 
+  // === LOAD SHORTS ===
   loadShorts();
 
-  // === Xử lý click tương tác toàn cục ===
+  // === SỰ KIỆN TOÀN CỤC ===
   document.addEventListener("click", (e) => {
     // ❤️ LIKE
     if (e.target.classList.contains("like-btn")) {
@@ -46,7 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 💬 COMMENT
     if (e.target.classList.contains("comment-btn")) {
-      alert("💬 Mở khung bình luận (sẽ nối API sau)");
+      const popup = document.getElementById("commentPopup");
+      if (popup) popup.classList.add("show");
     }
 
     // ↗️ SHARE
@@ -68,9 +65,13 @@ function createShortItem(short) {
     <div class="short-overlay">
       <div class="short-info">
         <img src="${
-          short.userAvatar || "https://i.pravatar.cc/150?u=guest"
+          short.userAvatar ||
+          short.userId?.avatar ||
+          "https://i.pravatar.cc/150?u=guest"
         }" class="short-avatar"/>
-        <div class="short-user">@${short.userName || "Người dùng"}</div>
+        <div class="short-user">@${
+          short.userName || short.userId?.username || "Người dùng"
+        }</div>
       </div>
 
       <div class="short-actions">
@@ -97,30 +98,29 @@ function createShortItem(short) {
   return item;
 }
 
-// === TẢI SHORTS DEMO ===
 // === TẢI SHORTS TỪ BACKEND ===
 async function loadShorts() {
   const container = document.getElementById("shortsContainer");
   container.innerHTML = `<div class="loading">⏳ Đang tải video...</div>`;
 
   try {
-    const res = await fetch(
-      "https://zingmini-backend-2.onrender.com/api/getShorts"
-    );
+    const res = await fetch("https://zingmini-backend-2.onrender.com/api/getShorts");
     const data = await res.json();
 
     container.innerHTML = "";
 
     if (!Array.isArray(data) || !data.length) {
-      container.innerHTML =
-        "<p class='no-shorts'>Chưa có video nào được đăng.</p>";
+      container.innerHTML = "<p class='no-shorts'>Chưa có video nào được đăng.</p>";
       return;
     }
 
-    data.forEach((short) => container.appendChild(createShortItem(short)));
+    data.forEach((short) => {
+      container.appendChild(createShortItem(short));
+    });
+
     setupScrollPlayback();
   } catch (err) {
-    console.error("Lỗi tải shorts:", err);
+    console.error("❌ Lỗi tải shorts:", err);
     container.innerHTML = "<p class='error'>❌ Không thể tải video!</p>";
   }
 }
@@ -155,19 +155,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (userName) formData.append("userName", userName);
     if (userAvatar) formData.append("userAvatar", userAvatar);
 
-    // TODO: nếu bạn có auth: formData.append("userId", userId);
-
     statusEl.textContent = "⏳ Đang tải video lên...";
     uploadBtn.disabled = true;
 
     try {
-      const res = await fetch(
-        "https://zingmini-backend-2.onrender.com/api/uploadShort",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const res = await fetch("https://zingmini-backend-2.onrender.com/api/uploadShort", {
+        method: "POST",
+        body: formData,
+      });
       const data = await res.json();
 
       if (data && data.success && data.short && data.short.videoUrl) {
@@ -175,14 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
         captionInput.value = "";
         videoInput.value = "";
 
-        const newItem = createShortItem({
-          videoUrl: data.short.videoUrl,
-          userName: data.short.userName,
-          userAvatar: data.short.userAvatar,
-          likes: 0,
-          comments: 0,
-        });
-
+        const newItem = createShortItem(data.short);
         container.prepend(newItem);
       } else {
         statusEl.textContent = "❌ Lỗi khi đăng short.";
@@ -201,19 +189,37 @@ document.addEventListener("DOMContentLoaded", () => {
 // === CHẠY TỰ ĐỘNG VIDEO NÀO Ở TRONG KHUNG ===
 function setupScrollPlayback() {
   const videos = document.querySelectorAll(".short-item video");
-
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.play();
-        } else {
-          entry.target.pause();
-        }
+        if (entry.isIntersecting) entry.target.play();
+        else entry.target.pause();
       });
     },
     { threshold: 0.6 }
   );
-
   videos.forEach((video) => observer.observe(video));
 }
+
+// === POPUP BÌNH LUẬN (AN TOÀN NẾU CHƯA TẠO HTML) ===
+document.addEventListener("DOMContentLoaded", () => {
+  const popup = document.getElementById("commentPopup");
+  const closeBtn = document.getElementById("closeComment");
+  const sendBtn = document.getElementById("sendComment");
+  const input = document.getElementById("commentInput");
+  const list = document.getElementById("commentList");
+
+  if (!popup || !closeBtn || !sendBtn) return;
+
+  closeBtn.addEventListener("click", () => popup.classList.remove("show"));
+
+  sendBtn.addEventListener("click", () => {
+    if (input.value.trim()) {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.textContent = input.value;
+      list.appendChild(div);
+      input.value = "";
+    }
+  });
+});

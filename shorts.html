@@ -3,39 +3,55 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ZingMini Shorts</title>
+    <title>ZingMini Shorts 🎬</title>
 
-    <!-- Kết nối đúng file CSS -->
+    <!-- CSS -->
     <link rel="stylesheet" href="style_shorts.css" />
   </head>
 
   <body>
-    <!-- Nút quay lại Home -->
+    <!-- 🔙 Nút quay lại Home -->
     <button class="back-home" onclick="window.location.href='home.html'">
       🏠
     </button>
 
-    <!-- Container chính để render short -->
+    <!-- 🎥 Container chính -->
     <div id="shortsContainer" class="shorts-container">
-      <!-- Các short sẽ được thêm tự động bằng script_shorts.js -->
+      <!-- Video sẽ được render tự động bằng script_shorts.js -->
     </div>
 
-    <!-- FORM UPLOAD SHORT (nên nằm ngoài để cố định vị trí) -->
-  <div id="uploadShortForm" class="upload-short-form">
-    <input type="file" id="shortVideoInput" accept="video/*" />
-    <input
-      type="text"
-      id="shortCaption"
-      placeholder="Mô tả video (tùy chọn)"
-      maxlength="120"
-    />
-    <button id="uploadShortBtn" class="upload-btn">⬆️ Đăng Short</button>
-    <div id="uploadStatus" class="upload-status"></div>
-  </div>
+    <!-- ⬆️ FORM UPLOAD SHORT (cố định cuối màn hình) -->
+    <div id="uploadShortForm" class="upload-short-form">
+      <input type="file" id="shortVideoInput" accept="video/*" />
+      <input
+        type="text"
+        id="shortCaption"
+        placeholder="Mô tả video (tùy chọn)"
+        maxlength="120"
+      />
+      <button id="uploadShortBtn" class="upload-btn">⬆️ Đăng Short</button>
+      <div id="uploadStatus" class="upload-status"></div>
+    </div>
+
+    <!-- 💬 POPUP BÌNH LUẬN -->
+    <div id="commentPopup" class="comment-popup">
+      <div class="comment-box">
+        <div class="comment-header">
+          <span>Bình luận</span>
+          <button id="closeComment">✖</button>
+        </div>
+
+        <div id="commentList" class="comment-list"></div>
+
+        <div class="comment-input-area">
+          <input id="commentInput" placeholder="Nhập bình luận..." />
+          <button id="sendComment" class="send-btn">Gửi</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Script -->
     <script src="script_shorts.js" type="module"></script>
-
     <script>
       // Đồng bộ theme với home
       const isDark = localStorage.getItem("theme") === "dark";
