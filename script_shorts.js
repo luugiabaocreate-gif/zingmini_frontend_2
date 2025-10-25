@@ -1,6 +1,26 @@
 // === SHORTS SCRIPT ===
 // ZingMini Short Reels Feature (TikTok-style)
 // Author: ChatGPT x ZingMini
+const socket = io("https://zingmini-backend-2.onrender.com");
+
+// Nhận realtime like
+socket.on("short-liked", (data) => {
+  const el = document.querySelector(`.short-item[data-id="${data.id}"] .likes`);
+  if (el) el.textContent = data.likes;
+});
+
+// Nhận realtime comment
+socket.on("short-commented", (data) => {
+  const list = document.getElementById("commentList");
+  if (list) {
+    const div = document.createElement("div");
+    div.className = "item";
+    const username = localStorage.getItem("username") || "Người dùng";
+    div.textContent = `${username}: ${data.text}`;
+    list.appendChild(div);
+  }
+});
+
 
 document.addEventListener("DOMContentLoaded", () => {
   // === NÚT QUAY LẠI HOME ===
@@ -38,6 +58,15 @@ document.addEventListener("DOMContentLoaded", () => {
         count--;
       }
       countEl.textContent = count;
+      // Gửi like lên server
+const shortId = btn.closest(".short-item").dataset.id;
+fetch(`https://zingmini-backend-2.onrender.com/api/shorts/${shortId}/like`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    userId: localStorage.getItem("userId"),
+  }),
+});
     }
 
     // 💬 COMMENT
@@ -88,7 +117,7 @@ function createShortItem(short) {
       </div>
     </div>
   `;
-
+  item.dataset.id = short._id; // ✅ thêm ID để xác định short khi like/comment   
   // 🎧 Click video để bật/tắt tiếng
   const video = item.querySelector("video");
   video.addEventListener("click", () => {
@@ -230,8 +259,30 @@ document.addEventListener("DOMContentLoaded", () => {
     if (input.value.trim()) {
       const div = document.createElement("div");
       div.className = "item";
-      div.textContent = input.value;
-      list.appendChild(div);
+      const shortItem = document.querySelector(".short-item video:in-viewport")?.closest(".short-item");
+const shortId = shortItem?.dataset.id;
+const text = input.value.trim();
+
+if (text && shortId) {
+  // Hiển thị ngay
+  const div = document.createElement("div");
+  div.className = "item";
+  div.textContent = text;
+  list.appendChild(div);
+
+  // Gửi lên backend để lưu
+  fetch(`https://zingmini-backend-2.onrender.com/api/shorts/${shortId}/comment`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      userId: localStorage.getItem("userId"),
+      text
+    }),
+  });
+
+  input.value = "";
+}
+
       input.value = "";
     }
   });
