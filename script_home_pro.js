@@ -2055,3 +2055,17 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+// 🔁 Gán chức năng "Quay lại Trang chính" vào logo ZM
+window.addEventListener("DOMContentLoaded", () => {
+  const zmLogo = document.getElementById("zm-logo");
+  if (zmLogo) {
+    zmLogo.style.cursor = "pointer"; // đổi con trỏ khi hover
+    zmLogo.addEventListener("click", () => {
+      window.location.href = "home.html"; // giữ nguyên chức năng quay lại
+    });
+  }
+
+  // Ẩn nút "Quay lại Trang chính" cũ nếu có
+  const backBtn = document.querySelector(".btn-back-home");
+  if (backBtn) backBtn.style.display = "none";
+});
