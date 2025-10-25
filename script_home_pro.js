@@ -1987,49 +1987,11 @@ socket.off("call-end").on("call-end", () => {
 /******************************************************
  * ⏪ NÚT TRỞ VỀ FEED HOME (tùy chọn)
  ******************************************************/
-function addBackToFeedButton() {
-  // kiểm tra xem có short container không (nếu có tức là đang ở chế độ Short)
-  const shortSection = document.getElementById("shorts-section");
-  if (!shortSection) return; // không phải trang Short thì bỏ qua
-
-  // tạo nút quay lại
-  const backBtn = document.createElement("button");
-  backBtn.textContent = "⏪ Quay lại Trang chính";
-  backBtn.className = "btn-back-home";
-  backBtn.style.position = "fixed";
-  backBtn.style.top = "20px";
-  backBtn.style.left = "20px";
-  backBtn.style.zIndex = "99999";
-  backBtn.style.padding = "10px 14px";
-  backBtn.style.borderRadius = "10px";
-  backBtn.style.background = "#1e90ff";
-  backBtn.style.color = "#fff";
-  backBtn.style.border = "none";
-  backBtn.style.cursor = "pointer";
-  backBtn.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
-  backBtn.style.fontWeight = "600";
-
-  backBtn.addEventListener("click", () => {
-    // trở về feed chính
-    window.location.href = "home.html"; // hoặc feed.html nếu trang chính là feed
-  });
-
-  document.body.appendChild(backBtn);
-}
-
 // gọi hàm này khi trang short load xong
-window.addEventListener("DOMContentLoaded", addBackToFeedButton);
-window.addEventListener("resize", () => {
-  const btn = document.querySelector(".btn-back-home");
-  if (!btn) return;
-  if (window.innerWidth < 768) {
-    btn.style.fontSize = "12px";
-    btn.style.padding = "6px 8px";
-  } else {
-    btn.style.fontSize = "14px";
-    btn.style.padding = "10px 14px";
-  }
-});
-document.getElementById("watch-btn")?.addEventListener("click", () => {
-  window.location.href = "shorts.html";
-});
+const zmLogo = document.getElementById("zm-logo");
+if (zmLogo) {
+  zmLogo.style.cursor = "pointer"; // chuột đổi con trỏ khi hover
+  zmLogo.addEventListener("click", () => {
+    window.location.href = "home.html"; // hoặc "feed.html"
+  });
+}
