@@ -1662,10 +1662,20 @@ async function loadStories() {
     stories.forEach((s) => {
       const item = document.createElement("div");
       item.className = "story-item";
-      const thumb =
-        s.mediaType === "video"
-          ? `<video src="${s.mediaUrl}" muted></video>`
-          : `<img src="${s.mediaUrl}" alt="story" />`;
+
+      // Lấy đúng field từ backend (field trong model là "type", không phải "mediaType")
+      const isVideo = s.type === "video";
+      let src = s.mediaUrl;
+
+      // Nếu backend trả đường dẫn tương đối (trường hợp cũ), thêm domain API_URL vào
+      if (src && src.startsWith("/")) {
+        src = `${API_URL}${src}`;
+      }
+
+      const thumb = isVideo
+        ? `<video src="${src}" muted playsinline preload="metadata"></video>`
+        : `<img src="${src}" alt="story" />`;
+
       item.innerHTML = thumb;
       storyContainer.appendChild(item);
     });
@@ -1679,10 +1689,12 @@ if (socket && socket.on) {
   socket.on("new-story", (s) => {
     const item = document.createElement("div");
     item.className = "story-item";
-    const thumb =
-      s.mediaType === "video"
-        ? `<video src="${s.mediaUrl}" muted></video>`
-        : `<img src="${s.mediaUrl}" alt="story" />`;
+    const isVideo = s.type === "video";
+    let src = s.mediaUrl;
+    if (src && src.startsWith("/")) src = `${API_URL}${src}`;
+    const thumb = isVideo
+      ? `<video src="${src}" muted playsinline preload="metadata"></video>`
+      : `<img src="${src}" alt="story" />`;
     item.innerHTML = thumb;
     storyContainer.appendChild(item);
   });
