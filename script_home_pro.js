@@ -1294,6 +1294,9 @@ document.querySelectorAll(".left-menu a").forEach((link) => {
       case "Cài đặt":
         window.location.href = "settings.html"; // trang cài đặt tài khoản
         break;
+      case "Truyện tranh":
+        window.open("https://pops.vn/comics", "_blank");
+        break;
       default:
         alert("Chức năng đang phát triển!");
     }
