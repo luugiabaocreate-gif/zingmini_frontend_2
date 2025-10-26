@@ -2210,11 +2210,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // Kích hoạt cuộn ngang mượt mà
   storyContainer.style.display = "flex";
+  storyContainer.style.flexWrap = "nowrap";
   storyContainer.style.overflowX = "auto";
+  storyContainer.style.overflowY = "hidden";
   storyContainer.style.scrollBehavior = "smooth";
-  storyContainer.style.gap = "10px";
-  storyContainer.style.padding = "6px 4px";
   storyContainer.style.scrollSnapType = "x mandatory";
+  storyContainer.style.gap = "10px";
+  storyContainer.style.padding = "8px";
+  /* storyContainer.style.scrollSnapType = "x mandatory"; */
 
   // Ẩn thanh cuộn ngang (cho gọn giao diện)
   storyContainer.style.msOverflowStyle = "none"; // IE, Edge
