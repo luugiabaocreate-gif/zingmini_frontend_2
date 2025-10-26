@@ -428,9 +428,15 @@ function createPostNode(post) {
 
     </div>
     <div class="post-actions">
-      <button class="btn like-btn">👍 Thích</button>
-      <button class="btn comment-btn">💬 Bình luận</button>
-    </div>
+  <button class="btn like-btn">👍 Thích</button>
+  <button class="btn comment-btn">💬 Bình luận</button>
+  ${
+    post.user &&
+    (post.user._id === currentUser._id || post.user === currentUser._id)
+      ? `<button class="btn delete-post-btn" data-id="${id}">🗑️ Xóa</button>`
+      : ""
+  }
+</div>
   `;
 
   const likeBtn = div.querySelector(".like-btn");
@@ -451,6 +457,29 @@ function createPostNode(post) {
   commentBtn.addEventListener("click", () => {
     openCommentBox(id);
   });
+
+  const deleteBtn = div.querySelector(".delete-post-btn");
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", async () => {
+      if (!confirm("Bạn có chắc muốn xóa bài viết này không?")) return;
+      try {
+        const res = await fetch(`${API_URL}/api/posts/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert("✅ Đã xóa bài viết!");
+          div.remove();
+        } else {
+          alert(data.message || "Không thể xóa bài viết!");
+        }
+      } catch (err) {
+        console.error("Lỗi xóa post:", err);
+        alert("Không thể xóa bài viết!");
+      }
+    });
+  }
 
   const img = div.querySelector("img[data-id]");
   if (img)
@@ -1676,8 +1705,45 @@ async function loadStories() {
         ? `<video src="${src}" muted playsinline preload="metadata"></video>`
         : `<img src="${src}" alt="story" />`;
 
-      item.innerHTML = thumb;
+      const canDelete =
+        s.userId &&
+        (s.userId._id === currentUser._id || s.userId === currentUser._id);
+
+      item.innerHTML = `
+  ${thumb}
+  ${
+    canDelete
+      ? `<button class="delete-story-btn" data-id="${s._id}">🗑️</button>`
+      : ""
+  }
+`;
       storyContainer.appendChild(item);
+
+      // ⬇️ Thêm đoạn này NGAY SAU stories.forEach(...)
+      storyContainer.querySelectorAll(".delete-story-btn").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.id;
+          if (!confirm("Bạn có chắc muốn xóa story này không?")) return;
+
+          try {
+            const res = await fetch(`${API_URL}/api/stories/${id}`, {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (res.ok) {
+              alert("✅ Đã xóa story!");
+              btn.closest(".story-item").remove();
+            } else {
+              alert(data.message || "Không thể xóa story!");
+            }
+          } catch (err) {
+            console.error("Lỗi xóa story:", err);
+            alert("Không thể xóa story!");
+          }
+        });
+      });
 
       /******************************************************
        * ✅ THÊM PHẦN XEM STORY CHI TIẾT (POPUP)

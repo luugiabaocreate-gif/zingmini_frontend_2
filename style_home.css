@@ -884,3 +884,25 @@ body.dark .chat-window .message.them::before,
 .hidden {
   display: none !important;
 }
+.delete-story-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(255, 0, 0, 0.8);
+  border: none;
+  color: white;
+  font-size: 14px;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.story-item:hover .delete-story-btn {
+  opacity: 1;
+}
