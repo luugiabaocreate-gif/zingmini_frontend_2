@@ -906,3 +906,95 @@ body.dark .chat-window .message.them::before,
 .story-item:hover .delete-story-btn {
   opacity: 1;
 }
+/* === STORY BAR - Facebook style === */
+.story-bar {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  gap: 10px;
+  padding: 10px;
+  background: var(--card-bg, #fff);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.story-bar::-webkit-scrollbar {
+  height: 8px;
+}
+.story-bar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.story-item {
+  flex: 0 0 auto;
+  width: 110px;
+  height: 180px;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  background: #f0f2f5;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.story-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.story-item img,
+.story-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.story-item span {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* Story thêm mới */
+.story-item.add-story {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #007bff, #00a8ff);
+  color: #fff;
+  font-weight: bold;
+  position: relative;
+}
+.story-item.add-story .story-thumb {
+  font-size: 32px;
+  background: #fff;
+  color: #007bff;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+/* RESPONSIVE - số story hiển thị theo màn hình */
+@media (max-width: 768px) {
+  .story-item {
+    width: 90px;
+    height: 150px;
+  }
+}
+@media (max-width: 480px) {
+  .story-item {
+    width: 80px;
+    height: 130px;
+  }
+}
