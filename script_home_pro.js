@@ -1752,69 +1752,6 @@ if (socket && socket.on) {
 }
 
 loadStories();
-// ===== STORY HORIZONTAL SCROLL: drag (mouse) + swipe (touch) =====
-(function enableStoryScroll() {
-  const scroller = document.getElementById("storyContainer");
-  if (!scroller) return;
-
-  // Mouse drag
-  let isDown = false;
-  let startX = 0;
-  let scrollLeft = 0;
-
-  scroller.addEventListener("mousedown", (e) => {
-    isDown = true;
-    scroller.classList.add("dragging");
-    startX = e.pageX - scroller.offsetLeft;
-    scrollLeft = scroller.scrollLeft;
-  });
-  scroller.addEventListener("mouseleave", () => {
-    isDown = false;
-    scroller.classList.remove("dragging");
-  });
-  scroller.addEventListener("mouseup", () => {
-    isDown = false;
-    scroller.classList.remove("dragging");
-  });
-  scroller.addEventListener("mousemove", (e) => {
-    if (!isDown) return;
-    e.preventDefault();
-    const x = e.pageX - scroller.offsetLeft;
-    const walk = (x - startX) * 1.2; // adjust speed
-    scroller.scrollLeft = scrollLeft - walk;
-  });
-
-  // Touch (mobile)
-  let touchStartX = 0;
-  scroller.addEventListener(
-    "touchstart",
-    (e) => {
-      touchStartX = e.touches[0].clientX;
-    },
-    { passive: true }
-  );
-
-  scroller.addEventListener(
-    "touchmove",
-    (e) => {
-      if (!e.touches || !e.touches.length) return;
-      const touchX = e.touches[0].clientX;
-      const deltaX = touchStartX - touchX;
-      scroller.scrollLeft += deltaX;
-      touchStartX = touchX;
-    },
-    { passive: true }
-  );
-
-  // Optional: keyboard arrows when focused (nice-to-have)
-  scroller.setAttribute("tabindex", "0");
-  scroller.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowRight")
-      scroller.scrollBy({ left: 160, behavior: "smooth" });
-    if (e.key === "ArrowLeft")
-      scroller.scrollBy({ left: -160, behavior: "smooth" });
-  });
-})();
 
 /******************************************************
  * 🎥 VIDEO CALL FEATURE — WebRTC + Socket.IO
