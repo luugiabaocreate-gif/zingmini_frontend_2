@@ -906,34 +906,3 @@ body.dark .chat-window .message.them::before,
 .story-item:hover .delete-story-btn {
   opacity: 1;
 }
-/* ✅ Thanh story luôn trượt ngang — dù chỉ có 3 story */
-.story-bar {
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  padding: 6px 0;
-}
-
-.story-list {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 10px;
-  scroll-snap-type: x mandatory;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  padding: 8px;
-}
-
-.story-list::-webkit-scrollbar {
-  display: none; /* ẩn thanh cuộn */
-}
-
-.story-item {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-  border-radius: 50%;
-  width: 80px;
-  height: 80px;
-  overflow: hidden;
-}
