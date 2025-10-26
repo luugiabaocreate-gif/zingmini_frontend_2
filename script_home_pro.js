@@ -1678,6 +1678,57 @@ async function loadStories() {
 
       item.innerHTML = thumb;
       storyContainer.appendChild(item);
+
+      /******************************************************
+       * ✅ THÊM PHẦN XEM STORY CHI TIẾT (POPUP)
+       ******************************************************/
+      item.addEventListener("click", () => {
+        const viewer = document.createElement("div");
+        viewer.className = "story-viewer";
+        viewer.style = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999999;
+    `;
+
+        const content = document.createElement(isVideo ? "video" : "img");
+        content.src = src;
+        content.style = `
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 12px;
+      object-fit: contain;
+      background: #000;
+    `;
+        if (isVideo) {
+          content.controls = true;
+          content.autoplay = true;
+        }
+
+        // Nút đóng
+        const closeBtn = document.createElement("div");
+        closeBtn.textContent = "✖";
+        closeBtn.style = `
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 28px;
+      color: #fff;
+      cursor: pointer;
+    `;
+        closeBtn.addEventListener("click", () => viewer.remove());
+
+        viewer.appendChild(content);
+        viewer.appendChild(closeBtn);
+        document.body.appendChild(viewer);
+      });
     });
   } catch (err) {
     console.warn("Không thể load story:", err);
