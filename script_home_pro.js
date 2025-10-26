@@ -2201,3 +2201,56 @@ window.addEventListener("DOMContentLoaded", () => {
   const backBtn = document.querySelector(".btn-back-home");
   if (backBtn) backBtn.style.display = "none";
 });
+/******************************************************
+ * ⚡ STORY BAR — Thanh trượt ngang & Responsive
+ ******************************************************/
+window.addEventListener("DOMContentLoaded", () => {
+  const storyContainer = document.getElementById("storyContainer");
+  if (!storyContainer) return;
+
+  // Kích hoạt cuộn ngang mượt mà
+  storyContainer.style.display = "flex";
+  storyContainer.style.overflowX = "auto";
+  storyContainer.style.scrollBehavior = "smooth";
+  storyContainer.style.gap = "10px";
+  storyContainer.style.padding = "6px 4px";
+  storyContainer.style.scrollSnapType = "x mandatory";
+
+  // Ẩn thanh cuộn ngang (cho gọn giao diện)
+  storyContainer.style.msOverflowStyle = "none"; // IE, Edge
+  storyContainer.style.scrollbarWidth = "none"; // Firefox
+  storyContainer.style.overflowY = "hidden";
+  storyContainer.style.flexWrap = "nowrap";
+  storyContainer.addEventListener("wheel", (e) => {
+    if (e.deltaY !== 0) {
+      e.preventDefault();
+      storyContainer.scrollLeft += e.deltaY; // Cho phép cuộn bằng chuột dọc
+    }
+  });
+
+  // Ẩn scrollbar trên Chrome/Safari
+  const style = document.createElement("style");
+  style.textContent = `
+    #storyContainer::-webkit-scrollbar { display: none; }
+    .story-item { scroll-snap-align: start; flex: 0 0 auto; }
+  `;
+  document.head.appendChild(style);
+
+  // Responsive tự động
+  function adjustStorySize() {
+    const width = window.innerWidth;
+    let itemSize = 90; // mặc định desktop
+    if (width < 480) itemSize = 70; // mobile
+    else if (width < 768) itemSize = 80; // tablet
+
+    document.querySelectorAll(".story-item").forEach((el) => {
+      el.style.width = itemSize + "px";
+      el.style.height = itemSize + "px";
+    });
+  }
+
+  adjustStorySize();
+  window.addEventListener("resize", adjustStorySize);
+
+  console.log("✅ Story bar scroll & responsive kích hoạt thành công!");
+});
