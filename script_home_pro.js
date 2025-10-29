@@ -1332,6 +1332,10 @@ document.getElementById("logout-mobile")?.addEventListener("click", () => {
   window.location.href = "index.html";
 });
 
+document.getElementById("zing-shop-btn")?.addEventListener("click", () => {
+  window.location.href = "shop.html";
+});
+
 // === Ẩn nút đăng xuất trên mobile khi bật chat ===
 function isMobile() {
   return window.innerWidth <= 768; // ngưỡng cho mobile
