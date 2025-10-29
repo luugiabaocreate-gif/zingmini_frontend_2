@@ -8,7 +8,7 @@ async function loadProducts() {
     const container = document.getElementById("productList");
     container.innerHTML = "";
 
-    products.forEach(p => {
+    products.forEach((p) => {
       const div = document.createElement("div");
       div.className = "product-card";
       div.innerHTML = `
@@ -34,15 +34,18 @@ async function buyProduct(id) {
     products: [{ product: id, quantity: 1 }],
     total: 0,
     address: "Chưa cập nhật",
-    phone: "0000000000"
+    phone: "0000000000",
   };
 
   const res = await fetch(`${API_URL}/api/orders`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(order)
+    body: JSON.stringify(order),
   });
   if (res.ok) alert("Đã đặt hàng thành công! Thanh toán khi nhận hàng.");
 }
 
 loadProducts();
+document.getElementById("back-home-btn")?.addEventListener("click", () => {
+  window.location.href = "home.html";
+});

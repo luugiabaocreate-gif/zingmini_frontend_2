@@ -906,3 +906,58 @@ body.dark .chat-window .message.them::before,
 .story-item:hover .delete-story-btn {
   opacity: 1;
 }
+/* === Responsive cho thanh điều hướng chính (zm-center) === */
+.zm-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto; /* cho phép vuốt ngang nếu nhiều nút */
+  padding: 6px 10px;
+  scrollbar-width: none; /* ẩn thanh cuộn Firefox */
+}
+.zm-center::-webkit-scrollbar {
+  display: none; /* ẩn thanh cuộn Chrome/Safari */
+}
+
+/* Các nút trong thanh nav */
+.zm-center .nav-btn {
+  flex: 0 0 auto; /* giữ kích thước cố định khi cuộn ngang */
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.16s;
+}
+.zm-center .nav-btn:hover {
+  background: rgba(0, 118, 255, 0.06);
+  transform: translateY(-2px);
+}
+.zm-center .nav-btn.active {
+  background: rgba(0, 118, 255, 0.12);
+  box-shadow: 0 10px 24px rgba(0, 118, 255, 0.04);
+}
+
+/* Khi màn hình nhỏ, tự co font và spacing */
+@media (max-width: 900px) {
+  .zm-center {
+    gap: 4px;
+    padding: 6px;
+  }
+  .zm-center .nav-btn {
+    font-size: 16px;
+    padding: 6px 10px;
+  }
+}
+@media (max-width: 600px) {
+  .zm-center {
+    justify-content: flex-start; /* căn trái, cho phép cuộn ngang */
+  }
+  .zm-center .nav-btn {
+    font-size: 14px;
+    padding: 5px 8px;
+  }
+}
