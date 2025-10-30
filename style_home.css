@@ -961,3 +961,133 @@ body.dark .chat-window .message.them::before,
     padding: 5px 8px;
   }
 }
+/* ====== RESPONSIVE TOPBAR FIX ====== */
+
+/* Tổng thể topbar */
+.zm-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  flex-wrap: wrap; /* Cho phép xuống dòng khi màn nhỏ */
+  background: var(--zm-header-bg, #fff);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Search input co giãn mượt mà */
+.zm-search input {
+  width: 240px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  transition: all 0.2s ease;
+}
+
+.zm-search input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+}
+
+/* Thanh nav trung tâm — hỗ trợ cuộn ngang */
+.zm-center {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto; /* ✅ Cho phép trượt ngang */
+  -webkit-overflow-scrolling: touch; /* mượt trên iOS */
+  scrollbar-width: none; /* Ẩn thanh cuộn Firefox */
+}
+
+.zm-center::-webkit-scrollbar {
+  display: none; /* Ẩn thanh cuộn Chrome/Safari */
+}
+
+.nav-btn {
+  flex: 0 0 auto; /* Không co lại khi trượt ngang */
+  font-size: 18px;
+  padding: 6px 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.nav-btn:active {
+  transform: scale(0.9);
+}
+
+/* Khu vực phải co lại gọn gàng */
+.zm-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ====== BREAKPOINTS ====== */
+@media (max-width: 1024px) {
+  .zm-search input {
+    width: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .zm-topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .zm-left,
+  .zm-center,
+  .zm-right {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .zm-search {
+    width: 100%;
+    margin-top: 4px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .zm-search input {
+    width: 90%;
+  }
+
+  .zm-center {
+    justify-content: flex-start;
+    padding: 4px 6px;
+  }
+
+  .zm-right {
+    justify-content: center;
+    margin-top: 6px;
+  }
+
+  /* Làm gọn icon */
+  .nav-btn {
+    font-size: 16px;
+    padding: 4px 6px;
+  }
+
+  .icon-btn {
+    font-size: 16px;
+    padding: 4px;
+  }
+
+  /* Ẩn chữ username nếu màn quá nhỏ */
+  #nav-username {
+    display: none;
+  }
+}
+.zm-center {
+  scroll-behavior: smooth;
+}
