@@ -1421,25 +1421,3 @@ body.dark .chat-window .message.them::before,
     gap: 4px;
   }
 }
-/* === Giữ nút chuyển sáng/tối (🌙/☀️) luôn hiện rõ trên mọi thiết bị === */
-#toggle-theme {
-  flex-shrink: 0; /* Không co lại khi topbar bị tràn */
-  font-size: 18px;
-  transition: transform 0.2s ease;
-}
-
-#toggle-theme:hover {
-  transform: rotate(15deg) scale(1.1);
-}
-
-/* Trên màn hình nhỏ, đảm bảo nó không bị trượt ra ngoài */
-@media (max-width: 600px) {
-  #toggle-theme {
-    position: sticky;
-    right: 6px;
-    z-index: 1500;
-    background: var(--bg-color, #fff);
-    border-radius: 50%;
-    padding: 6px;
-  }
-}
