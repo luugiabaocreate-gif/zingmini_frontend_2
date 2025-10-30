@@ -1342,3 +1342,82 @@ body.dark .chat-window .message.them::before,
     gap: 6px;
   }
 }
+/* ==== Responsive Sticky Topbar (ZingMini) ==== */
+
+.zm-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-color, #fff);
+  padding: 6px 12px;
+  border-bottom: 1px solid #ccc;
+  gap: 8px;
+  overflow-x: auto; /* 👈 Cho phép cuộn ngang nếu tràn */
+  scroll-behavior: smooth;
+}
+
+/* Ẩn thanh cuộn mặc định cho đẹp hơn */
+.zm-topbar::-webkit-scrollbar {
+  display: none;
+}
+
+.zm-left,
+.zm-center,
+.zm-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Đảm bảo các phần bên trong topbar co giãn đều */
+.zm-left {
+  flex: 1;
+  min-width: 120px;
+}
+
+.zm-center {
+  flex: 1;
+  justify-content: center;
+  overflow-x: auto; /* 👈 Thanh trượt ngang riêng cho phần nav */
+}
+
+.zm-right {
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 140px;
+}
+
+/* Giúp input search tự co lại trên màn nhỏ */
+.zm-search input {
+  max-width: 180px;
+}
+
+@media (max-width: 900px) {
+  .zm-search input {
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 600px) {
+  .zm-search input {
+    display: none; /* Ẩn khung tìm kiếm nếu quá chật */
+  }
+
+  .zm-center {
+    flex: 1;
+    overflow-x: auto; /* 👈 Khi màn nhỏ, cho phép trượt ngang */
+    scroll-snap-type: x mandatory;
+  }
+
+  .zm-center .nav-btn {
+    flex: 0 0 auto;
+    scroll-snap-align: center;
+  }
+
+  .zm-right {
+    gap: 4px;
+  }
+}
