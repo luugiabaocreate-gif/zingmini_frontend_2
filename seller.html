@@ -1,45 +1,7 @@
 <!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZingShop Seller Center</title>
-  <link rel="stylesheet" href="style_shop.css" />
-</head>
+<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Seller Center — ZingShop</title><link rel="stylesheet" href="style_shop.css"></head>
 <body>
-  <header class="shop-header">
-    <h1>👩‍💼 ZingShop Seller</h1>
-    <nav>
-      <a href="shop.html">Shop</a>
-      <a href="seller.html" class="active">Quản lý sản phẩm</a>
-      <a href="seller-orders.html">Đơn hàng</a>
-    </nav>
-  </header>
-
-  <main class="seller-container">
-    <section class="create-product">
-      <h2>Đăng sản phẩm mới</h2>
-      <form id="productForm">
-        <input type="text" id="name" placeholder="Tên sản phẩm" required />
-        <textarea id="description" placeholder="Mô tả"></textarea>
-        <input type="number" id="price" placeholder="Giá" required />
-        <input type="number" id="stock" placeholder="Số lượng" />
-        <input type="text" id="category" placeholder="Danh mục" />
-        <input type="text" id="image" placeholder="URL ảnh sản phẩm" />
-        <button type="submit">Đăng sản phẩm</button>
-      </form>
-    </section>
-
-    <section class="product-list-section">
-      <h2>Sản phẩm của bạn</h2>
-      <div id="sellerProducts" class="product-grid"></div>
-    </section>
-  </main>
-
-  <footer class="shop-footer">
-    <p>© 2025 ZingShop Seller Center.</p>
-  </footer>
-
-  <script src="script_seller.js"></script>
-</body>
-</html>
+  <header class="shop-header"><a class="shop-brand" href="home.html"><span class="shop-brand-mark">ZM</span><span>ZingShop Seller</span></a><nav><a href="shop.html">Cửa hàng</a><a href="seller.html" class="active">Sản phẩm</a><a href="seller-orders.html">Đơn hàng</a></nav></header>
+  <main class="seller-container"><section class="create-product"><h2>Đăng sản phẩm mới</h2><p class="shop-subtitle">Nhập thông tin sản phẩm và đăng trực tiếp lên hệ thống.</p><form id="productForm"><input type="text" id="name" placeholder="Tên sản phẩm" required><textarea id="description" placeholder="Mô tả sản phẩm"></textarea><input type="number" id="price" placeholder="Giá" required><input type="number" id="stock" placeholder="Số lượng"><input type="text" id="category" placeholder="Danh mục"><input type="text" id="image" placeholder="URL ảnh sản phẩm"><button type="submit">Đăng sản phẩm</button></form></section><section><h2>Sản phẩm của bạn</h2><div id="sellerProducts" class="product-grid" style="margin-top:14px"></div></section></main>
+  <footer class="shop-footer">Seller Center · ZingShop</footer><script src="script_seller.js"></script>
+</body></html>

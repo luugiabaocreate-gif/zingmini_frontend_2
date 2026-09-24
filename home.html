@@ -1,246 +1,145 @@
 <!DOCTYPE html>
 <html lang="vi">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>ZingMini - Mạng xã hội tuổi teen</title>
-    <link rel="stylesheet" href="style_home.css" />
-    <link rel="stylesheet" href="theme_full.css" />
-  </head>
-  <body class="zing-body">
-    <!-- TOPBAR (fixed) -->
-    <header class="zm-topbar" role="banner">
-      <div class="zm-left">
-        <div class="zm-logo-wrap" id="zm-logo" title="Quay lại Trang chính">
-          <div class="zm-logo-icon">ZM</div>
-          <div class="zm-logo-txt">ZingMini</div>
-        </div>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#1677ff" />
+  <title>ZingMini — Trang chủ</title>
+  <link rel="stylesheet" href="style_home.css" />
+  <link rel="stylesheet" href="theme_full.css" />
+</head>
+<body class="zing-body">
+  <header class="zm-topbar" role="banner">
+    <div class="zm-left">
+      <div class="zm-logo-wrap" id="zm-logo" title="Quay lại Trang chính">
+        <div class="zm-logo-icon">ZM</div><div class="zm-logo-txt">ZingMini</div>
+      </div>
+      <div class="zm-search" role="search">
+        <input id="nav-search" placeholder="Tìm kiếm trên ZingMini" aria-label="Tìm kiếm" />
+      </div>
+    </div>
 
-        <div class="zm-search" role="search">
-          <input
-            id="nav-search"
-            placeholder="Tìm kiếm trên ZingMini"
-            aria-label="Tìm kiếm"
-          />
+    <nav class="zm-center" aria-label="Điều hướng chính">
+      <button class="nav-btn active" aria-pressed="true" title="Trang chủ">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+      </button>
+      <button class="nav-btn" id="watch-btn" title="Video">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg>
+      </button>
+      <button class="nav-btn" id="nav-shorts" title="Shorts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m9 3 6 4-3 3 4 4-6 7-2-6-4-3 5-9z"/></svg>
+      </button>
+      <button class="nav-btn" title="Nhóm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M3 19a6 6 0 0 1 12 0M16 5a3 3 0 0 1 0 6M17 13a5 5 0 0 1 4 5"/></svg>
+      </button>
+      <button class="nav-btn" id="zing-shop-btn" title="Zing Shop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9h16l-1 11H5zM8 9a4 4 0 0 1 8 0"/></svg>
+      </button>
+    </nav>
+
+    <div class="zm-right">
+      <div id="nav-user" class="user-chip" role="button" title="Tài khoản">
+        <img id="nav-avatar" src="https://i.pravatar.cc/40" alt="Ảnh đại diện" />
+        <span id="nav-username">Bạn</span>
+      </div>
+      <div class="icon-wrap">
+        <button id="messenger-btn" class="icon-btn" title="Tin nhắn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.6 8.6 0 0 1-4-.9L4 20l1.3-3.4A7.4 7.4 0 0 1 4 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5z"/></svg>
+        </button>
+        <div id="messenger-dropdown" class="dropdown hidden" aria-hidden="true"></div>
+      </div>
+      <div class="icon-wrap">
+        <button id="notif-btn" class="icon-btn" title="Thông báo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+          <span id="notif-badge" class="badge hidden">0</span>
+        </button>
+        <div id="notif-dropdown" class="dropdown hidden" aria-hidden="true"></div>
+      </div>
+      <div class="icon-wrap profile-menu-wrap">
+        <button id="profile-btn" class="icon-btn" title="Menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+        </button>
+        <div id="profile-dropdown" class="dropdown hidden" aria-hidden="true">
+          <a href="#" id="view-profile">Xem trang cá nhân</a>
+          <a href="#" id="settings">Cài đặt</a>
+        </div>
+      </div>
+      <button id="logout-top" class="icon-btn" title="Đăng xuất">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 5H5v14h5M14 8l4 4-4 4M9 12h9"/></svg>
+      </button>
+      <button id="toggle-theme" class="icon-btn theme-btn" title="Chuyển giao diện" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4 8.5 8.5 0 1 0 20 15.2z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="zm-container" role="main">
+    <button class="menu-toggle-left" aria-label="Mở menu" title="Mở menu"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+
+    <aside class="left-col" aria-label="Điều hướng phụ">
+      <div class="card left-profile">
+        <div class="left-top">
+          <img id="left-avatar" src="https://i.pravatar.cc/48" alt="Ảnh đại diện" />
+          <div><div id="left-username" class="name">Bạn</div><div class="small">Trang cá nhân</div></div>
+        </div>
+        <label class="avatar-file-picker" for="avatar-input">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4" width="17" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4.5 17 5-5 3.4 3.4 2.1-2.1 4.5 4.5"/></svg>
+          <span><strong>Chọn ảnh</strong><small id="avatar-file-name">Chưa chọn tệp</small></span>
+          <input type="file" id="avatar-input" accept="image/*" aria-label="Chọn ảnh đại diện" />
+        </label>
+        <button id="upload-avatar-btn" class="btn primary">Đổi ảnh đại diện</button>
+        <nav class="left-menu">
+          <a href="#">Trang cá nhân</a><a href="#">Bảng tin</a><a href="#">Game</a><a href="#">Quản trị</a><a href="#">Cài đặt</a><a href="#">Truyện tranh</a>
+        </nav>
+      </div>
+      <div class="card shortcuts">
+        <div class="section-title">Lối tắt</div>
+        <a href="#">Nhóm</a><a href="#">Sự kiện</a><a href="#">Fanpage</a><a href="#">Album ảnh</a>
+      </div>
+    </aside>
+
+    <section class="center-col" aria-live="polite">
+      <div class="story-bar">
+        <div id="storyContainer" class="story-list">
+          <div class="story-item add-story">
+            <div class="story-thumb">+</div><span>Thêm tin</span>
+            <input type="file" id="storyInput" accept="image/*,video/*" hidden />
+            <button id="btnPostStory" class="btn hidden">Đăng</button>
+          </div>
         </div>
       </div>
 
-      <nav class="zm-center" aria-label="Điều hướng chính">
-        <button class="nav-btn active" aria-pressed="true" title="Trang chủ">
-          🏠
-        </button>
-        <button class="nav-btn" id="watch-btn" title="Watch">🎞</button>
-        <button class="nav-btn" id="nav-shorts" title="Shorts">🎬</button>
-        <!-- <button class="nav-btn" title="Watch">🎞</button> -->
-        <button class="nav-btn" title="Groups">👥</button>
-        <button class="nav-btn" id="zing-shop-btn" title="Zing Shop">🛍️</button>
-      </nav>
-
-      <div class="zm-right">
-        <div id="nav-user" class="user-chip" role="button" title="Tài khoản">
-          <img id="nav-avatar" src="https://i.pravatar.cc/40" alt="avatar" />
-          <span id="nav-username">Bạn</span>
-        </div>
-
-        <div class="icon-wrap">
-          <button id="messenger-btn" class="icon-btn" title="Tin nhắn">
-            💬
-          </button>
-          <div
-            id="messenger-dropdown"
-            class="dropdown hidden"
-            aria-hidden="true"
-          ></div>
-        </div>
-
-        <div class="icon-wrap">
-          <button id="notif-btn" class="icon-btn" title="Thông báo">
-            🔔<span id="notif-badge" class="badge hidden">0</span>
-          </button>
-          <div
-            id="notif-dropdown"
-            class="dropdown hidden"
-            aria-hidden="true"
-          ></div>
-        </div>
-
-        <div class="icon-wrap profile-wrap">
-          <button id="profile-btn" class="icon-btn" title="Menu">🧑</button>
-          <div id="profile-dropdown" class="dropdown hidden" aria-hidden="true">
-            <a href="#" id="view-profile">Xem trang cá nhân</a>
-            <a href="#" id="settings">Cài đặt</a>
+      <div class="card create-post" aria-label="Tạo bài viết">
+        <div class="create-top">
+          <img id="create-avatar" class="avatar" src="https://i.pravatar.cc/48" alt="Ảnh đại diện" />
+          <div class="create-wrap">
+            <textarea id="post-content" placeholder="Bạn đang nghĩ gì?" rows="3"></textarea>
+            <div id="media-preview" class="preview" aria-hidden="true"></div>
           </div>
         </div>
-
-        <!-- LOGOUT VISIBLE (góc phải) -->
-        <button id="logout-top" class="icon-btn" title="Đăng xuất">🔓</button>
-
-        <button
-          id="toggle-theme"
-          class="icon-btn theme-btn"
-          title="Chuyển giao diện"
-        >
-          🌙
-        </button>
+        <div class="create-bottom">
+          <label class="file-btn">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1.4"/><path d="m4 17 5-5 4 4 2-2 5 5"/></svg>
+            Ảnh / Video<input id="post-image" type="file" accept="image/*,video/*" />
+          </label>
+          <div class="right"><button id="post-submit" class="btn primary">Đăng bài</button></div>
+        </div>
       </div>
-    </header>
 
-    <!-- MAIN GRID -->
-    <main class="zm-container" role="main">
-      <!-- Nút mở menu trái/phải cho mobile -->
-      <div class="menu-toggle-left" onclick="toggleMenu('left')">☰</div>
-      <div class="menu-toggle-right" onclick="toggleMenu('right')">💬</div>
+      <div id="posts-container" class="feed-list"></div>
+      <div id="shorts-section" class="hidden"><div class="shorts-container"></div></div>
+    </section>
 
-      <!-- LEFT COLUMN -->
-      <aside class="left-col" aria-label="Sidebar trái">
-        <div class="card left-profile">
-          <div class="left-top">
-            <img id="left-avatar" src="https://i.pravatar.cc/48" alt="avatar" />
-            <div>
-              <div id="left-username" class="name">Bạn</div>
-              <div class="small">Xem trang cá nhân</div>
-            </div>
-          </div>
-          <!-- 👇 Thêm ngay dưới đây -->
-          <input
-            type="file"
-            id="avatar-input"
-            accept="image/*"
-            style="margin-top: 8px"
-          />
-          <button
-            id="upload-avatar-btn"
-            class="btn primary"
-            style="margin-top: 6px"
-          >
-            Đổi ảnh
-          </button>
-          <nav class="left-menu">
-            <a href="#">Trang cá nhân</a>
-            <a href="#">Bảng tin</a>
-            <a href="#">Game</a>
-            <a href="#">Quản trị</a>
-            <a href="#">Cài đặt</a>
-            <a href="#">Truyện tranh</a>
-          </nav>
-        </div>
+    <aside class="right-col" aria-label="Bạn bè và gợi ý">
+      <div class="card online-card"><div class="section-title">Bạn bè online</div><div id="friends-list" class="friends-list"></div></div>
+      <div class="card suggestions-card"><div class="section-title">Gợi ý kết bạn</div><div class="suggest-list"><div class="s-item"><img src="https://i.pravatar.cc/40?img=1" alt="" /><div>Người A</div></div><div class="s-item"><img src="https://i.pravatar.cc/40?img=2" alt="" /><div>Người B</div></div></div></div>
+    </aside>
+  </main>
 
-        <div class="card shortcuts">
-          <div class="section-title">Lối tắt</div>
-          <a href="#">Nhóm</a>
-          <a href="#">Sự kiện</a>
-          <a href="#">Fanpage</a>
-          <a href="#">Album ảnh</a>
-        </div>
-      </aside>
-
-      <!-- CENTER COLUMN -->
-      <section class="center-col" aria-live="polite">
-        <!-- ==== STORY REAL ==== -->
-        <div class="story-bar">
-          <div id="storyContainer" class="story-list">
-            <!-- Story thật sẽ được load vào đây -->
-            <div class="story-item add-story">
-              <div class="story-thumb">+</div>
-              <span>Thêm</span>
-              <input
-                type="file"
-                id="storyInput"
-                accept="image/*,video/*"
-                hidden
-              />
-              <button id="btnPostStory" class="btn hidden">Đăng</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card create-post" aria-label="Tạo bài viết">
-          <div class="create-top">
-            <img
-              id="create-avatar"
-              class="avatar"
-              src="https://i.pravatar.cc/48"
-              alt="avatar"
-            />
-            <div class="create-wrap">
-              <!-- Story row ABOVE textarea -->
-              <div class="stories-inline" id="stories-row">
-                <div class="story">
-                  <img src="https://i.pravatar.cc/64?u=1" alt="Story" />
-                  <div>Bạn</div>
-                </div>
-                <div class="story">
-                  <img src="https://i.pravatar.cc/64?u=2" alt="Story" />
-                  <div>Người A</div>
-                </div>
-                <div class="story">
-                  <img src="https://i.pravatar.cc/64?u=3" alt="Story" />
-                  <div>Người B</div>
-                </div>
-                <div class="story add-story">+</div>
-              </div>
-
-              <textarea
-                id="post-content"
-                placeholder="Bạn đang nghĩ gì?"
-                rows="2"
-              ></textarea>
-              <div id="media-preview" class="preview" aria-hidden="true"></div>
-            </div>
-          </div>
-
-          <div class="create-bottom">
-            <label class="file-btn"
-              >Ảnh/Video<input
-                id="post-image"
-                type="file"
-                accept="image/*,video/*"
-            /></label>
-            <div class="right">
-              <button id="post-submit" class="btn primary">Đăng</button>
-            </div>
-          </div>
-        </div>
-
-        <div id="posts-container" class="feed-list">
-          <!-- posts injected by script_home_pro.js -->
-        </div>
-        <!-- SHORTS SECTION -->
-        <div id="shorts-section" class="hidden">
-          <div class="shorts-container"></div>
-        </div>
-      </section>
-
-      <!-- RIGHT COLUMN -->
-      <aside class="right-col" aria-label="Sidebar phải">
-        <div class="card online-card">
-          <div class="section-title">Bạn bè online</div>
-          <div id="friends-list" class="friends-list">
-            <!-- friendPool injected by script -->
-          </div>
-        </div>
-
-        <div class="card suggestions-card">
-          <div class="section-title">Gợi ý kết bạn</div>
-          <div class="suggest-list">
-            <div class="s-item">
-              <img src="https://i.pravatar.cc/40?img=1" />
-              <div>Người A</div>
-            </div>
-            <div class="s-item">
-              <img src="https://i.pravatar.cc/40?img=2" />
-              <div>Người B</div>
-            </div>
-          </div>
-        </div>
-      </aside>
-    </main>
-
-    <!-- chat windows root (floating) -->
-    <div id="chat-windows-root" aria-live="polite"></div>
-    <!-- Nút đăng xuất cho điện thoại -->
-    <div id="logout-mobile" title="Đăng xuất">🔓</div>
-    <!-- non-blocking boot logo created by script -->
-    <script type="module" src="script_home_pro.js"></script>
-  </body>
+  <div id="chat-windows-root" aria-live="polite"></div>
+  <button id="logout-mobile" title="Đăng xuất" aria-label="Đăng xuất">
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 5H5v14h5M14 8l4 4-4 4M9 12h9"/></svg>
+  </button>
+  <script type="module" src="script_home_pro.js"></script>
+</body>
 </html>

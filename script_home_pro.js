@@ -90,12 +90,12 @@ setTimeout(() => {
       document.body.classList.add("dark");
       document.documentElement.classList.add("dark"); // in case some rules target html
       if (btn) btn.setAttribute("aria-pressed", "true");
-      if (btn) btn.textContent = "🌞"; // sun = switch to light
+      if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>'; // switch to light
     } else {
       document.body.classList.remove("dark");
       document.documentElement.classList.remove("dark");
       if (btn) btn.setAttribute("aria-pressed", "false");
-      if (btn) btn.textContent = "🌙"; // moon = switch to dark
+      if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4 8.5 8.5 0 1 0 20 15.2z"/></svg>'; // switch to dark
     }
     try {
       localStorage.setItem(KEY, theme);
@@ -151,7 +151,7 @@ function escapeHtml(s = "") {
   return String(s)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, ">");
+    .replace(/>/g, "&gt;");
 }
 async function safeJson(res) {
   const t = await res.text().catch(() => "");
@@ -449,7 +449,7 @@ function createPostNode(post) {
       });
     } catch (e) {}
     likeBtn.classList.add("reaction-selected");
-    likeBtn.textContent = "👍 • Bạn";
+    likeBtn.innerHTML = '<span aria-hidden="true">♡</span> Bạn';
   });
 
   // === THÊM ĐOẠN NÀY SAU LIKE ===
@@ -765,9 +765,7 @@ if (socket && socket.on) {
     if (node) {
       const likeBtn = node.querySelector(".like-btn");
       if (likeBtn) {
-        likeBtn.textContent = `${r.reaction} • ${
-          r.user === currentUser.name ? "Bạn" : r.user
-        }`;
+        likeBtn.innerHTML = `<span aria-hidden="true">♡</span> ${r.user === currentUser.name ? "Bạn" : r.user}`;
         likeBtn.classList.add("reaction-selected");
       }
     }
@@ -823,7 +821,7 @@ if (profileBtn) {
     if (profileDropdown) profileDropdown.classList.toggle("hidden");
   });
   document.addEventListener("click", (e) => {
-    if (!e.target.closest(".profile-wrap") && profileDropdown)
+    if (!e.target.closest(".profile-menu-wrap") && profileDropdown)
       profileDropdown.classList.add("hidden");
   });
 }
@@ -1309,9 +1307,26 @@ const leftCol = document.querySelector(".left-col");
 const rightCol = document.querySelector(".right-col");
 
 if (leftToggle && leftCol) {
-  leftToggle.addEventListener("click", () => {
-    leftCol.classList.toggle("show");
+  const closeMobileMenus = () => {
+    leftCol.classList.remove("show");
     rightCol?.classList.remove("show");
+    document.body.classList.remove("mobile-menu-open");
+  };
+
+  leftToggle.addEventListener("click", () => {
+    const open = !leftCol.classList.contains("show");
+    leftCol.classList.toggle("show", open);
+    rightCol?.classList.remove("show");
+    document.body.classList.toggle("mobile-menu-open", open);
+  });
+
+  document.addEventListener("click", (event) => {
+    if (window.innerWidth > 760 || !leftCol.classList.contains("show")) return;
+    if (!leftCol.contains(event.target) && !leftToggle.contains(event.target)) closeMobileMenus();
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 760) closeMobileMenus();
   });
 }
 
@@ -1521,6 +1536,15 @@ fetchAndStoreCurrentUser()
 // === Upload avatar handler (ổn định, đồng bộ & không mất sau reload) ===
 const avatarInput = document.getElementById("avatar-input");
 const uploadAvatarBtn = document.getElementById("upload-avatar-btn");
+const avatarFileName = document.getElementById("avatar-file-name");
+
+if (avatarInput && avatarFileName) {
+  avatarInput.addEventListener("change", () => {
+    const file = avatarInput.files?.[0];
+    avatarFileName.textContent = file ? file.name : "Chưa chọn tệp";
+    avatarFileName.title = file ? file.name : "";
+  });
+}
 
 if (avatarInput && uploadAvatarBtn) {
   uploadAvatarBtn.addEventListener("click", async () => {
@@ -1563,6 +1587,10 @@ if (avatarInput && uploadAvatarBtn) {
         const el = document.getElementById(id);
         if (el) el.src = finalUrl;
       });
+      if (avatarFileName) {
+        avatarFileName.textContent = "Đã chọn ảnh";
+        avatarFileName.title = "";
+      }
 
       // === Đồng bộ ảnh trong toàn hệ thống ===
       document.querySelectorAll("img[data-id]").forEach((img) => {

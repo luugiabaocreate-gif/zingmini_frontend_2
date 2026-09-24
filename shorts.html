@@ -1,61 +1,27 @@
 <!DOCTYPE html>
-<html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ZingMini Shorts 🎬</title>
-
-    <!-- CSS -->
-    <link rel="stylesheet" href="style_shorts.css" />
-  </head>
-
-  <body>
-    <!-- 🔙 Nút quay lại Home -->
-    <button class="back-home" onclick="window.location.href='home.html'">
-      🏠
+<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>ZingMini Shorts</title><link rel="stylesheet" href="style_shorts.css"></head>
+<body>
+  <button class="back-home" onclick="window.location.href='home.html'" title="Quay lại trang chủ" aria-label="Quay lại trang chủ">
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m15 18-6-6 6-6M9 12h11"/></svg>
+  </button>
+  <div id="shortsContainer" class="shorts-container"></div>
+  <div id="uploadShortForm" class="upload-short-form" aria-label="Đăng Short">
+    <label class="short-file-picker" for="shortVideoInput">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h3l1.4-1.5h3.6A2.5 2.5 0 0 1 17 6v1.5A2.5 2.5 0 0 1 19.5 10v7A2.5 2.5 0 0 1 17 19.5h-10A2.5 2.5 0 0 1 4.5 17v-7A2.5 2.5 0 0 1 7 7.5H4Z"/><circle cx="12" cy="13.5" r="3.1"/></svg>
+      <span class="short-file-copy"><strong>Chọn video</strong><span id="shortFileName">Chưa chọn tệp</span></span>
+      <input type="file" id="shortVideoInput" accept="video/*" aria-label="Chọn video">
+    </label>
+    <label class="short-caption-field" for="shortCaption">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5h14M5 12h10M5 17.5h7"/></svg>
+      <input type="text" id="shortCaption" placeholder="Mô tả video (tùy chọn)" maxlength="120">
+    </label>
+    <button id="uploadShortBtn" class="upload-btn">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4m0 0L8.5 7.5M12 4l3.5 3.5M5 13v4.5A2.5 2.5 0 0 0 7.5 20h9a2.5 2.5 0 0 0 2.5-2.5V13"/></svg>
+      <span>Đăng Short</span>
     </button>
-
-    <!-- 🎥 Container chính -->
-    <div id="shortsContainer" class="shorts-container">
-      <!-- Video sẽ được render tự động bằng script_shorts.js -->
-    </div>
-
-    <!-- ⬆️ FORM UPLOAD SHORT (cố định cuối màn hình) -->
-    <div id="uploadShortForm" class="upload-short-form">
-      <input type="file" id="shortVideoInput" accept="video/*" />
-      <input
-        type="text"
-        id="shortCaption"
-        placeholder="Mô tả video (tùy chọn)"
-        maxlength="120"
-      />
-      <button id="uploadShortBtn" class="upload-btn">⬆️ Đăng Short</button>
-      <div id="uploadStatus" class="upload-status"></div>
-    </div>
-
-    <!-- 💬 POPUP BÌNH LUẬN -->
-    <div id="commentPopup" class="comment-popup">
-      <div class="comment-box">
-        <div class="comment-header">
-          <span>Bình luận</span>
-          <button id="closeComment">✖</button>
-        </div>
-
-        <div id="commentList" class="comment-list"></div>
-
-        <div class="comment-input-area">
-          <input id="commentInput" placeholder="Nhập bình luận..." />
-          <button id="sendComment" class="send-btn">Gửi</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Script -->
-    <script src="script_shorts.js" type="module"></script>
-    <script>
-      // Đồng bộ theme với home
-      const isDark = localStorage.getItem("theme") === "dark";
-      document.body.classList.toggle("dark-mode", isDark);
-    </script>
-  </body>
-</html>
+    <div id="uploadStatus" class="upload-status" aria-live="polite"></div>
+  </div>
+  <div id="commentPopup" class="comment-popup"><div class="comment-box"><div class="comment-header"><span>Bình luận</span><button id="closeComment" aria-label="Đóng">×</button></div><div id="commentList" class="comment-list"></div><div class="comment-input-area"><input id="commentInput" placeholder="Nhập bình luận..."><button id="sendComment" class="send-btn">Gửi</button></div></div></div>
+  <script src="script_shorts.js" type="module"></script>
+  <script>const isDark=localStorage.getItem("theme")==="dark"||localStorage.getItem("zingmini_theme")==="dark";document.body.classList.toggle("dark-mode",isDark);</script>
+</body></html>

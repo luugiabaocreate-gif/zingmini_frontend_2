@@ -1,344 +1,210 @@
-/* === RESET & BODY === */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* ZingMini Shorts — focused vertical viewing with a compact, predictable creator bar. */
+:root{
+  --short-bg:#090b0f;
+  --short-text:#fff;
+  --short-muted:rgba(255,255,255,.68);
+  --short-border:rgba(255,255,255,.15);
+  --short-surface:rgba(12,16,22,.78);
+  --short-control:rgba(255,255,255,.075);
+  --short-control-hover:rgba(255,255,255,.12);
+  --short-accent:#fff;
 }
+*,*::before,*::after{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;overflow:hidden}
+body{font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--short-bg);color:var(--short-text);overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+button,input{font:inherit}
+button{border:0}
 
-body {
-  font-family: "Inter", sans-serif;
-  overflow: hidden;
-  background-color: var(--bg-color, #000);
-  color: var(--text-color, #fff);
-  transition: background 0.3s, color 0.3s;
+.shorts-container{
+  position:relative;
+  width:100%;
+  height:100dvh;
+  overflow-y:auto;
+  overflow-x:hidden;
+  scroll-snap-type:y mandatory;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  background:var(--short-bg);
+  scrollbar-width:none;
+  overscroll-behavior-y:contain;
 }
-
-/* === CONTAINER CHÍNH === */
-.shorts-container {
-  height: 100vh;
-  width: 100%;
-  scroll-snap-type: y mandatory;
-  overflow-y: scroll;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: #000;
+.shorts-container::-webkit-scrollbar{display:none}
+.short-item{
+  position:relative;
+  width:min(100%,620px);
+  height:100dvh;
+  min-height:100dvh;
+  flex:0 0 100dvh;
+  scroll-snap-align:start;
+  scroll-snap-stop:always;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#000;
+  overflow:hidden;
 }
-
-/* === MỖI SHORT ITEM === */
-.short-item {
-  position: relative;
-  height: 100vh;
-  width: 100%;
-  scroll-snap-align: start;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.short-item video{width:100%;height:100%;object-fit:cover;background:#000}
+.short-item::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.18),transparent 28%,transparent 57%,rgba(0,0,0,.68))}
+.short-overlay{
+  position:absolute;
+  left:18px;
+  right:18px;
+  bottom:max(28px,env(safe-area-inset-bottom));
+  z-index:2;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:18px;
+  color:#fff;
+  pointer-events:none;
 }
+.short-info{display:flex;align-items:center;gap:10px;pointer-events:auto;min-width:0;max-width:calc(100% - 72px)}
+.short-avatar{width:44px;height:44px;flex:none;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,.7)}
+.short-user{font-size:14px;font-weight:750;text-shadow:0 1px 6px rgba(0,0,0,.6);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.short-actions{display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:auto;flex:none}
+.short-btn{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:rgba(15,18,23,.48);border:1px solid rgba(255,255,255,.18);color:#fff;cursor:pointer;backdrop-filter:blur(10px);transition:transform .15s ease,background .15s ease}
+.short-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8}
+.short-btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.15)}
+.short-btn.liked{background:#fff;color:#111}
+.short-btn.liked svg{fill:currentColor}
+.short-count{font-size:11px;color:#fff;margin-bottom:7px;text-shadow:0 1px 5px #000}
 
-.short-item video {
-  width: 100%;
-  height: 100%;
-  max-height: 100vh;
-  object-fit: cover;
-  background: #000;
-  border-radius: 0;
+.back-home{
+  position:fixed;
+  top:max(16px,env(safe-area-inset-top));
+  left:16px;
+  z-index:40;
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  background:rgba(10,13,18,.58);
+  border:1px solid rgba(255,255,255,.18);
+  color:#fff;
+  backdrop-filter:blur(12px);
+  cursor:pointer;
+  transition:background .15s ease,transform .15s ease;
 }
+.back-home svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8}
+.back-home:hover{background:rgba(255,255,255,.14);transform:translateY(-1px)}
 
-/* ✅ Fix mobile mất hình */
-@media (max-width: 768px) {
-  .short-item video {
-    object-fit: contain;
-    background-color: black;
-  }
-
-  .short-item {
-    background-color: black;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .short-overlay {
-    bottom: 80px; /* nâng overlay lên chút cho đỡ che video */
-  }
+/* Compact creator bar. The native file input remains available to the existing JS,
+   but the browser's bulky filename control is replaced by a stable custom control. */
+.upload-short-form{
+  position:fixed;
+  left:50%;
+  bottom:max(16px,env(safe-area-inset-bottom));
+  z-index:30;
+  transform:translateX(-50%);
+  width:min(620px,calc(100vw - 32px));
+  min-height:56px;
+  display:grid;
+  grid-template-columns:minmax(180px,1.05fr) minmax(170px,1fr) auto;
+  align-items:stretch;
+  gap:8px;
+  padding:7px;
+  background:var(--short-surface);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:14px;
+  box-shadow:0 14px 40px rgba(0,0,0,.32);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
 }
-
-/* === OVERLAY (THÔNG TIN + NÚT TƯƠNG TÁC) === */
-.short-overlay {
-  position: absolute;
-  bottom: 80px;
-  left: 10px;
-  right: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  color: white;
-  pointer-events: none;
+.short-file-picker,
+.short-caption-field{
+  min-width:0;
+  height:40px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:0 10px;
+  border:1px solid var(--short-border);
+  border-radius:9px;
+  background:var(--short-control);
+  color:#fff;
 }
-
-/* === THÔNG TIN NGƯỜI DÙNG === */
-.short-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  pointer-events: auto;
+.short-file-picker{cursor:pointer}
+.short-file-picker:hover,.short-caption-field:focus-within{background:var(--short-control-hover);border-color:rgba(255,255,255,.24)}
+.short-file-picker svg,.short-caption-field svg,.upload-btn svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8}
+.short-file-copy{display:flex;align-items:center;gap:7px;min-width:0;overflow:hidden}
+.short-file-copy strong{font-size:12px;font-weight:700;white-space:nowrap}
+.short-file-copy span{min-width:0;color:var(--short-muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#shortVideoInput{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.short-caption-field input{height:100%;padding:0;background:transparent;border:0;border-radius:0;color:#fff;box-shadow:none;outline:0}
+.short-caption-field input::placeholder{color:rgba(255,255,255,.48)}
+.short-caption-field input:focus{border:0;box-shadow:none;background:transparent}
+.upload-btn{
+  min-width:112px;
+  height:40px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:0 13px;
+  border:0;
+  border-radius:9px;
+  background:#fff;
+  color:#111;
+  font-weight:750;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:transform .15s ease,background .15s ease,opacity .15s ease;
 }
+.upload-btn:hover{background:#f0f2f5;transform:translateY(-1px)}
+.upload-btn:disabled{opacity:.58;cursor:wait;transform:none}
+.upload-status{grid-column:1/-1;min-height:0;height:0;overflow:hidden;font-size:11px;color:var(--short-muted);padding:0 3px;transition:height .16s ease}
+.upload-short-form:has(.upload-status:not(:empty)) .upload-status{height:15px}
 
-.short-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 2px solid white;
-  object-fit: cover;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+.comment-popup{
+  position:fixed;
+  left:50%;
+  bottom:0;
+  z-index:50;
+  width:min(620px,100%);
+  height:min(560px,72dvh);
+  transform:translate(-50%,100%);
+  background:#11161d;
+  color:#fff;
+  border:1px solid var(--short-border);
+  border-bottom:0;
+  border-radius:18px 18px 0 0;
+  transition:transform .25s ease;
+  box-shadow:0 -20px 60px rgba(0,0,0,.35);
 }
+.comment-popup.show{transform:translate(-50%,0)}
+.comment-box{height:100%;display:flex;flex-direction:column;padding:15px;min-height:0}
+.comment-header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--short-border);font-weight:750}
+.comment-header button{width:32px;height:32px;flex:none;border-radius:9px;background:transparent;color:#fff;cursor:pointer}
+.comment-header button:hover{background:rgba(255,255,255,.08)}
+.comment-list{flex:1;min-height:0;overflow:auto;padding:12px 2px;display:flex;flex-direction:column;gap:7px;overscroll-behavior:contain}
+.comment-list .item{padding:9px 10px;border:1px solid var(--short-border);border-radius:10px;background:rgba(255,255,255,.05);font-size:13px;overflow-wrap:anywhere}
+.comment-input-area{display:flex;gap:7px;padding-top:10px;border-top:1px solid var(--short-border)}
+#commentInput{height:40px;min-width:0;padding:0 11px;border:1px solid var(--short-border);border-radius:10px;background:rgba(255,255,255,.07);color:#fff;outline:none}
+.send-btn{height:40px;flex:none;padding:0 13px;border:0;border-radius:10px;background:#fff;color:#111;font-weight:750;cursor:pointer}
+.loading,.no-shorts,.error{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.7);font-size:13px}
 
-.short-user {
-  font-weight: 600;
-  font-size: 16px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+@media(max-width:700px){
+  .short-item{width:100%}
+  .short-overlay{bottom:max(104px,calc(env(safe-area-inset-bottom) + 92px));left:12px;right:12px}
+  .upload-short-form{width:calc(100vw - 20px);bottom:max(8px,env(safe-area-inset-bottom));grid-template-columns:minmax(0,1fr) auto;gap:7px;padding:7px}
+  .short-file-picker{min-width:0}
+  .short-caption-field{grid-column:1/-1;order:3}
+  .upload-btn{min-width:104px;padding:0 11px}
+  .upload-status{grid-column:1/-1}
+  .comment-popup{height:70dvh}
 }
-
-/* === CỘT NÚT HÀNH ĐỘNG === */
-.short-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  pointer-events: auto;
-  margin-right: 8px;
+@media(max-width:430px){
+  .upload-short-form{grid-template-columns:minmax(0,1fr) auto}
+  .short-file-copy strong{display:none}
+  .short-file-copy span{font-size:11px}
+  .short-caption-field{height:38px}
+  .upload-btn{height:38px;min-width:100px;font-size:12px}
+  .short-btn{width:44px;height:44px}
+  .short-overlay{bottom:max(96px,calc(env(safe-area-inset-bottom) + 84px))}
 }
-
-.short-btn {
-  font-size: 28px;
-  background: rgba(0, 0, 0, 0.3);
-  border: none;
-  color: white;
-  border-radius: 50%;
-  width: 52px;
-  height: 52px;
-  cursor: pointer;
-  transition: transform 0.15s ease, background 0.3s;
-}
-
-.short-btn:hover {
-  transform: scale(1.2);
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.short-btn.liked {
-  color: #ff3b3b;
-  background: rgba(255, 0, 0, 0.3);
-}
-
-.short-count {
-  font-size: 14px;
-}
-
-/* === NÚT QUAY LẠI HOME === */
-.back-home {
-  position: fixed;
-  top: 15px;
-  left: 15px;
-  z-index: 9999;
-  font-size: 22px;
-  background: rgba(0, 0, 0, 0.4);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 45px;
-  height: 45px;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  transition: background 0.3s;
-}
-
-.back-home:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
-
-/* === FORM UPLOAD SHORT === */
-.upload-short-form {
-  position: fixed;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(10px);
-  padding: 8px 12px;
-  border-radius: 12px;
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  z-index: 10000;
-}
-
-.upload-short-form input[type="file"] {
-  color: white;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.upload-short-form input[type="text"] {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  border-radius: 6px;
-  padding: 6px 8px;
-  width: 180px;
-}
-
-.upload-btn {
-  background: #1db954;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 10px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.upload-btn:hover {
-  background: #1ed760;
-}
-
-.upload-status {
-  color: #fff;
-  font-size: 13px;
-}
-
-/* === POPUP BÌNH LUẬN === */
-.comment-popup {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 65%;
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(8px);
-  color: #fff;
-  border-radius: 12px 12px 0 0;
-  transform: translateY(100%);
-  transition: transform 0.35s ease;
-  z-index: 9999;
-}
-
-.comment-popup.show {
-  transform: translateY(0);
-}
-
-.comment-box {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 10px;
-}
-
-.comment-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: bold;
-  font-size: 18px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #444;
-}
-
-.comment-list {
-  flex: 1;
-  overflow-y: auto;
-  margin-top: 8px;
-  padding-right: 5px;
-}
-
-.comment-list .item {
-  padding: 6px 4px;
-  border-bottom: 1px solid #333;
-  font-size: 15px;
-  line-height: 1.4;
-}
-
-/* === INPUT BÌNH LUẬN === */
-.comment-input-area {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  margin-top: 8px;
-}
-
-#commentInput {
-  flex: 1;
-  padding: 8px;
-  border: none;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-  outline: none;
-}
-
-.send-btn {
-  padding: 8px 12px;
-  background: #ff3b3b;
-  border: none;
-  border-radius: 6px;
-  color: #fff;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.send-btn:hover {
-  background: #ff5c5c;
-}
-
-/* === LIGHT & DARK MODE === */
-body.dark-mode {
-  --bg-color: #000;
-  --text-color: #fff;
-}
-
-body:not(.dark-mode) {
-  --bg-color: #f0f0f0;
-  --text-color: #000;
-}
-
-body:not(.dark-mode) .back-home {
-  background: rgba(255, 255, 255, 0.8);
-  color: black;
-}
-
-/* === RESPONSIVE === */
-@media (max-width: 768px) {
-  .short-item video {
-    width: 100%;
-    height: 100vh;
-    object-fit: cover;
-  }
-
-  .short-avatar {
-    width: 40px;
-    height: 40px;
-  }
-
-  .short-user {
-    font-size: 14px;
-  }
-
-  .upload-short-form {
-    width: 92%;
-    bottom: 10px;
-    left: 4%;
-    gap: 4px;
-  }
-
-  .comment-popup {
-    height: 70%;
-  }
-
-  .comment-list .item {
-    font-size: 14px;
-  }
-}
-/* === Giữ form upload không bị che video trên mobile === */
-.upload-short-form {
-  margin-bottom: 5px;
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .comment-popup,.short-btn,.back-home,.upload-btn{transition:none}
 }

@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // === THEME ===
-  const isDark = localStorage.getItem("theme") === "dark";
+  const isDark = localStorage.getItem("zingmini_theme") === "dark" || localStorage.getItem("theme") === "dark";
   document.body.classList.toggle("dark-mode", isDark);
 
   // === LOAD SHORTS ===
@@ -24,23 +24,24 @@ document.addEventListener("DOMContentLoaded", () => {
   // === SỰ KIỆN TOÀN CỤC ===
   document.addEventListener("click", (e) => {
     // ❤️ LIKE
-    if (e.target.classList.contains("like-btn")) {
-      const btn = e.target;
+    const likeButton = e.target.closest(".like-btn");
+    if (likeButton) {
+      const btn = likeButton;
       const countEl = btn.nextElementSibling;
       let count = parseInt(countEl.textContent) || 0;
 
       if (btn.classList.toggle("liked")) {
-        btn.textContent = "❤️";
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 20.3 4.9 13.5A5.2 5.2 0 0 1 12 6.1a5.2 5.2 0 0 1 7.1 7.4z"/></svg>';
         count++;
       } else {
-        btn.textContent = "🤍";
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20.8 8.8c0 5-8.8 10.3-8.8 10.3S3.2 13.8 3.2 8.8A4.8 4.8 0 0 1 12 6.1a4.8 4.8 0 0 1 8.8 2.7z"/></svg>';
         count--;
       }
       countEl.textContent = count;
     }
 
     // 💬 COMMENT
-    if (e.target.classList.contains("comment-btn")) {
+    if (e.target.closest(".comment-btn")) {
       const popup = document.getElementById("commentPopup");
       const uploadForm = document.getElementById("uploadShortForm");
 
@@ -49,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ↗️ SHARE
-    if (e.target.classList.contains("share-btn")) {
+    if (e.target.closest(".share-btn")) {
       navigator.clipboard
         .writeText(window.location.href)
         .then(() => alert("🔗 Link short đã được sao chép!"));
@@ -77,13 +78,13 @@ function createShortItem(short) {
       </div>
 
       <div class="short-actions">
-        <button class="short-btn like-btn">🤍</button>
+        <button class="short-btn like-btn" aria-label="Thích"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 8.8c0 5-8.8 10.3-8.8 10.3S3.2 13.8 3.2 8.8A4.8 4.8 0 0 1 12 6.1a4.8 4.8 0 0 1 8.8 2.7z"/></svg></button>
         <div class="short-count likes">${short.likes || 0}</div>
 
-        <button class="short-btn comment-btn">💬</button>
+        <button class="short-btn comment-btn" aria-label="Bình luận"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.6 8.6 0 0 1-4-.9L4 20l1.3-3.4A7.4 7.4 0 0 1 4 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5z"/></svg></button>
         <div class="short-count comments">${short.comments || 0}</div>
 
-        <button class="short-btn share-btn">↗️</button>
+        <button class="short-btn share-btn" aria-label="Chia sẻ"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 17 17 7M9 7h8v8"/></svg></button>
       </div>
     </div>
   `;
@@ -136,8 +137,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const captionInput = document.getElementById("shortCaption");
   const statusEl = document.getElementById("uploadStatus");
   const container = document.getElementById("shortsContainer");
+  const fileNameEl = document.getElementById("shortFileName");
 
   if (!uploadBtn) return;
+
+  if (videoInput && fileNameEl) {
+    videoInput.addEventListener("change", () => {
+      const file = videoInput.files && videoInput.files[0];
+      fileNameEl.textContent = file ? file.name : "Chưa chọn tệp";
+      fileNameEl.title = file ? file.name : "";
+    });
+  }
 
   uploadBtn.addEventListener("click", async () => {
     const file = videoInput.files[0];
@@ -176,6 +186,10 @@ document.addEventListener("DOMContentLoaded", () => {
         statusEl.textContent = "✅ Đăng short thành công!";
         captionInput.value = "";
         videoInput.value = "";
+        if (fileNameEl) {
+          fileNameEl.textContent = "Chưa chọn tệp";
+          fileNameEl.title = "";
+        }
 
         const newItem = createShortItem(data.short);
         container.prepend(newItem);
@@ -221,7 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   closeBtn.addEventListener("click", () => {
     popup.classList.remove("show");
-    if (uploadForm) uploadForm.style.display = "flex"; // hiện lại form upload
+    if (uploadForm) uploadForm.style.removeProperty("display"); // hiện lại form upload
   });
 
   sendBtn.addEventListener("click", () => {

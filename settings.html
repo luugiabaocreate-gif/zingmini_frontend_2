@@ -1,22 +1,7 @@
 <!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Cài đặt — ZingMini</title>
-  <link rel="stylesheet" href="style_home.css">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>.settings-wrap{max-width:900px;margin:90px auto;padding:0 18px}.row{display:flex;align-items:center;justify-content:space-between;padding:8px 0}</style>
-</head>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cài đặt — ZingMini</title><link rel="stylesheet" href="style_home.css"></head>
 <body class="zing-body">
-  <div class="settings-wrap">
-    <h2>Cài đặt</h2>
-    <div class="card">
-      <div class="row"><div>Thông báo</div><div><input id="toggle-notif" type="checkbox"/></div></div>
-      <div class="row"><div>Hiển thị tên đầy đủ</div><div><input id="toggle-fullname" type="checkbox"/></div></div>
-      <div style="margin-top:12px"><button id="save-settings" class="btn primary">Lưu cài đặt</button></div>
-    </div>
-  </div>
-
+  <header class="zm-topbar"><div class="zm-left"><a class="zm-logo-wrap" href="home.html"><div class="zm-logo-icon">ZM</div><div class="zm-logo-txt">ZingMini</div></a></div><div></div><div class="zm-right"><a class="btn" href="home.html">Trang chủ</a></div></header>
+  <main class="settings-wrap"><div class="page-header"><h2>Cài đặt</h2><p>Tùy chỉnh trải nghiệm ZingMini trên thiết bị này.</p></div><div class="card"><div class="row"><div><strong>Thông báo</strong><div class="small">Cho phép giao diện ghi nhớ tùy chọn thông báo.</div></div><input id="toggle-notif" type="checkbox"></div><div class="row"><div><strong>Hiển thị tên đầy đủ</strong><div class="small">Ưu tiên tên đầy đủ ở các khu vực hỗ trợ.</div></div><input id="toggle-fullname" type="checkbox"></div><div style="margin-top:14px"><button id="save-settings" class="btn primary">Lưu cài đặt</button></div></div></main>
   <script type="module" src="settings.js"></script>
-</body>
-</html>
+</body></html>

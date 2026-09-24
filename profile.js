@@ -61,41 +61,64 @@ $id("save-profile").addEventListener("click", async () => {
 });
 
 // ===== Đổi ảnh đại diện bằng file upload =====
-// const avatarFile = document.getElementById("avatar-file");
-// const uploadBtn = document.getElementById("upload-avatar-btn");
-// const pfAvatar = document.getElementById("pf-avatar");
+const avatarFile = $id("avatar-file");
+const uploadBtn = $id("upload-avatar-btn");
+const pfAvatar = $id("pf-avatar");
+const profileAvatarFileName = $id("profile-avatar-file-name");
 
-// if (uploadBtn && avatarFile && pfAvatar) {
-//  uploadBtn.addEventListener("click", async () => {
-//    const file = avatarFile.files[0];
-//    if (!file) return alert("Vui lòng chọn ảnh!");
+if (avatarFile && profileAvatarFileName) {
+  avatarFile.addEventListener("change", () => {
+    const file = avatarFile.files?.[0];
+    profileAvatarFileName.textContent = file ? file.name : "Chưa chọn tệp";
+    profileAvatarFileName.title = file ? file.name : "";
+  });
+}
 
-//    const form = new FormData();
-//    form.append("avatar", file);
+if (uploadBtn && avatarFile && pfAvatar) {
+  uploadBtn.addEventListener("click", async () => {
+    const file = avatarFile.files?.[0];
+    if (!file) return alert("Vui lòng chọn ảnh trước!");
+    if (!file.type.startsWith("image/")) return alert("Vui lòng chọn tệp hình ảnh.");
 
-//    try {
-//      const res = await fetch(`${API_URL}/api/users/${currentUser._id}`, {
-//        method: "PUT",
-//        headers: { Authorization: `Bearer ${token}` },
-//        body: form,
-//      });
+    const form = new FormData();
+    form.append("avatar", file);
 
-//      if (!res.ok) throw new Error("Cập nhật thất bại");
-//      const updated = await res.json();
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = "Đang tải lên...";
+    try {
+      const res = await fetch(`${API_URL}/api/users/${currentUser._id}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${res.status}`);
+      }
 
-      // Cập nhật localStorage và UI
-//      currentUser = { ...currentUser, ...updated };
-//      localStorage.setItem("currentUser", JSON.stringify(currentUser));
-//      pfAvatar.src = updated.avatar?.startsWith("http")
-//        ? updated.avatar
-//        : `${API_URL}${updated.avatar}`;
-//      alert("✅ Đã đổi ảnh đại diện thành công!");
-//    } catch (err) {
-//      console.error(err);
-//      alert("❌ Lỗi khi tải ảnh lên!");
-//    }
-//  });
-//}
+      const data = await res.json();
+      const newAvatar = data.user?.avatar || data.avatar;
+      if (!newAvatar) throw new Error("Server không trả về URL ảnh đại diện mới.");
+
+      const finalUrl = newAvatar.startsWith("http") ? newAvatar : `${API_URL}${newAvatar}`;
+      currentUser = { ...currentUser, ...(data.user || {}), avatar: finalUrl };
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+      pfAvatar.src = finalUrl;
+      avatarFile.value = "";
+      if (profileAvatarFileName) {
+        profileAvatarFileName.textContent = "Đã tải ảnh";
+        profileAvatarFileName.title = "";
+      }
+      alert("Ảnh đại diện đã được cập nhật.");
+    } catch (err) {
+      console.error("Upload avatar error:", err);
+      alert("Lỗi khi tải ảnh: " + (err.message || err));
+    } finally {
+      uploadBtn.disabled = false;
+      uploadBtn.textContent = "Tải lên ảnh đại diện";
+    }
+  });
+}
 
 // ===== Hiển thị bài viết của người dùng =====
 async function loadUserPosts() {

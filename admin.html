@@ -1,23 +1,7 @@
 <!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Quản trị — ZingMini</title>
-  <link rel="stylesheet" href="style_home.css">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>
-    .admin-wrap{max-width:1100px;margin:90px auto;padding:0 18px}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:8px;border-bottom:1px solid #eee}
-  </style>
-</head>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Quản trị — ZingMini</title><link rel="stylesheet" href="style_home.css"></head>
 <body class="zing-body">
-  <div class="admin-wrap">
-    <h2>Quản trị</h2>
-    <p class="small">Một bảng điều khiển admin cơ bản. (Yêu cầu role/admin từ backend)</p>
-    <div id="admin-area">Đang kiểm tra quyền...</div>
-  </div>
-
+  <header class="zm-topbar"><div class="zm-left"><a class="zm-logo-wrap" href="home.html"><div class="zm-logo-icon">ZM</div><div class="zm-logo-txt">ZingMini</div></a></div><div></div><div class="zm-right"><a class="btn" href="home.html">Trang chủ</a></div></header>
+  <main class="admin-wrap"><div class="page-header"><h2>Quản trị</h2><p>Quản lý người dùng theo quyền được backend cấp.</p></div><div id="admin-area"><div class="small">Đang kiểm tra quyền...</div></div></main>
   <script type="module" src="admin.js"></script>
-</body>
-</html>
+</body></html>
